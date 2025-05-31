@@ -13,13 +13,13 @@
   <string name="app_theme_dark_theme_light">ライト</string>
   <string name="app_theme_dark_theme_dark">ダーク</string>
   <string name="settings_app_theme">アプリテーマ</string>
-  <string name="settings_app_theme_desc">カラースキームとナイトモードを変更します</string>
+  <string name="settings_app_theme_desc">カラースキームとナイトモードを変更します。</string>
   <string name="webui">WebUI</string>
   <string name="settings_developer_mode">開発者モード</string>
-  <string name="settings_developer_mode_desc">モジュール ID などの情報を表示します</string>
+  <string name="settings_developer_mode_desc">モジュール ID などの情報を表示します。</string>
   <string name="settings_webui_remote_url">WebUI リモート URL</string>
   <string name="settings_webui_remote_url_desc">デバッグを簡素化するために http://localhost などのローカルドメインを指定してください。詳細は上記のアラートをご確認ください。</string>
-  <string name="settings_webui_remote_url_alert_desc">WebUI X は、すべてのモジュールで提供されたアドレスを一貫して使用し、すべての SSL エラーをバイパスします。この機能を使用するには、自己署名されたローカル Web サーバーが必要です。この機能はデバッグを行う目的でのみを想定しており、日常的な使用を意図したものでありません。自己責任でご使用ください。</string>
+  <string name="settings_webui_remote_url_alert_desc">WebUI X は、すべてのモジュールで提供されたアドレスを一貫して使用し、すべての SSL エラーをバイパスします。この機能を使用するには、自己署名されたローカル Web サーバーが必要です。この機能はデバッグを行う目的でのみを想定しており、日常的な使用を意図したものではありません。自己責任でご使用ください。</string>
   <string name="invalid_ip">これは有効なローカルドメインではありません！</string>
   <string name="settings_security_inject_eruda">Eruda をインジェクト</string>
   <string name="non_root_note">WebUI X のすべての機能にアクセスするには、root 化された Android デバイスが必要です。WebUI X は root 化の手順を提供していません。root 化のプロセス中または、WebUI X 自体の使用によって発生する可能性のある損害については一切責任を負いません。</string>
@@ -46,8 +46,8 @@
   <string name="menu_pin_webui">WebUI をピン留め</string>
   <string name="menu_show_updated">更新日を表示</string>
   <string name="menu_show_antifeatures">アンチ機能を表示</string>
-  <string name="settings_security_inject_eruda_desc">Eruda のインジェクトは WebUI リモート URL では使用できません</string>
-  <string name="add_shortcut">ショートカットを追加</string>
+  <string name="settings_security_inject_eruda_desc">Eruda をインジェクトは WebUI リモート URL では使用できません。</string>
+  <string name="add_shortcut">ショートカットを作成</string>
   <string name="remove_shortcut">ショートカットを削除</string>
   <string name="non_root">Non-Root</string>
 </resources>
