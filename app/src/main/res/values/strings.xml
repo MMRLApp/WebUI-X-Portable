@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WebUI X</string>
     <string name="missing_mod_id">Module ID is missing</string>
@@ -35,7 +36,6 @@
     <string name="modules_empty">No modules found</string>
     <string name="search_empty">Empty list</string>
     <string name="search_placeholder">Search…</string>
-
     <string name="menu_advanced_menu">Advanced Menu</string>
     <string name="menu_sort_mode">Sort Mode</string>
     <string name="menu_sort_option_name">Name</string>
@@ -59,7 +59,7 @@
     <string name="notification_platform_service">Platform Service</string>
     <string name="settings_date_pattern">Date pattern</string>
     <string name="settings_date_pattern_desc">Use your own date format</string>
-    <string name="settings_date_pattern_dialog_desc">The date will be parsed as [color=primary]%1$s[/color]</string>
+    <string name="settings_date_pattern_dialog_desc">The date pattern will be parsed as:\n[color=primary]%1$s[/color]</string>
     <string name="controlled_by_native">Controlled by Native</string>
     <string name="controlled_by_javascript">Controlled by JavaScript</string>
     <string name="delete">Delete</string>
@@ -91,7 +91,6 @@
     <string name="export_config">Export Config</string>
     <string name="export_module_config_json">Export Module Config JSON</string>
     <string name="export_webui_config_json">Export WebUI Config JSON</string>
-
     <!-- Permissions -->
     <string name="permission_wx_label">WebUI X</string>
     <string name="permission_wx_desc">use WebUI X in WebUI X: Portable</string>
@@ -99,5 +98,4 @@
     <string name="permission_wl_desc">use WebUI Legacy in WebUI X: Portable</string>
     <string name="general">General</string>
     <string name="developer">Developer</string>
-
 </resources>
