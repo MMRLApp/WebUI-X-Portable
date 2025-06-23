@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="requireNewVersion_cannot_load_webui">WebUI can nicht geladen werden</string>
+    <string name="requireNewVersion_cannot_load_webui">WebUI kann nicht geladen werden</string>
 </resources>
