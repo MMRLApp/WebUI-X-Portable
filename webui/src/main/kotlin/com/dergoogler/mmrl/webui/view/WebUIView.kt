@@ -318,7 +318,22 @@ open class WebUIView(
      */
     @SuppressLint("JavascriptInterface")
     override fun addJavascriptInterface(obj: Any, name: String) {
+        if (obj !is WXInterface) {
+            Log.d("WebUIView", "$obj is not a WXInterface")
+            return
+        }
+
+        if (interfaces.any { it.name == name }) {
+            Log.w(TAG, "Interface ${obj.name} already exists")
+            return
+        }
+
+
         super.addJavascriptInterface(obj, name)
+
+        interfaces += JavaScriptInterface.Instance(obj)
+
+        Log.d("WebUIView", "Added interface $name")
     }
 
     /**
@@ -336,16 +351,6 @@ open class WebUIView(
     fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
         try {
             val js = obj.createNew(createDefaultWxOptions(options))
-
-            if (js in interfaces) {
-                Log.w(TAG, "Interface ${js.name} already exists")
-                return
-            }
-
-            interfaces += js
-
-            Log.d(TAG, "Added interface ${js.name}")
-
             addJavascriptInterface(js.instance, js.name)
         } catch (e: Exception) {
             throw BrickException(
