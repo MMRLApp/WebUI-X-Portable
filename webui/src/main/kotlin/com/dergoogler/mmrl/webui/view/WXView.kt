@@ -171,12 +171,13 @@ open class WXView(
     }
 
     override fun cleanup() {
-        super.cleanup()
 
         stopLoading()
         webChromeClient = null
         removeView(this)
         webChromeClient = null
+
+        super.cleanup()
 
         Log.d(TAG, "WebUI X cleaned up")
     }
