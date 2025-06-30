@@ -257,7 +257,6 @@ open class WebUIView(
 
     protected open fun cleanup() {
         stopLoading()
-        loadUrl("about:blank")
         clearHistory()
         removeAllViews()
 
