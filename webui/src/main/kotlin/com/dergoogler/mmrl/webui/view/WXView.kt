@@ -175,7 +175,6 @@ open class WXView(
 
         stopLoading()
         webChromeClient = null
-        destroy()
         removeView(this)
         webChromeClient = null
 
