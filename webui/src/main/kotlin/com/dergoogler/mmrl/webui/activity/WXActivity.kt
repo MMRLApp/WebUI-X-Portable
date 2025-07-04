@@ -86,9 +86,7 @@ open class WXActivity : ComponentActivity() {
      *
      * @return The [ModId] if found, otherwise `null`.
      */
-    val modId by lazy {
-        intent.getModId()
-    }
+    val modId: ModId? = intent.getModId()
 
     /**
      * Executes a block of code with the ModId if it exists in the intent.
