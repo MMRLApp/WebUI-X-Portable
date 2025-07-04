@@ -86,7 +86,8 @@ open class WXActivity : ComponentActivity() {
      *
      * @return The [ModId] if found, otherwise `null`.
      */
-    val modId: ModId? = intent.getModId()
+    var modId: ModId? = null
+        private set
 
     /**
      * Executes a block of code with the ModId if it exists in the intent.
@@ -134,6 +135,8 @@ open class WXActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        modId = intent.getModId()
 
         onRender(savedInstanceState)
         registerBackEvents()
@@ -229,10 +232,10 @@ open class WXActivity : ComponentActivity() {
         finish()
     }
 
-   override fun onActivityResult(
+    override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
-        data: Intent?
+        data: Intent?,
     ) {
         super.onActivityResult(requestCode, resultCode, data)
         view.wx.onActivityResult(requestCode, resultCode, data)
