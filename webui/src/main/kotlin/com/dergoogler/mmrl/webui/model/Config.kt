@@ -345,7 +345,6 @@ data class WebUIConfig(
 
                 if (!moduleConfigConfig.exists()) {
                     moduleConfigDir.mkdirs()
-                    moduleConfigConfig.createNewFile()
                     moduleConfigConfig.writeText("{}")
                 }
 
