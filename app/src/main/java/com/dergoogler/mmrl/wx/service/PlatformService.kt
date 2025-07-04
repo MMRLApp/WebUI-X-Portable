@@ -24,7 +24,6 @@ class PlatformService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
         isActive = true
-        setForeground()
     }
 
     override fun onDestroy() {
@@ -39,6 +38,8 @@ class PlatformService : LifecycleService() {
         if (intent == null) {
             return START_NOT_STICKY
         }
+
+        setForeground()
 
         lifecycleScope.launch {
             isActive = initPlatform(baseContext, intent.getPlatform() ?: return@launch)
@@ -72,7 +73,7 @@ class PlatformService : LifecycleService() {
             mode: Platform,
         ) {
             val intent = context.createPlatformIntent<PlatformService>(mode)
-            context.startService(intent)
+            context.startForegroundService(intent)
         }
 
         fun stop(
