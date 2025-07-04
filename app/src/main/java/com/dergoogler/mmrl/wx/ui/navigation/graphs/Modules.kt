@@ -9,6 +9,7 @@ import com.dergoogler.mmrl.ext.panicArguments
 import com.dergoogler.mmrl.ext.panicString
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
+import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.ModulesScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.screens.ConfigEditorScreen
@@ -42,6 +43,11 @@ fun NavGraphBuilder.modulesScreen() = navigation(
 
         val module = PlatformManager.moduleManager.getModuleById(id.toModId())
 
+        if (module == null) {
+            LocalNavController.current.popBackStack()
+            return@composable
+        }
+
         ConfigEditorScreen(module)
     }
 
@@ -54,6 +60,11 @@ fun NavGraphBuilder.modulesScreen() = navigation(
         val id = args.panicString("id")
 
         val module = PlatformManager.moduleManager.getModuleById(id.toModId())
+
+        if (module == null) {
+            LocalNavController.current.popBackStack()
+            return@composable
+        }
 
         PluginsScreen(module)
     }
