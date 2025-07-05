@@ -99,4 +99,14 @@
     <string name="webui_config_exit_confirm_desc">WebUI 終了時の確認ダイアログを有効化します。</string>
     <string name="webui_config_kill_shell_when_background">シェルを強制終了</string>
     <string name="webui_config_kill_shell_when_background_desc">WebUI をバックグラウンド時にシェルを強制終了します。バックグラウンドコードの実行を防止します。</string>
+    <string name="cache">キャッシュ</string>
+    <string name="no">いいえ</string>
+    <string name="yes">はい</string>
+    <string name="dex_source_type_dex">Dalvik 実行ファイル</string>
+    <string name="dex_source_type_apk">Android パッケージ</string>
+    <string name="plugin_type">プラグインタイプ</string>
+    <string name="dex_source_type_dex_desc">軽量コードプラグイン用の raw dex バイトコードファイルを読み込みます。</string>
+    <string name="dex_source_type_apk_desc">完全な APK ファイルをリソース付きのモジュラープラグインとして読み込みます。</string>
+    <string name="plugins">プラグイン</string>
+    <string name="plugins_desc">ニーズに合わせて WebUI を拡張します。</string>
 </resources>
