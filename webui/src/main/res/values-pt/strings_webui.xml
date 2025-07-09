@@ -4,6 +4,26 @@
     <string name="requireNewVersion_require_text">requer pelo menos %1$s &gt;=</string>
     <string name="requireNewVersion_try_the_following">Tente o seguinte:</string>
     <string name="requireNewVersion_try_the_following_one">Atualize %1$s para a última versão do Google Play ou Github Releases.</string>
-    <string name="requireNewVersion_try_the_following_two">Entre em contato com o desenvolvedor do módulo para uma possível solução alternativa.</string>
+    <string name="requireNewVersion_try_the_following_two">Contate o desenvolvedor do módulo para uma possível solução.</string>
     <string name="requireNewVersion_refresh">Recarregar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="loading">Carregando…</string>
+    <string name="unknown_error">Erro desconhecido</string>
+    <string name="says">%1$s diz</string>
+    <string name="title_or_icon_not_found">Título ou ícone não encontrado</string>
+    <string name="icon_not_found">Ícone não encontrado</string>
+    <string name="exit">Sair</string>
+    <string name="exit_desc">Tem certeza que deseja sair dessa WebUI?</string>
+    <string name="missing_mod_id">Faltando ID do módulo</string>
+    <string name="class_not_found">Não foi possível encontrar classe da atividade definida</string>
+    <string name="shortcut_already_exists">Atalho já existe.</string>
+    <string name="shortcut_creation_requirements_not_met">Não foi possível adicionar atalho: título ou arquivo de ícone em falta.</string>
+    <string name="shortcut_icon_not_found">Não foi possível adicionar atalho: arquivo do ícone não encontrado.</string>
+    <string name="shortcut_icon_loading_error">Erro carregando arquivo de ícone.</string>
+    <string name="shortcut_icon_decode_error">Falha ao decodificar arquivo do ícone.</string>
+    <string name="pin_shortcut_not_supported">Fixar atalhos não é suportado nesse dispositivo/launcher.</string>
+    <string name="shortcut_add_request_failed">Falha ao enviar o pedido de atalho para o launcher.</string>
+    <string name="shortcut_removed_successfully">Atalho removido/desabilitado com sucesso.</string>
+    <string name="shortcut_removed_message">Esse atalho não está mais disponível.</string>
 </resources>
