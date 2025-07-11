@@ -3,8 +3,10 @@ package com.dergoogler.mmrl.webui.model
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.toCssValue
 import com.dergoogler.mmrl.ui.component.button.defaultFilledTonalButtonColors
 import com.dergoogler.mmrl.ui.component.card.defaultCardColors
@@ -36,6 +38,11 @@ data class WebColors(val colorScheme: ColorScheme) {
         appendTabbedLine("/* App Base Colors */")
         colorSchemeMap.forEach { (name, color) ->
             appendTabbedLine("--$name: ${color.toCssValue()};")
+
+            // Manual inject this because it not a default
+            if (name == "surface") {
+                appendTabbedLine("--tonalSurface: ${colorScheme.surfaceColorAtElevation(1.dp).toCssValue()};")
+            }
         }
 
         appendTabbedLine("/* Filled Tonal Button Colors */")
