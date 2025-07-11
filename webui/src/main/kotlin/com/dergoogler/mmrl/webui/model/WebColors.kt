@@ -5,7 +5,6 @@ import androidx.compose.material3.CardColors
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.toCssValue
 import com.dergoogler.mmrl.ui.component.button.defaultFilledTonalButtonColors
