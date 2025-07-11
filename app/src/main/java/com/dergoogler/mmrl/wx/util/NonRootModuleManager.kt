@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
+import android.util.Log
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.ModuleCompatibility
 import com.dergoogler.mmrl.platform.content.NullableBoolean

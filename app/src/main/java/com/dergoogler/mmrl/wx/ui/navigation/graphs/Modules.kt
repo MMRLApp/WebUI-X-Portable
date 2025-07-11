@@ -1,7 +1,9 @@
 package com.dergoogler.mmrl.wx.ui.navigation.graphs
 
+import android.util.Log
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
@@ -38,13 +40,14 @@ fun NavGraphBuilder.modulesScreen() = navigation(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
+        val context = LocalContext.current
         val args = it.panicArguments
         val id = args.panicString("id")
 
-        val module = PlatformManager.moduleManager.getModuleById(id.toModId())
+        val baseDir = context.getExternalFilesDir(null) ?: return@composable
+        val module = PlatformManager.moduleManager.getModuleById(id.toModId(baseDir.path))
 
         if (module == null) {
-            LocalNavController.current.popBackStack()
             return@composable
         }
 
@@ -56,10 +59,12 @@ fun NavGraphBuilder.modulesScreen() = navigation(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
+        val context = LocalContext.current
         val args = it.panicArguments
         val id = args.panicString("id")
 
-        val module = PlatformManager.moduleManager.getModuleById(id.toModId())
+        val baseDir = context.getExternalFilesDir(null) ?: return@composable
+        val module = PlatformManager.moduleManager.getModuleById(id.toModId(baseDir.path))
 
         if (module == null) {
             LocalNavController.current.popBackStack()
