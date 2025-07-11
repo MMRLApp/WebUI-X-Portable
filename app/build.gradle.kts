@@ -145,7 +145,7 @@ android {
     packaging.resources.excludes += setOf(
         "META-INF/**",
         "okhttp3/**",
-        "kotlin/**",
+        //"kotlin/**",
         "org/**",
         "**.properties",
         "**.bin",

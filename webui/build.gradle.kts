@@ -47,6 +47,7 @@ dependencies {
     compileOnly(libs.mmrl.platform)
     compileOnly(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
+    implementation(kotlin("reflect"))
     implementation(libs.libsu.core)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
