@@ -1,5 +1,5 @@
 [versions]
-mmrl = "af412b433d"
+mmrl = "20e7735506"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "8.9.1"
 androidxActivity = "1.9.3"

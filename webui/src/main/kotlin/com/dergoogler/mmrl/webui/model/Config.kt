@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.webui.model
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -7,7 +8,7 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
-import android.os.Build
+import android.os.Process
 import android.util.Log
 import android.widget.Toast
 import com.dergoogler.mmrl.platform.PlatformManager
@@ -113,9 +114,28 @@ data class WebUIConfigDexFile(
     val path: String? = null,
     val className: String? = null,
     val cache: Boolean = true,
+    val sharedObjects: List<String> = emptyList(),
 ) {
     private companion object {
         const val TAG = "WebUIConfigDexFile"
+    }
+
+    @SuppressLint("DiscouragedPrivateApi")
+    private fun loadLibraries(files: List<SuFile>) {
+        val libs = files.map { file ->
+            if (!file.exists()) return
+            if (file.extension != "so") return
+
+            try {
+                file.setOwner(Process.myUid(), Process.myUid())
+            } catch (e: Exception) {
+                Log.e(TAG, "Error setting owner for ${file.path}", e)
+            }
+
+            file.absolutePath
+        }
+
+        SuFile.loadSharedObjects(*libs.toTypedArray())
     }
 
     /**
@@ -155,6 +175,10 @@ data class WebUIConfigDexFile(
             }
 
             @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
+
+            val sharedObjectFiles = sharedObjects.map { SuFile(modId.webrootDir, it) }
+            loadLibraries(sharedObjectFiles)
+
             val instance = JavaScriptInterface(clazz)
 
             // 4. Cache the new instance and return it.
@@ -376,7 +400,8 @@ data class WebUIConfig(
             val overrideJson = overrideFile.readText()
             val override = overrideJson.toConfigMap() ?: mutableMapOf()
             val mergedMap = baseJson.toConfigMap()?.deepMerge(override)
-            return mergedMap?.let { jsonAdapter.fromJson(mapAdapter.toJson(it)) }?.copy(modId = this) ?: WebUIConfig(modId = this)
+            return mergedMap?.let { jsonAdapter.fromJson(mapAdapter.toJson(it)) }
+                ?.copy(modId = this) ?: WebUIConfig(modId = this)
         }
 
         private fun SuFile?.readConfig(): String? = try {
@@ -394,7 +419,7 @@ data class WebUIConfig(
 
         private fun Map<String, Any?>.deepMerge(
             other: Map<String, Any?>,
-            listMergeStrategy: ListMergeStrategy = ListMergeStrategy.REPLACE
+            listMergeStrategy: ListMergeStrategy = ListMergeStrategy.REPLACE,
         ): Map<String, Any?> {
             val result = this.toMutableMap()
             for ((key, overrideValue) in other) {
@@ -402,7 +427,10 @@ data class WebUIConfig(
                 result[key] = when {
                     baseValue is Map<*, *> && overrideValue is Map<*, *> -> {
                         baseValue.asStringMap()
-                            ?.deepMerge(overrideValue.asStringMap() ?: emptyMap(), listMergeStrategy)
+                            ?.deepMerge(
+                                overrideValue.asStringMap() ?: emptyMap(),
+                                listMergeStrategy
+                            )
                     }
 
                     baseValue is List<*> && overrideValue is List<*> -> {
