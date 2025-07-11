@@ -19,7 +19,7 @@ import androidx.compose.ui.res.painterResource
 import com.dergoogler.mmrl.ext.systemBarsPaddingEnd
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.ExtFile
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.rememberConfirm
 import com.dergoogler.mmrl.wx.R
@@ -79,7 +79,7 @@ data class ResultData(
 
 fun importZipToModules(context: Context, zipUri: Uri): ResultData {
     val tempZipName = "temp_module_import_${System.currentTimeMillis()}.zip"
-    val zipFile = SuFile(context.cacheDir, tempZipName)
+    val zipFile = ExtFile(context.cacheDir, tempZipName)
 
     try {
         context.contentResolver.openInputStream(zipUri)?.use { input ->
@@ -117,9 +117,9 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
             )
         }
 
-        val targetDir = SuFile(baseDir, "modules/${newModule.id}")
+        val targetDir = ExtFile(baseDir, "modules/${newModule.id}")
         if (targetDir.exists()) {
-            if (!targetDir.deleteRecursively()) {
+            if (!targetDir.delete()) {
                 return ResultData(
                     title = "Failed",
                     message = "An old version of the module directory exists at '${targetDir.path}', but it could not be deleted."
@@ -160,11 +160,11 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
     }
 }
 
-fun unzip(zipFile: SuFile, targetDir: SuFile) {
+fun unzip(zipFile: ExtFile, targetDir: ExtFile) {
     ZipInputStream(BufferedInputStream(FileInputStream(zipFile))).use { zis ->
         var entry: ZipEntry?
         while (zis.nextEntry.also { entry = it } != null) {
-            val file = SuFile(targetDir, entry!!.name)
+            val file = ExtFile(targetDir, entry!!.name)
             if (entry.isDirectory) {
                 file.mkdirs()
             } else {

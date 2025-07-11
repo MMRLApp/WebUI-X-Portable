@@ -1,5 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.util.Log
+import android.widget.Toast
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.R
@@ -16,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,7 +28,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.navigateSingleTopTo
+import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
+import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
+import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
+import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.webUiConfig
@@ -37,6 +44,7 @@ fun ModulesList(
     list: List<LocalModule>,
     state: LazyListState,
     isProviderAlive: Boolean,
+    platform: Platform,
 ) = Box(
     modifier = Modifier.fillMaxSize()
 ) {
@@ -52,6 +60,7 @@ fun ModulesList(
         ) { module ->
             ModuleItem(
                 isProviderAlive = isProviderAlive,
+                platform = platform,
                 module = module,
             )
         }
@@ -66,8 +75,10 @@ fun ModulesList(
 @Composable
 fun ModuleItem(
     module: LocalModule,
+    platform: Platform,
     isProviderAlive: Boolean,
 ) {
+    val context = LocalContext.current
     val navController = LocalNavController.current
 
     ModuleItem(
@@ -83,7 +94,7 @@ fun ModuleItem(
             ConfigButton(
                 onClick = {
                     navController.navigateSingleTopTo(
-                        route =  ModulesScreen.Config.route,
+                        route = ModulesScreen.Config.route,
                         args = mapOf("id" to module.id.toString())
                     )
                 },
@@ -97,10 +108,40 @@ fun ModuleItem(
                 config = config,
                 enabled = isProviderAlive && config.canAddWebUIShortcut()
             )
+
+            if (platform.isNonRoot) {
+                val colorScheme = MaterialTheme.colorScheme
+                RemoveButton(isProviderAlive) {
+                    context.confirm(
+                        ConfirmData(
+                            title = "Remove ${module.name}?",
+                            description = "Are you sure that you want to remove this module?",
+                            onConfirm = {
+                                val file = module.id.moduleDir.toExtFile()
+
+                                if (file.deleteRecursively()) {
+                                    Toast.makeText(
+                                        context,
+                                        "Successfully removed!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    return@ConfirmData
+                                }
+
+                                Toast.makeText(
+                                    context,
+                                    "Failed to remove",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                        ),
+                        colorScheme
+                    )
+                }
+            }
         }
     )
 }
-
 
 @Composable
 private fun ShortcutAdd(
@@ -142,6 +183,22 @@ private fun ConfigButton(
     Icon(
         modifier = Modifier.size(20.dp),
         painter = painterResource(id = R.drawable.settings),
+        contentDescription = null
+    )
+}
+
+@Composable
+private fun RemoveButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
+) = FilledTonalButton(
+    onClick = onClick,
+    enabled = enabled,
+    contentPadding = PaddingValues(horizontal = 12.dp)
+) {
+    Icon(
+        modifier = Modifier.size(20.dp),
+        painter = painterResource(id = R.drawable.trash),
         contentDescription = null
     )
 }

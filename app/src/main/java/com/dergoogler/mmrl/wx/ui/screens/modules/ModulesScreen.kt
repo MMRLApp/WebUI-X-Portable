@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
@@ -31,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.util.waitOfPlatform
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
 import com.dergoogler.mmrl.wx.R
@@ -92,6 +90,7 @@ fun ModulesScreen(
                 ModulesList(
                     list = list,
                     isProviderAlive = viewModel.isProviderAlive,
+                    platform = viewModel.platform,
                     state = listState,
                 )
             }
