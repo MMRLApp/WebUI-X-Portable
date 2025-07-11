@@ -133,11 +133,7 @@ fun webrootPathHandler(
                 }
 
                 addInjection(InjectionType.BODY) {
-                    appendLine("<script data-internal data-internal-dont-use src=\"https://mui.kernelsu.org/internal/scripts/require.js\" type=\"module\"></script>")
-                }
-
-                addInjection(InjectionType.BODY) {
-                    appendLine("<script data-internal data-internal-dont-use src=\"https://mui.kernelsu.org/internal/scripts/sufile-fetch-ext.js\" type=\"module\"></script>")
+                    appendLine("<script data-internal data-internal-dont-use data-mod-id=\"${options.modId}\" data-input-stream=\"${options.modId.sanitizedIdWithFileInputStream}\" src=\"https://mui.kernelsu.org/internal/assets/ext/require.js\"></script>")
                 }
 
                 customJsHead.exists {
