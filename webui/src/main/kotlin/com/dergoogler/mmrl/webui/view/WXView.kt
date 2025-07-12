@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowInsetsController
 import android.webkit.WebView
+import androidx.annotation.CallSuper
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -178,14 +179,12 @@ open class WXView(
         }
     }
 
-    override fun cleanup() {
-        stopLoading()
-        webChromeClient = null
+    @CallSuper
+    override fun destroy() {
+        super.destroy()
 
         (parent as? ViewGroup)?.removeView(this)
-
         removeAllViews()
-        super.cleanup()
 
         Log.d(TAG, "WebUI X cleaned up")
     }

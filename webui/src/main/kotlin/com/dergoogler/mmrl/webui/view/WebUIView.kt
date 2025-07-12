@@ -9,6 +9,7 @@ import android.view.ViewGroup.LayoutParams
 import android.webkit.WebMessage
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.annotation.CallSuper
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import androidx.compose.ui.graphics.toArgb
@@ -255,14 +256,6 @@ open class WebUIView(
         post { evaluateJavascript(script, null) }
     }
 
-    protected open fun cleanup() {
-        stopLoading()
-        clearHistory()
-        removeAllViews()
-
-        initJob?.cancel()
-    }
-
     open fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -297,8 +290,12 @@ open class WebUIView(
         }
     }
 
+    @CallSuper
     override fun destroy() {
-        cleanup()
+        stopLoading()
+        clearHistory()
+
+        initJob?.cancel()
 
         // remove all interfaces
         for (obj in interfaces) {
@@ -315,6 +312,7 @@ open class WebUIView(
     /**
      * # DO NOT USE
      */
+    @CallSuper
     @SuppressLint("JavascriptInterface")
     override fun addJavascriptInterface(obj: Any, name: String) {
         if (obj !is WXInterface) {

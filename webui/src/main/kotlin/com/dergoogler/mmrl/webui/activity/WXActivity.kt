@@ -14,6 +14,7 @@ import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.CallSuper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -232,6 +233,7 @@ open class WXActivity : ComponentActivity() {
         finish()
     }
 
+    @CallSuper
     override fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
@@ -241,14 +243,18 @@ open class WXActivity : ComponentActivity() {
         view.wx.onActivityResult(requestCode, resultCode, data)
     }
 
+    @CallSuper
     override fun onDestroy() {
-        super.onDestroy()
         with(view.wx) {
             onActivityDestroyInterfaces()
-            destroy()
+            // leave it commented out to prevent crashes
+            // destroy()
         }
+
+        super.onDestroy()
     }
 
+    @CallSuper
     override fun onResume() {
         with(view.wx) {
             this.onResume()
@@ -260,6 +266,7 @@ open class WXActivity : ComponentActivity() {
         super.onResume()
     }
 
+    @CallSuper
     override fun onPause() {
         with(view.wx) {
             this.onPause()
@@ -271,6 +278,7 @@ open class WXActivity : ComponentActivity() {
         super.onPause()
     }
 
+    @CallSuper
     override fun onStop() {
         with(view.wx) {
             onActivityStopInterfaces()
