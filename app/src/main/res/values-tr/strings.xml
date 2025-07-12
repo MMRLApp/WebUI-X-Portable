@@ -1,3 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">WebUI X</string>
+    <string name="missing_mod_id">Modül kimliği eksik</string>
+    <string name="empty">Boş</string>
+    <string name="update_on">%s tarihinde güncellendi</string>
+    <string name="modules">Modüller</string>
+    <string name="search_placeholder">Ara…</string>
+    <string name="settings">Ayarlar</string>
+    <string name="app_theme_palette">Tema Paleti</string>
+    <string name="app_theme_dark_theme">Koyu Tema</string>
+    <string name="app_theme_dark_theme_auto">Otomatik</string>
+    <string name="app_theme_dark_theme_light">Işık</string>
+    <string name="app_theme_dark_theme_dark">Karanlık</string>
+    <string name="settings_app_theme">Uygulama Teması</string>
+    <string name="settings_app_theme_desc">Renk düzenini ve gece modunu değiştirin</string>
+    <string name="webui">WebUI</string>
+    <string name="settings_developer_mode">Geliştirici Modu</string>
+    <string name="settings_developer_mode_desc">Modüllerin kimliklerini ve daha fazlasını gösterir</string>
+    <string name="settings_webui_remote_url_desc">Hata ayıklamayı kolaylaştırmak için http://localhost gibi yerel bir alan adı sağlayın. Daha fazla bilgi için yukarıdaki uyarıya bakın.</string>
+    <string name="settings_webui_remote_url_alert_desc">WebUI X, tüm modüller için sağladığınız adresi sürekli bir şekilde kullanacak ve tüm SSL hatalarını atlayacaktır. Bu özelliği kullanmak için kendi kendine imzalanmış bir yerel web sunucusuna ihtiyaç duyulduğunu unutmayın. Bu özellik yalnızca hata ayıklama amaçlıdır, günlük kullanım için tasarlanmamıştır ve kullanımı tamamen sizin sorumluluğunuzdadır.</string>
+    <string name="settings_webui_engine">WebUI Motoru</string>
+    <string name="settings_webui_engine_desc">Tercih ettiğiniz motoru seçin</string>
+    <string name="settings_webui_engine_wx">WebUI X</string>
+    <string name="invalid_ip">Bu geçerli bir yerel alan adı değil!</string>
+    <string name="settings_security_inject_eruda">Eruda\'yı enjekte et</string>
+    <string name="menu_sort_mode">Sıralama Modu</string>
+    <string name="menu_pin_action">Eylemleri Sabitle</string>
 </resources>

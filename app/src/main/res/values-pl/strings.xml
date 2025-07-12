@@ -109,4 +109,6 @@
     <string name="dex_source_type_apk_desc">Ładuje pełne pliki APK jako modułowe wtyczki z zasobami.</string>
     <string name="plugins">Wtyczki</string>
     <string name="plugins_desc">Rozszerz WebUI, aby dopasować go do swoich potrzeb.</string>
+    <string name="settings_security_auto_open_eruda">Automatycznie otwórz Erudę</string>
+    <string name="settings_security_auto_open_eruda_desc">Automatycznie otwiera konsolę Eruda po uruchomieniu WebUI</string>
 </resources>
