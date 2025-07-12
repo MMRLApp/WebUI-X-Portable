@@ -16,6 +16,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.PromptData
@@ -27,9 +28,15 @@ import com.dergoogler.mmrl.webui.handler.internalPathHandler
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.handler.webrootPathHandler
 import com.dergoogler.mmrl.webui.model.Insets
+import com.dergoogler.mmrl.webui.model.WebResourceErrors
 import com.dergoogler.mmrl.webui.util.WebUIOptions
+import com.dergoogler.mmrl.webui.util.errorPages.baseErrorPage
+import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.view.WXSwipeRefresh
 import com.dergoogler.mmrl.webui.wxAssetLoader
+import kotlinx.html.b
+import kotlinx.html.br
+import kotlinx.html.i
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -179,10 +186,34 @@ open class WXClient : WebViewClient {
         request: WebResourceRequest,
         error: WebResourceError,
     ) {
-        super.onReceivedError(view, request, error)
         mSwipeView.nullply {
             isRefreshing = false
         }
+
+        if (request.isForMainFrame) {
+            val errorName = WebResourceErrors.from(error.errorCode)
+
+            val err = mOptions.baseErrorPage(
+                title = "Failed to load",
+                description = {
+                    b { +request.url.toString() }
+                    br
+                    i { +error.description.toString() }
+                },
+                tryFollowing = listOf(
+                    "Check your internet connection",
+                    "Refreshing the page",
+                    "Restarting the WebUI X"
+                ),
+                errorCode = errorName?.name ?: "UNDEFINED"
+            )
+
+            view.loadData(
+                err, "text/html", "UTF-8"
+            )
+        }
+
+        super.onReceivedError(view, request, error)
     }
 
     override fun onReceivedHttpError(

@@ -26,6 +26,7 @@ import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXInsetsEventData.Companion.toEventData
 import com.dergoogler.mmrl.webui.util.WebUIOptions
+import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.util.getRequireNewVersion
 
 /**
@@ -197,7 +198,7 @@ open class WXView(
         options {
             if (requireNewAppVersion?.required == true) {
                 loadData(
-                    getRequireNewVersion(context), "text/html", "UTF-8"
+                    requireNewVersionErrorPage(), "text/html", "UTF-8"
                 )
 
                 return@options

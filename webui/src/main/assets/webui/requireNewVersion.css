@@ -2,6 +2,14 @@ body {
   margin: 0;
   user-select: none;
   background-color: var(--background);
+  color: var(--onBackground);
+  font-family: "Roboto", "Segoe UI", Tahoma, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+code {
+  user-select: text;
 }
 
 .container {
@@ -11,79 +19,167 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - var(--top-padding) - var(--bottom-padding));
-  font-family: "Segoe UI", Tahoma, sans-serif;
-  color: var(--onBackground);
-  font-size: 15px;
-  margin: 0 32px;
-  padding-top: var(--top-padding);
-  padding-bottom: var(--bottom-padding);
+  min-height: calc(100vh - var(--top-padding) - var(--bottom-padding));
+  padding: 24px;
+  box-sizing: border-box;
+}
 
-  .error-icon {
-    user-select: none;
-    margin-bottom: 24px;
+.content {
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.error-icon {
+  color: var(--error);
+  margin-bottom: 8px;
+  text-align: center;
+
+  display: flex;
+  justify-content: center;
+
+  svg {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+}
+
+.title {
+  color: var(--onSecondaryContainer);
+  font-weight: 500;
+  font-size: 1.8em;
+  margin: 0;
+  text-align: center;
+}
+
+.description {
+  background-color: var(--surfaceContainer);
+  padding: 16px;
+  border-radius: 12px;
+  border-left: 4px solid var(--error);
+}
+
+.list {
+  background-color: var(--surfaceContainer);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.list ul {
+  margin: 8px 0 0 0;
+  padding-left: 24px;
+}
+
+.list li {
+  margin-bottom: 8px;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 500;
+
+  :hover {
+    text-decoration: underline;
+  }
+}
+
+.code {
+  color: var(--outline);
+  font-size: 13px;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+
+.buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  margin: 0;
+  user-select: none;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 120px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.refresh {
+  background: var(--primary);
+  color: var(--onPrimary);
+}
+
+button.more {
+  border: 1px solid var(--outline);
+  background: transparent;
+  color: var(--primary);
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 32px;
   }
 
   .content {
-    max-width: 600px;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+    gap: 32px;
+  }
+
+  .error-icon {
+    font-size: 4rem;
+
+    svg {
+      width: 5rem;
+      height: 5rem;
+    }
   }
 
   .title {
-    color: var(--onSecondaryContainer);
-    font-weight: 500;
-    font-size: 1.6em;
-    margin-bottom: 16px;
+    font-size: 2em;
   }
 
+  .description,
   .list {
-    margin-top: 15px;
-    line-height: 24px;
-
-    ul {
-      margin-top: 0;
-    }
+    padding: 20px;
   }
 
-  a {
-    text-decoration: none;
-    color: var(--primary);
+  button {
+    padding: 14px 28px;
+    font-size: 1em;
   }
+}
 
-  .code {
-    color: var(--outline);
-    font-size: 12px;
-    text-transform: uppercase;
-    margin-top: 12px;
+@media (orientation: landscape) {
+  .container {
+    justify-content: flex-start;
+    padding-top: 40px;
   }
 
   .buttons {
-    margin-top: 100%;
-    display: flex;
-
-    button {
-      display: block;
-      padding: 16px 32px;
-      border: 0;
-      border-radius: 10rem;
-      cursor: pointer;
-      font-size: 0.875em;
-      margin: 0;
-      user-select: none;
-    }
-
-    button.refresh {
-      background: var(--primary);
-      color: var(--onPrimary);
-    }
-
-    button.more {
-      border: 1px solid var(--outline);
-      margin-left: auto;
-      background: transparent;
-      color: var(--primary);
-    }
+    margin-top: 32px;
   }
 }
