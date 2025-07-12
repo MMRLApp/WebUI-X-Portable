@@ -258,7 +258,7 @@ data class WebUIConfig(
     val autoStatusBarsStyle: Boolean = true,
     val dexFiles: List<WebUIConfigDexFile> = emptyList(),
     val killShellWhenBackground: Boolean = true,
-    val contentSecurityPolicy: String? = "default-src 'self' data: blob: {domain}; " +
+    val contentSecurityPolicy: String = "default-src 'self' data: blob: {domain}; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
             "style-src 'self' 'unsafe-inline' {domain}; connect-src *",
     val caching: Boolean = true,

@@ -2,9 +2,12 @@ package com.dergoogler.mmrl.webui.handler
 
 import android.util.Log
 import android.webkit.WebResourceResponse
+import com.dergoogler.mmrl.ext.isNotNullOrBlank
 import com.dergoogler.mmrl.ext.isNull
+import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
+import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
 import com.dergoogler.mmrl.webui.Injection
 import com.dergoogler.mmrl.webui.InjectionType
@@ -74,7 +77,7 @@ fun webrootPathHandler(
                 val fallbackFile = SuFile(options.webRoot, options.config.historyFallbackFile)
                 val fallbackResponse = fallbackFile.asResponse()
 
-                if (options.config.contentSecurityPolicy != null) {
+                if (options.config.contentSecurityPolicy.isNotNullOrBlank()) {
                     fallbackResponse.setResponseHeaders(
                         mapOf(
                             "Content-Security-Policy" to options.config.contentSecurityPolicy.replace("{domain}", options.domain.toString())
@@ -150,14 +153,14 @@ fun webrootPathHandler(
 
                 addInjection(insets.cssInject)
             }
-
+            PlatformManager
             val ext = file.extension
             val isHtml = ext == "html" || ext == "htm"
             val response = if (isHtml) file.asResponse(injections) else file.asResponse()
 
             val headers = mutableMapOf<String, String>()
 
-            if (isHtml && options.config.contentSecurityPolicy != null) {
+            if (isHtml && options.config.contentSecurityPolicy.isNotNullOrBlank()) {
                 headers["Content-Security-Policy"] = options.config.contentSecurityPolicy.replace("{domain}", options.domain.toString())
             }
 
