@@ -89,6 +89,10 @@ fun webrootPathHandler(
                         appendLine("\timport eruda from \"https://mui.kernelsu.org/internal/assets/eruda/eruda.mjs\";")
                         appendLine("\teruda.init();")
 
+                        if (options.isAutoOpenErudaEnabled) {
+                            appendLine("\teruda.show();")
+                        }
+
                         val editors = listOf(
                             Editor("css", "style", customCssFile),
                             Editor("javascript", "script", customJsFile),

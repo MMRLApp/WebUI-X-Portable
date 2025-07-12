@@ -57,6 +57,7 @@ class WebUIActivity : WXActivity() {
             appVersionCode = BuildConfig.VERSION_CODE,
             remoteDebug = userPrefs.useWebUiDevUrl,
             enableEruda = userPrefs.enableErudaConsole,
+            autoOpenEruda = userPrefs.enableAutoOpenEruda,
             debugDomain = userPrefs.webUiDevUrl,
             userAgentString = userAgent,
             isDarkMode = userPrefs.isDarkMode(),
