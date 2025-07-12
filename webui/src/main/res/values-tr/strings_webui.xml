@@ -23,4 +23,7 @@
     <string name="shortcut_icon_loading_error">Kısayol simgesi yüklenirken hata oluştu.</string>
     <string name="shortcut_icon_decode_error">Kısayol simgesi çözülemedi.</string>
     <string name="pin_shortcut_not_supported">Bu cihazda/başlatıcıda kısayol sabitleme desteklenmiyor.</string>
+    <string name="shortcut_add_request_failed">Kısayol isteği başlatıcıya gönderilemedi.</string>
+    <string name="shortcut_removed_successfully">Kısayol başarıyla kaldırıldı/devre dışı bırakıldı.</string>
+    <string name="shortcut_removed_message">Bu kısayol artık kullanılamıyor.</string>
 </resources>
