@@ -110,4 +110,6 @@
     <string name="dex_source_type_apk_desc">Loads full APK files as modular plugins with resources</string>
     <string name="plugins">Plugins</string>
     <string name="plugins_desc">Extend the WebUI to fit it your needs</string>
+    <string name="settings_security_auto_open_eruda">Auto Open Eruda</string>
+    <string name="settings_security_auto_open_eruda_desc">Automatically opens the Eruda console when a WebUI is launched</string>
 </resources>

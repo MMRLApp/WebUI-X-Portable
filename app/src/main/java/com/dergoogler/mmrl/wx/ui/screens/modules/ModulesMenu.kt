@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.datastore.model.Option
-import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ui.component.BottomSheet
 import com.dergoogler.mmrl.ui.component.MenuChip
 import com.dergoogler.mmrl.ui.component.Segment

@@ -2,11 +2,11 @@ package com.dergoogler.mmrl.wx.viewmodel
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
-import com.dergoogler.mmrl.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.Homepage
-import com.dergoogler.mmrl.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.platform.PlatformManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -49,93 +49,9 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setDeleteZipFile(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setDeleteZipFile(value)
-        }
-    }
-
-    fun setUseDoh(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setUseDoh(value)
-        }
-    }
-
-    fun setDownloadPath(value: String) {
-        viewModelScope.launch {
-            userPreferencesRepository.setDownloadPath(value)
-        }
-    }
-
-    fun setConfirmReboot(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setConfirmReboot(value)
-        }
-    }
-
-    fun setTerminalTextWrap(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setTerminalTextWrap(value)
-        }
-    }
-
     fun setDatePattern(value: String) {
         viewModelScope.launch {
             userPreferencesRepository.setDatePattern(value)
-        }
-    }
-
-    fun setAutoUpdateRepos(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setAutoUpdateRepos(value)
-        }
-    }
-
-    fun setAutoUpdateReposInterval(value: Long) {
-        viewModelScope.launch {
-            userPreferencesRepository.setAutoUpdateReposInterval(value)
-        }
-    }
-
-    fun setCheckModuleUpdates(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setCheckModuleUpdates(value)
-        }
-    }
-
-    fun setCheckModuleUpdatesInterval(value: Long) {
-        viewModelScope.launch {
-            userPreferencesRepository.setCheckModuleUpdatesInterval(value)
-        }
-    }
-
-    fun setCheckAppUpdates(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setCheckAppUpdates(value)
-        }
-    }
-
-    fun setCheckAppUpdatesPreReleases(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setCheckAppUpdatesPreReleases(value)
-        }
-    }
-
-    fun setHideFingerprintInHome(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setHideFingerprintInHome(value)
-        }
-    }
-
-    fun setStrictMode(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setStrictMode(value)
-        }
-    }
-
-    fun setHomepage(value: Homepage) {
-        viewModelScope.launch {
-            userPreferencesRepository.setHomepage(value)
         }
     }
 
@@ -157,63 +73,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setUseShellForModuleStateChange(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setUseShellForModuleStateChange(value)
-        }
-    }
-
-    fun setUseShellForModuleAction(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setUseShellForModuleAction(value)
-        }
-    }
-
-    fun setClearInstallTerminal(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setClearInstallTerminal(value)
-        }
-    }
-
-    fun setAllowCancelInstall(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setAllowCancelInstall(value)
-        }
-    }
-
-    fun setAllowCancelAction(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setAllowCancelAction(value)
-        }
-    }
-
-    fun setBlacklistAlerts(value: Boolean) {
-        viewModelScope.launch {
-            userPreferencesRepository.setBlacklistAlerts(value)
-        }
-    }
-
-    fun setInjectEruda(value: List<String>) {
-        viewModelScope.launch {
-            userPreferencesRepository.setInjectEruda(value)
-        }
-    }
-
-    fun setAllowedFsModules(value: List<String>) {
-        viewModelScope.launch {
-            userPreferencesRepository.setAllowedFsModules(value)
-        }
-    }
-
-    fun setAllowedKsuModules(value: List<String>) {
-        viewModelScope.launch {
-            userPreferencesRepository.setAllowedKsuModules(value)
-        }
-    }
-
     fun setEnableEruda(value: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setEnableEruda(value)
+        }
+    }
+
+    fun setEnableAutoOpenEruda(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setEnableAutoOpenEruda(value)
         }
     }
 

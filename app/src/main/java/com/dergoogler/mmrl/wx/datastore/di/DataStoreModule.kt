@@ -1,8 +1,8 @@
 package com.dergoogler.mmrl.wx.datastore.di
 
-import com.dergoogler.mmrl.datastore.provider.DataStoreProvider
-import com.dergoogler.mmrl.datastore.UserPreferencesSerializer
-import com.dergoogler.mmrl.datastore.model.UserPreferences
+import com.dergoogler.mmrl.wx.datastore.provider.DataStoreProvider
+import com.dergoogler.mmrl.wx.datastore.UserPreferencesSerializer
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import android.content.Context
 import androidx.datastore.core.DataStore
 import dagger.Module

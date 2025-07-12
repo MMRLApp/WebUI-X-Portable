@@ -12,7 +12,7 @@ val mmrlBaseApplicationId = "com.dergoogler.mmrl"
 
 android {
     namespace = "$mmrlBaseApplicationId.wx"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = namespace
@@ -168,6 +168,7 @@ dependencies {
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.platform)
     implementation(libs.mmrl.datastore)
+    implementation(projects.datastore)
     implementation(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
 

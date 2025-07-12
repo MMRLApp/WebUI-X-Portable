@@ -28,19 +28,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isRoot
-import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.navigatePopUpTo
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.App.Companion.TAG
 import com.dergoogler.mmrl.wx.service.PlatformService
 import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsScreen
-import com.dergoogler.mmrl.wx.util.initPlatform
 
 @Composable
 fun MainScreen() {

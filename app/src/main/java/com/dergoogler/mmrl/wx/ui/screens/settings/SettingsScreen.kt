@@ -29,8 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.datastore.model.WebUIEngine
-import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
@@ -66,8 +66,6 @@ fun SettingsScreen() {
     val userPreferences = LocalUserPreferences.current
     val viewModel = LocalSettings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val navController = LocalNavController.current
-    val density = LocalDensity.current
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -211,6 +209,18 @@ fun SettingsScreen() {
                     )
                     Title(R.string.settings_security_inject_eruda)
                     Description(R.string.settings_security_inject_eruda_desc)
+                }
+
+                DeveloperSwitch(
+                    enabled = userPreferences.enableErudaConsole,
+                    checked = userPreferences.enableErudaConsole && userPreferences.enableAutoOpenEruda,
+                    onChange = viewModel::setEnableAutoOpenEruda
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.tools)
+                    )
+                    Title(R.string.settings_security_auto_open_eruda)
+                    Description(R.string.settings_security_auto_open_eruda_desc)
                 }
 
                 TextEditDialogItem(

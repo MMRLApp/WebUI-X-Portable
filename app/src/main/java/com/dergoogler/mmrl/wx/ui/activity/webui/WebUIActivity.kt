@@ -3,7 +3,7 @@ package com.dergoogler.mmrl.wx.ui.activity.webui
 import android.os.Bundle
 import android.os.Build
 import androidx.lifecycle.lifecycleScope
-import com.dergoogler.mmrl.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.ext.exception.BrickException

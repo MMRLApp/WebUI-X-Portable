@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.wx.ui.screens.modules
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -28,15 +27,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.fadingEdge
 import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.ui.component.card.Card
-import com.dergoogler.mmrl.ui.component.card.CardDefaults.cardStyle
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.nullply
-import com.dergoogler.mmrl.ext.nullvoke
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -49,7 +46,6 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.LocalCover
 import com.dergoogler.mmrl.ui.component.card.component.Absolute
-import com.dergoogler.mmrl.ui.component.card.component.Relative
 import com.dergoogler.mmrl.wx.util.launchWebUI
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
@@ -95,7 +91,7 @@ fun ModuleItem(
             config.cover.nullable(menu.showCover) {
                 val file = SuFile(module.id.moduleDir, it)
 
-                file.exists {
+                file.exists { i ->
                     LocalCover(
                         modifier = Modifier.fadingEdge(
                             brush = Brush.verticalGradient(
@@ -107,7 +103,7 @@ fun ModuleItem(
                                 endY = 0f
                             ),
                         ),
-                        inputStream = it.newInputStream(),
+                        inputStream = i.newInputStream(),
                     )
                 }
             }

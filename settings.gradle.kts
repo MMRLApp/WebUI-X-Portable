@@ -22,6 +22,7 @@ pluginManagement {
 rootProject.name = "WebUIX"
 include(
     ":app",
-    ":webui"
+    ":webui",
+    ":helper",
+    ":datastore"
 )
-include(":helper")
