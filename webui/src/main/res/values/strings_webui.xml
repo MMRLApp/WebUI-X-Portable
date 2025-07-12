@@ -30,5 +30,9 @@
     <string name="shortcut_add_request_failed">Failed to send shortcut request to launcher.</string>
     <string name="shortcut_removed_successfully">Shortcut removed/disabled successfully.</string>
     <string name="shortcut_removed_message">This shortcut is no longer available.</string>
+    <string name="failed_to_load">Failed to load</string>
+    <string name="check_your_internet_connection">Check your internet connection</string>
+    <string name="refreshing_the_page">Refreshing the page</string>
+    <string name="restarting_the_webui_x">Restarting the WebUI X</string>
 
 </resources>

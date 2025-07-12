@@ -8,6 +8,7 @@ import android.net.http.SslError
 import android.util.Log
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -181,6 +182,14 @@ open class WXClient : WebViewClient {
         }
     }
 
+    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail): Boolean {
+        mSwipeView.nullply {
+            isRefreshing = false
+        }
+        Log.e("WebView", "Renderer crashed. Did it crash? ${detail.didCrash()}")
+        return true // or false to kill app
+    }
+
     override fun onReceivedError(
         view: WebView,
         request: WebResourceRequest,
@@ -190,27 +199,29 @@ open class WXClient : WebViewClient {
             isRefreshing = false
         }
 
-        if (request.isForMainFrame) {
-            val errorName = WebResourceErrors.from(error.errorCode)
+        with(mOptions.context) {
+            if (request.isForMainFrame) {
+                val errorName = WebResourceErrors.from(error.errorCode)
 
-            val err = mOptions.baseErrorPage(
-                title = "Failed to load",
-                description = {
-                    b { +request.url.toString() }
-                    br
-                    i { +error.description.toString() }
-                },
-                tryFollowing = listOf(
-                    "Check your internet connection",
-                    "Refreshing the page",
-                    "Restarting the WebUI X"
-                ),
-                errorCode = errorName?.name ?: "UNDEFINED"
-            )
+                val err = mOptions.baseErrorPage(
+                    title = getString(R.string.failed_to_load),
+                    description = {
+                        b { +request.url.toString() }
+                        br
+                        i { +error.description.toString() }
+                    },
+                    tryFollowing = listOf(
+                        getString(R.string.check_your_internet_connection),
+                        getString(R.string.refreshing_the_page),
+                        getString(R.string.restarting_the_webui_x)
+                    ),
+                    errorCode = errorName?.name ?: "UNDEFINED"
+                )
 
-            view.loadData(
-                err, "text/html", "UTF-8"
-            )
+                view.loadData(
+                    err, "text/html", "UTF-8"
+                )
+            }
         }
 
         super.onReceivedError(view, request, error)
