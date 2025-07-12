@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.util.Log
+import android.view.ViewGroup
 import android.view.WindowInsetsController
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
@@ -172,12 +173,12 @@ open class WXView(
     }
 
     override fun cleanup() {
-
         stopLoading()
         webChromeClient = null
-        removeView(this)
-        webChromeClient = null
 
+        (parent as? ViewGroup)?.removeView(this)
+
+        removeAllViews()
         super.cleanup()
 
         Log.d(TAG, "WebUI X cleaned up")
