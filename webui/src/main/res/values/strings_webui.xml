@@ -34,5 +34,6 @@
     <string name="check_your_internet_connection">Check your internet connection</string>
     <string name="refreshing_the_page">Refreshing the page</string>
     <string name="restarting_the_webui_x">Restarting the WebUI X</string>
+    <string name="renderer_crashed">The WebView Render Process is unresponsive. Do want terminate it?</string>
 
 </resources>

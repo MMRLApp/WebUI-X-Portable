@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.webui.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.webui.client.WXChromeClient
 import com.dergoogler.mmrl.webui.client.WXClient
+import com.dergoogler.mmrl.webui.client.WXRenderProcessClient
 import com.dergoogler.mmrl.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.webui.interfaces.FileInputInterface
 import com.dergoogler.mmrl.webui.interfaces.FileInterface
@@ -100,6 +102,10 @@ open class WXView(
 
         // WebView clients and settings
         webChromeClient = WXChromeClient(options)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            webViewRenderProcessClient = WXRenderProcessClient(options)
+        }
 
         settings.apply {
             options {

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
+import android.os.Build
 import android.util.Log
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
@@ -16,6 +17,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebViewRenderProcess
+import android.webkit.WebViewRenderProcessClient
+import androidx.annotation.RequiresApi
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
@@ -28,6 +32,7 @@ import com.dergoogler.mmrl.webui.WXAssetLoader
 import com.dergoogler.mmrl.webui.handler.internalPathHandler
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.handler.webrootPathHandler
+import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WebResourceErrors
 import com.dergoogler.mmrl.webui.util.WebUIOptions
@@ -274,5 +279,33 @@ open class WXClient : WebViewClient {
 
     private companion object {
         const val TAG = "WebUIClient"
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+open class WXRenderProcessClient(
+    private val options: WebUIOptions,
+) : WebViewRenderProcessClient() {
+    override fun onRenderProcessUnresponsive(
+        view: WebView,
+        renderer: WebViewRenderProcess?,
+    ) {
+        options.context.confirm(
+            ConfirmData(
+                title = options.context.getString(R.string.says, options.modId.id),
+                description = options.context.getString(R.string.renderer_crashed),
+                onConfirm = {
+                    renderer?.terminate()
+                }
+            ),
+            options.colorScheme
+        )
+    }
+
+    override fun onRenderProcessResponsive(
+        view: WebView,
+        renderer: WebViewRenderProcess?,
+    ) {
+        Log.d("WXRenderProcessClient", "onRenderProcessResponsive")
     }
 }
