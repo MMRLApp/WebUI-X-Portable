@@ -3,14 +3,6 @@ name: Release CI
 on:
   workflow_dispatch:
     inputs:
-      title:
-        required: false
-        default: '**WebUI X: Portable**'
-        description: 'Title'
-      message:
-        required: false
-        default: 'No message.'
-        description: 'Message'
       send_telegram:
         description: 'Release to Telegram'
         required: true
@@ -26,19 +18,6 @@ on:
         required: true
         default: false
         type: boolean
-      buildType:
-        description: "Build Type"
-        type: choice
-        required: true
-        default: 'Alpha'
-        options:
-          - 'Release'
-          - 'Playstore'
-          - 'ReleaseCandidate'
-          - 'Beta'
-          - 'Alpha'
-          - 'Debug'
-          - 'DebugMin'
 
 jobs:
   build:
@@ -47,11 +26,6 @@ jobs:
     outputs:
       release-name: ${{ steps.release-name.outputs.name }}
     steps:
-      - name: Parse input
-        run: |
-            BUILD_TYPE_CASED=$(echo "${{ inputs.buildType }}" | sed 's/^\(.\)/\L\1/')
-            echo "BUILD_TYPE_CASED=$BUILD_TYPE_CASED" >> $GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@v4.2.2
         with:
@@ -80,38 +54,26 @@ jobs:
             cache-cleanup: always
 
       - name: Build APK
-        run: chmod 755 gradlew && ./gradlew assemble${{ inputs.buildType }}
+        run: chmod 755 gradlew && ./gradlew assembleRelease
 
       - name: Get release name
         if: success() && github.ref == 'refs/heads/master'
         id: release-name
         run: |
-            name=`ls app/build/outputs/apk/${{ env.BUILD_TYPE_CASED }}/*.apk | awk -F '(/|.apk)' '{print $6}'` && echo "name=${name}" >> $GITHUB_OUTPUT
+            name=`ls app/build/outputs/apk/release/*.apk | awk -F '(/|.apk)' '{print $6}'` && echo "name=${name}" >> $GITHUB_OUTPUT
 
       - name: Find APK
         id: find_apk
         run: |
-          APK_PATH=$(find app/build/outputs/apk/${{ env.BUILD_TYPE_CASED }} -name "*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
           echo "APK_PATH=$APK_PATH" >> $GITHUB_OUTPUT
-
-      # - name: Find mapping file
-      #   id: normal_mapping
-      #   run: |
-      #     MAPPING_PATH=$(find app/build/outputs/mapping/${{ env.BUILD_TYPE_CASED }} -name "mapping.txt" | head -n 1)
-      #     echo "MAPPING_PATH=$MAPPING_PATH" >> $GITHUB_OUTPUT
-
-      # - name: Upload normal mapping as artifact
-      #   uses: actions/upload-artifact@v4.6.2
-      #   with:
-      #     name: mapping
-      #     path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
 
       - name: Upload normal apk as artifact
         if: success() && github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v4.6.2
         with:
             name: ${{ steps.release-name.outputs.name }}
-            path: app/build/outputs/apk/${{ env.BUILD_TYPE_CASED }}/*.apk
+            path: app/build/outputs/apk/release/*.apk
 
   release:
     name: Release on Telegram or GitHub
@@ -123,22 +85,11 @@ jobs:
         with:
             fetch-depth: 0
 
-      - name: Parse input
-        run: |
-            BUILD_TYPE_CASED=$(echo "${{ inputs.buildType }}" | sed 's/^\(.\)/\L\1/')
-            echo "BUILD_TYPE_CASED=$BUILD_TYPE_CASED" >> $GITHUB_ENV
-
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
           name: ${{ needs.build.outputs.release-name }}
           path: unspoofed-apk
-
-      # - name: Download Mappings
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: mapping
-      #     path: mapping
 
       - name: Find normal APK
         id: find_normal_apk
@@ -146,31 +97,15 @@ jobs:
           APK_PATH=$(find unspoofed-apk -name "*.apk" | head -n 1)
           echo "APK_PATH=$APK_PATH" >> $GITHUB_OUTPUT
 
-      # - name: Find normal mapping file
-      #   id: normal_mapping
-      #   run: |
-      #     MAPPING_PATH=$(find mapping -name "mapping.txt" | head -n 1)
-      #     echo "MAPPING_PATH=$MAPPING_PATH" >> $GITHUB_OUTPUT
-
       - name: Get commit info and build timestamp
         id: meta
         run: |
           BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S")
           COMMIT_COUNT=$(git rev-list --count HEAD)
+          MESSAGE=$(bash commits.sh)
           echo "VERSION=$COMMIT_COUNT" >> $GITHUB_ENV
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
-
-      - name: Set release platforms message
-        id: platforms
-        run: |
-          PLATFORMS=""
-          if [[ "${{ github.event.inputs.send_github }}" == "true" ]]; then
-            PLATFORMS="${PLATFORMS}- **GitHub**: [Release](${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ env.VERSION }})\n"
-          fi
-          if [[ "${{ github.event.inputs.send_playstore }}" == "true" ]]; then
-            PLATFORMS="${PLATFORMS}- **Google Play**: [Play Store](https://play.google.com/store/apps/details?id=com.dergoogler.mmrl.wx)\n"
-          fi
-          echo -e "PLATFORMS<<EOF\n${PLATFORMS}EOF" >> $GITHUB_ENV
+          echo "MESSAGE=$MESSAGE" >> $GITHUB_ENV
 
       - name: Upload files to Telegram
         if: github.event.inputs.send_telegram == 'true'
@@ -178,16 +113,13 @@ jobs:
         with:
           to-who: '@MMRLCI'
           message: |
-            ${{ inputs.title }}
+            **WebUI X: Portable**
             #ci_${{ env.VERSION }}
-
-            Build on ${{ env.BUILD_DATE }}.
 
             **What's new?**
 
-            ${{ inputs.message }}
+            ${{ env.message }}
             
-            Type: ${{ env.BUILD_TYPE_CASED }}
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           files: |
             ${{ steps.find_normal_apk.outputs.APK_PATH }}
@@ -216,16 +148,10 @@ jobs:
           tag_name: v${{ env.VERSION }}
           release_name: v${{ env.VERSION }}
           body: |
-            ${{ inputs.title }}
-            #ci_${{ env.VERSION }}
-            
-            Build on ${{ env.BUILD_DATE }}.
-            
             ## What's new?
             
-            ${{ inputs.message }}
+            ${{ env.message }}
             
-            Type: ${{ inputs.buildType }}
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -240,17 +166,6 @@ jobs:
           asset_content_type: application/vnd.android.package-archive
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-      # - name: Upload normal mapping to GitHub Release
-      #   if: steps.check_release.outputs.exists == 'false' && github.event.inputs.send_github == 'true'
-      #   uses: actions/upload-release-asset@v1
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
-      #     asset_name: mapping.txt
-      #     asset_content_type: text/plain
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   playstore-build:
     name: Build for Google Play Store and release
