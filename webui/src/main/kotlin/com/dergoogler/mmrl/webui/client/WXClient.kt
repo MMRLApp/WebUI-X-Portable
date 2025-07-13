@@ -13,22 +13,23 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.material3.ExperimentalMaterial3Api
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.WXAssetLoader
+import com.dergoogler.mmrl.webui.component.ErrorScreen
 import com.dergoogler.mmrl.webui.handler.internalPathHandler
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.handler.webrootPathHandler
 import com.dergoogler.mmrl.webui.model.Insets
+import com.dergoogler.mmrl.webui.model.SslErrors
 import com.dergoogler.mmrl.webui.model.WebResourceErrors
 import com.dergoogler.mmrl.webui.util.WebUIOptions
-import com.dergoogler.mmrl.webui.util.errorPages.baseErrorPage
+import com.dergoogler.mmrl.webui.util.drawCompose
 import com.dergoogler.mmrl.webui.view.WXSwipeRefresh
+import com.dergoogler.mmrl.webui.view.WebUIView
 import com.dergoogler.mmrl.webui.wxAssetLoader
-import kotlinx.html.b
-import kotlinx.html.br
-import kotlinx.html.i
 
 open class WXClient : WebViewClient {
     private val mOptions: WebUIOptions
@@ -89,10 +90,33 @@ open class WXClient : WebViewClient {
         handler: SslErrorHandler,
         error: SslError,
     ) {
-        if (mOptions.debug) {
-            handler.proceed()
-        } else {
-            handler.cancel()
+        // Cancel the SSL handshake
+        handler.cancel()
+
+        val errCode = SslErrors.from(error.primaryError)
+
+        mOptions.drawCompose {
+            ErrorScreen(
+                icon = R.drawable.certificate_off,
+                title = getString(R.string.failed_to_open_ssl),
+                description = getString(
+                    R.string.failed_to_open_ssl_desc,
+                    view.url,
+                ),
+                errorCode = errCode?.name ?: "UNDEFINED",
+                onRefresh = {
+                    if (view is WebUIView) {
+                        view.loadDomain()
+                        return@ErrorScreen
+                    }
+
+                    view.reload()
+                },
+                moreInfoText = R.string.proceed,
+                onMoreInfo = {
+                    handler.proceed()
+                }
+            )
         }
     }
 
@@ -104,6 +128,7 @@ open class WXClient : WebViewClient {
         return true // or false to kill app
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onReceivedError(
         view: WebView,
         request: WebResourceRequest,
@@ -113,32 +138,33 @@ open class WXClient : WebViewClient {
             isRefreshing = false
         }
 
-        with(mOptions.context) {
-            if (request.isForMainFrame) {
-                val errorName = WebResourceErrors.from(error.errorCode)
-
-                val err = mOptions.baseErrorPage(
+        if (request.isForMainFrame) {
+            mOptions.drawCompose {
+                ErrorScreen(
+                    icon = R.drawable.exclamation_circle,
                     title = getString(R.string.failed_to_load),
-                    description = {
-                        b { +request.url.toString() }
-                        br
-                        i { +error.description.toString() }
-                    },
-                    tryFollowing = listOf(
+                    description = getString(
+                        R.string.failed_to_load_desc,
+                        request.url,
+                        error.description
+                    ),
+                    suggestions = listOf(
                         getString(R.string.check_your_internet_connection),
                         getString(R.string.refreshing_the_page),
                         getString(R.string.restarting_the_webui_x)
                     ),
-                    errorCode = errorName?.name ?: "UNDEFINED"
-                )
+                    errorCode = WebResourceErrors.from(error.errorCode)?.name ?: "UNDEFINED",
+                    onRefresh = {
+                        if (view is WebUIView) {
+                            view.loadDomain()
+                            return@ErrorScreen
+                        }
 
-                view.loadData(
-                    err, "text/html", "UTF-8"
+                        view.reload()
+                    },
                 )
             }
         }
-
-        super.onReceivedError(view, request, error)
     }
 
     override fun onReceivedHttpError(

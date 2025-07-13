@@ -1,23 +1,25 @@
 package com.dergoogler.mmrl.webui.util
 
-import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageInfo
 import android.net.Uri
 import android.util.Log
+import android.view.ViewGroup.LayoutParams
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.net.toUri
+import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import com.dergoogler.mmrl.ui.theme.Colors.Companion.getColorScheme
 import com.dergoogler.mmrl.webui.activity.WXActivity
@@ -221,7 +223,7 @@ data class WebUIOptions(
         }
     }
 
-    private companion object Default {
+    companion object {
         const val TAG = "WebUIOptions"
     }
 
@@ -291,6 +293,7 @@ data class WebUIOptions(
         result = 31 * result + debugDomainSafeRegex.hashCode()
         result = 31 * result + debug.hashCode()
         result = 31 * result + enableEruda.hashCode()
+        result = 31 * result + autoOpenEruda.hashCode()
         result = 31 * result + debugDomain.hashCode()
         result = 31 * result + isDarkMode.hashCode()
         result = 31 * result + userAgentString.hashCode()
@@ -298,4 +301,32 @@ data class WebUIOptions(
         result = 31 * result + colorScheme.hashCode()
         return result
     }
+}
+
+fun WebUIOptions.drawCompose(
+    layoutParams: LayoutParams = LayoutParams(
+        LayoutParams.MATCH_PARENT,
+        LayoutParams.MATCH_PARENT
+    ),
+    content: @Composable (WebUIOptions.() -> Unit),
+) {
+    val act = findActivity()
+
+    if (act == null) {
+        Log.e(WebUIOptions.TAG, "Unable to draw compose. Activity not found")
+        return
+    }
+
+    act.addContentView(
+        ComposeView(this).apply {
+            setContent {
+                MaterialTheme(
+                    colorScheme = colorScheme
+                ) {
+                    content()
+                }
+            }
+        },
+        layoutParams
+    )
 }
