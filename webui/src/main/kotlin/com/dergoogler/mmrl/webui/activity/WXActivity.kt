@@ -192,7 +192,7 @@ open class WXActivity : ComponentActivity() {
                 val interceptor = options.config.backInterceptor
 
                 if (backHandler != true) {
-                    finish()
+                    handleNativeBack()
                     return
                 }
 
