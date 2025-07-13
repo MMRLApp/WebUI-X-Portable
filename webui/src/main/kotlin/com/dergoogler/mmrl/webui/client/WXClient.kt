@@ -159,7 +159,12 @@ open class WXClient : WebViewClient {
         val mUri = request.url ?: return false
         val mUrl = mUri.toString()
 
+        val isLoadedData = mUrl.startsWith("data:")
         val isUnsafe = !mOptions.isDomainSafe(mUrl)
+
+        if (isLoadedData) {
+            return false
+        }
 
         if (isUnsafe) {
             if (mOptions.onUnsafeDomainRequest != null) {
