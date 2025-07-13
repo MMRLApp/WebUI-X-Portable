@@ -85,7 +85,7 @@ open class WXView(
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
-    override fun onInit(isInitialized: Boolean) {
+    override suspend fun onInit(isInitialized: Boolean) {
         super.onInit(isInitialized)
 
         if (isInitialized) return
@@ -117,6 +117,7 @@ open class WXView(
             }
         }
 
+        var clientSet = false
 
         // Window insets handling
         ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
@@ -146,16 +147,31 @@ open class WXView(
             }
 
             client.mSwipeView = mSwipeView
-
             super.webViewClient = client
 
+            clientSet = true
             insets
         }
 
         // JavaScript interfaces (delayed until WebView is fully ready)
         post {
             addJavascriptInterfaces()
-            Log.d(TAG, "WebUI X fully initialized")
+            options.debugger {
+                Log.d(TAG, "WebUI X fully initialized")
+            }
+
+            // Wait until client is definitely set
+            if (!clientSet) {
+                options.debugger {
+                    Log.d(TAG, "Waiting for client to be set")
+                }
+                postDelayed({ loadDomain() }, 100)
+            } else {
+                options.debugger {
+                    Log.d(TAG, "Client already set, loading domain")
+                }
+                loadDomain()
+            }
         }
     }
 

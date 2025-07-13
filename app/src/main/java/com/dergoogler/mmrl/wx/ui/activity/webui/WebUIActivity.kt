@@ -67,7 +67,8 @@ class WebUIActivity : WXActivity() {
 
         val view = WebUIXView(options).apply {
             wx.addJavascriptInterface<KernelSUInterface>()
-            wx.loadDomain()
+            // not required anymore since onInit() handles it
+            // wx.loadDomain()
         }
 
         this.options = options

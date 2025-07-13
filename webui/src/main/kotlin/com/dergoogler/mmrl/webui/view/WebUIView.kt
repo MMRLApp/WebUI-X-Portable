@@ -90,7 +90,7 @@ open class WebUIView(
 
     protected val interfaces = hashSetOf<JavaScriptInterface.Instance>()
 
-    protected open fun onInit(isInitialized: Boolean) {}
+    protected open suspend fun onInit(isInitialized: Boolean) {}
 
     private fun initWhenReady() {
         // Basic setup that can run immediately

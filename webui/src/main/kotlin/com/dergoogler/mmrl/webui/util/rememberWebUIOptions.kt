@@ -84,6 +84,15 @@ data class WebUIOptions(
             userManager.myUserId
         }
 
+    fun <R> debugger(block: WebUIOptions.() -> R): R? = debugger(null, block)
+    fun <R> debugger(default: R, block: WebUIOptions.() -> R): R {
+        if (debug) {
+            return block()
+        }
+
+        return default
+    }
+
     val isProviderAlive get() = PlatformManager.isAlive
 
     val versionName: String
