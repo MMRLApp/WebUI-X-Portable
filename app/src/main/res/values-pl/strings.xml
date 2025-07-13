@@ -111,4 +111,11 @@
     <string name="plugins_desc">Rozszerz WebUI, aby dopasować go do swoich potrzeb.</string>
     <string name="settings_security_auto_open_eruda">Automatycznie otwórz Erudę</string>
     <string name="settings_security_auto_open_eruda_desc">Automatycznie otwiera konsolę Eruda po uruchomieniu WebUI</string>
+    <string name="sukisu">SukiSU Ultra</string>
+    <string name="webui_config_content_security_policy_title">Polityka bezpieczeństwa treści</string>
+    <string name="webui_config_content_security_policy_desc">Definiuje zasady bezpieczeństwa, które ograniczają zawartość internetową (skrypty, style, obrazy itp.), którą WebUI może załadować i wykonać w celu ochrony przed złośliwym kodem.</string>
+    <string name="webui_config_caching_desc">Włącza lub wyłącza buforowanie w celu poprawy wydajności WebUI poprzez lokalne przechowywanie zasobów.</string>
+    <string name="webui_config_caching_title">Buforowanie</string>
+    <string name="webui_config_caching_max_age_title">Maks. wiek pamięci podręcznej</string>
+    <string name="webui_config_caching_max_age_desc">Ustawia maksymalny czas (w sekundach), przez jaki buforowane zasoby są uznawane za ważne przed odświeżeniem.</string>
 </resources>
