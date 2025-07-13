@@ -27,12 +27,8 @@ fun webrootPathHandler(
     val configBase = options.modId.moduleConfigDir
     val configStyleBase = SuFile(configBase, "style")
     val configJsBase = SuFile(configBase, "js")
-
-    val customCssFile = SuFile(configStyleBase, "custom.css")
-
     val customJsHead = SuFile(configJsBase, "head")
     val customJsBody = SuFile(configJsBase, "body")
-    val customJsFile = SuFile(customJsBody, "custom.js")
 
     val directory = SuFile(options.webRoot).getCanonicalDirPath().toSuFile()
     SuFile.createDirectories(customJsHead, customJsBody, configStyleBase)
@@ -41,7 +37,9 @@ fun webrootPathHandler(
         "mmrl/", "internal/", ".adb/", ".local/", ".config/", ".${options.modId.id}/", "__root__/"
     )
 
-    val staticExtensions = listOf("js", "css", "png", "jpg", "jpeg", "gif", "svg", "woff", "woff2")
+    val jsExtensionRegex = Regex("^[cm]?js$")
+    val staticExtensions =
+        listOf("js", "cjs", "mjs", "css", "png", "jpg", "jpeg", "gif", "svg", "woff", "woff2")
 
     fun MutableList<Injection>.addScriptInjections(
         dir: SuFile,
@@ -49,11 +47,16 @@ fun webrootPathHandler(
         urlBase: String,
     ) {
         dir.exists { d ->
-            d.listFiles { f -> f.exists() && f.extension == "js" }?.forEach { js ->
-                addInjection(type) {
-                    appendLine("<script data-internal src=\"$urlBase/${js.name}\" type=\"module\"></script>")
+            d.list()?.map { SuFile(d, it) }
+                ?.filter { it.exists() && jsExtensionRegex.matches(it.extension) }?.forEach {
+                    addInjection(type) {
+                        append("<script data-user-extension src=\"$urlBase/${it.name}\"")
+                        if (it.extension == "mjs") {
+                            append(" type=\"module\"")
+                        }
+                        append("></script>\n")
+                    }
                 }
-            }
         }
     }
 
@@ -80,7 +83,9 @@ fun webrootPathHandler(
                 if (options.config.contentSecurityPolicy.isNotNullOrBlank()) {
                     fallbackResponse.setResponseHeaders(
                         mapOf(
-                            "Content-Security-Policy" to options.config.contentSecurityPolicy.replace("{domain}", options.domain.toString())
+                            "Content-Security-Policy" to options.config.contentSecurityPolicy.replace(
+                                "{domain}", options.domain.toString()
+                            )
                         )
                     )
                 }
@@ -98,21 +103,6 @@ fun webrootPathHandler(
                         if (options.isAutoOpenErudaEnabled) {
                             appendLine("\teruda.show();")
                         }
-
-                        listOf(
-                            Triple("css", "style", customCssFile),
-                            Triple("javascript", "script", customJsFile),
-                        ).forEach { (mode, name, f) ->
-                            appendLine("\tconst $name = erudaEditor({")
-                            appendLine("\t\tmodId: \"${options.modId.id}\",")
-                            appendLine("\t\tfile: ${options.modId.sanitizedIdWithFile},")
-                            appendLine("\t\tfileToEdit: \"${f.path}\",")
-                            appendLine("\t\tlang: \"$mode\",")
-                            appendLine("\t\tname: \"$name\",")
-                            appendLine("\t});")
-                            appendLine("eruda.add($name);")
-                        }
-
                         appendLine("\tconst sheet = new CSSStyleSheet();")
                         appendLine("\tsheet.replaceSync(\".eruda-dev-tools { padding-bottom: ${insets.bottom}px }\");")
                         appendLine("\twindow.eruda.shadowRoot.adoptedStyleSheets.push(sheet);")
@@ -161,7 +151,9 @@ fun webrootPathHandler(
             val headers = mutableMapOf<String, String>()
 
             if (isHtml && options.config.contentSecurityPolicy.isNotNullOrBlank()) {
-                headers["Content-Security-Policy"] = options.config.contentSecurityPolicy.replace("{domain}", options.domain.toString())
+                headers["Content-Security-Policy"] = options.config.contentSecurityPolicy.replace(
+                    "{domain}", options.domain.toString()
+                )
             }
 
             if (ext in staticExtensions && options.config.caching) {
