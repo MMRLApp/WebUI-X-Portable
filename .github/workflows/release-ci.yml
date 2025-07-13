@@ -108,11 +108,11 @@ jobs:
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
           
           echo "MESSAGE_TG<<EOF" >> $GITHUB_ENV
-          echo "MESSAGE_TG" >> $GITHUB_ENV
+          echo "$MESSAGE_TG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
           echo "MESSAGE_GH<<EOF" >> $GITHUB_ENV
-          echo "MESSAGE_GH" >> $GITHUB_ENV
+          echo "$MESSAGE_GH" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Upload files to Telegram
