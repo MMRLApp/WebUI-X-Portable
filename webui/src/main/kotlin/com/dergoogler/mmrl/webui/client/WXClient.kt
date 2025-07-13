@@ -5,121 +5,30 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
-import android.os.Build
 import android.util.Log
-import android.webkit.JsPromptResult
-import android.webkit.JsResult
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
-import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebViewRenderProcess
-import android.webkit.WebViewRenderProcessClient
-import androidx.annotation.RequiresApi
 import com.dergoogler.mmrl.ext.nullply
-import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
-import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
-import com.dergoogler.mmrl.ui.component.dialog.PromptData
-import com.dergoogler.mmrl.ui.component.dialog.confirm
-import com.dergoogler.mmrl.ui.component.dialog.prompt
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.WXAssetLoader
 import com.dergoogler.mmrl.webui.handler.internalPathHandler
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.handler.webrootPathHandler
-import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WebResourceErrors
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.errorPages.baseErrorPage
-import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.view.WXSwipeRefresh
 import com.dergoogler.mmrl.webui.wxAssetLoader
 import kotlinx.html.b
 import kotlinx.html.br
 import kotlinx.html.i
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-
-open class WXChromeClient(
-    private val options: WebUIOptions,
-) : WebChromeClient() {
-    private companion object {
-        const val TAG = "WXChromeClient"
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    private inline fun options(
-        result: JsResult,
-        options: WebUIOptions,
-        block: WebUIOptions.() -> Unit,
-    ): Boolean {
-        contract {
-            callsInPlace(block, InvocationKind.AT_MOST_ONCE)
-        }
-
-        block(options)
-        return true
-    }
-
-    override fun onJsAlert(
-        view: WebView?,
-        url: String,
-        message: String,
-        result: JsResult,
-    ): Boolean = options(result, options) {
-        context.confirm(
-            confirmData = ConfirmData(
-                title = context.getString(R.string.says, modId.id),
-                description = message,
-                onConfirm = { result.confirm() },
-                onClose = { result.cancel() }
-            ),
-            colorScheme = colorScheme
-        )
-    }
-
-    override fun onJsConfirm(
-        view: WebView,
-        url: String,
-        message: String,
-        result: JsResult,
-    ): Boolean = options(result, options) {
-        context.confirm(
-            confirmData = ConfirmData(
-                title = context.getString(R.string.says, modId.id),
-                description = message,
-                onConfirm = { result.confirm() },
-                onClose = { result.cancel() }
-            ),
-            colorScheme = colorScheme
-        )
-    }
-
-    override fun onJsPrompt(
-        view: WebView,
-        url: String?,
-        message: String?,
-        defaultValue: String?,
-        result: JsPromptResult,
-    ): Boolean = options(result, options) {
-        context.prompt(
-            promptData = PromptData(
-                title = message ?: context.getString(R.string.says, modId.id),
-                value = defaultValue ?: "",
-                onConfirm = { result.confirm(it) },
-                onClose = { result.cancel() }
-            ),
-            colorScheme = colorScheme
-        )
-    }
-}
 
 open class WXClient : WebViewClient {
     private val mOptions: WebUIOptions
@@ -191,7 +100,7 @@ open class WXClient : WebViewClient {
         mSwipeView.nullply {
             isRefreshing = false
         }
-        Log.e("WebView", "Renderer crashed. Did it crash? ${detail.didCrash()}")
+        Log.e(TAG, "Renderer crashed. Did it crash? ${detail.didCrash()}")
         return true // or false to kill app
     }
 
@@ -252,14 +161,18 @@ open class WXClient : WebViewClient {
 
         val isUnsafe = !mOptions.isDomainSafe(mUrl)
 
-        return if (isUnsafe) {
-            mOptions.onUnsafeDomainRequest?.invoke()
-                ?: openUri(mUri)
-            true
-        } else {
-            view.loadUrl(mUrl)
-            false
+        if (isUnsafe) {
+            if (mOptions.onUnsafeDomainRequest != null) {
+                mOptions.onUnsafeDomainRequest.invoke(mUri)
+                return true
+            }
+
+            openUri(mUri)
+            return true
         }
+
+        view.loadUrl(mUrl)
+        return false
     }
 
     override fun shouldInterceptRequest(
@@ -278,34 +191,6 @@ open class WXClient : WebViewClient {
     }
 
     private companion object {
-        const val TAG = "WebUIClient"
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.Q)
-open class WXRenderProcessClient(
-    private val options: WebUIOptions,
-) : WebViewRenderProcessClient() {
-    override fun onRenderProcessUnresponsive(
-        view: WebView,
-        renderer: WebViewRenderProcess?,
-    ) {
-        options.context.confirm(
-            ConfirmData(
-                title = options.context.getString(R.string.says, options.modId.id),
-                description = options.context.getString(R.string.renderer_crashed),
-                onConfirm = {
-                    renderer?.terminate()
-                }
-            ),
-            options.colorScheme
-        )
-    }
-
-    override fun onRenderProcessResponsive(
-        view: WebView,
-        renderer: WebViewRenderProcess?,
-    ) {
-        Log.d("WXRenderProcessClient", "onRenderProcessResponsive")
+        const val TAG = "WXClient"
     }
 }

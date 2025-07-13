@@ -68,7 +68,7 @@ data class WebUIOptions(
     val enableEruda: Boolean = false,
     val autoOpenEruda: Boolean = false,
     val debugDomain: String = "https://127.0.0.1:8080",
-    val onUnsafeDomainRequest: (() -> Unit)? = null,
+    val onUnsafeDomainRequest: ((Uri) -> Unit)? = null,
     val isDarkMode: Boolean = false,
     val userAgentString: String = "DON'T TRACK ME DOWN MOTHERFUCKER!",
     val colorScheme: ColorScheme = context.getColorScheme(id = 0, darkMode = isDarkMode),
@@ -252,7 +252,7 @@ data class WebUIOptions(
         isDarkMode: Boolean = this.isDarkMode,
         userAgentString: String = this.userAgentString,
         colorScheme: ColorScheme = this.colorScheme,
-        onUnsafeDomainRequest: (() -> Unit)? = this.onUnsafeDomainRequest,
+        onUnsafeDomainRequest: ((Uri) -> Unit)? = this.onUnsafeDomainRequest,
         cls: Class<out WXActivity>? = this.cls,
     ): WebUIOptions = WebUIOptions(
         context = context,
