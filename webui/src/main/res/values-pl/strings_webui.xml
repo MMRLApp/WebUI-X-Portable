@@ -26,4 +26,16 @@
     <string name="shortcut_removed_message">Ten skrót nie jest już dostępny.</string>
     <string name="missing_mod_id">Brakuje ID modułu</string>
     <string name="shortcut_creation_requirements_not_met">Nie można dodać skrótu: brakuje tytułu lub pliku ikony.</string>
+    <string name="failed_to_load">Nie udało się załadować</string>
+    <string name="check_your_internet_connection">Sprawdź swoje połączenie internetowe</string>
+    <string name="refreshing_the_page">Odświeżanie strony</string>
+    <string name="restarting_the_webui_x">Ponowne uruchamianie WebUI X</string>
+    <string name="renderer_crashed">Proces renderowania WebView nie odpowiada. Czy chcesz go zakończyć?</string>
+    <string name="failed_to_open_ssl">Nie można otworzyć z powodu SSL</string>
+    <string name="refresh">Odśwież</string>
+    <string name="more_info">Więcej informacji</string>
+    <string name="failed_to_load_desc">Nie udało się załadować [b]%1$s[/b]\nBłąd: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">Nie udało się załadować [b]%1$s[/b] z powodu błędu SSL</string>
+    <string name="please_try_the_following">Wypróbuj poniższe rozwiązania:</string>
+    <string name="proceed">Kontynuuj</string>
 </resources>
