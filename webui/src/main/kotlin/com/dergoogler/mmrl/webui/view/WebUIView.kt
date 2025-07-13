@@ -290,6 +290,12 @@ open class WebUIView(
         }
     }
 
+    open fun removeAllJavaScriptInterfaces() {
+        for (obj in interfaces) {
+            removeJavascriptInterface(obj.name)
+        }
+    }
+
     @CallSuper
     override fun destroy() {
         stopLoading()
@@ -297,10 +303,7 @@ open class WebUIView(
 
         initJob?.cancel()
 
-        // remove all interfaces
-        for (obj in interfaces) {
-            removeJavascriptInterface(obj.name)
-        }
+        removeAllJavaScriptInterfaces()
 
         super.destroy()
     }
