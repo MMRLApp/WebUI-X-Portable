@@ -363,6 +363,9 @@ fun ConfigEditorScreen(module: LocalModule) {
                 title = stringResource(R.string.webui_config_caching_max_age_title),
                 desc = stringResource(R.string.webui_config_caching_max_age_desc),
                 value = config.cachingMaxAge.toString(),
+                onValid = {
+                    !Regex("^[0-9]+$").matches(it)
+                },
                 onConfirm = {
                     slave {
                         "cachingMaxAge" change it.toInt()
