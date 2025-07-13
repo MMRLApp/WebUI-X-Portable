@@ -105,7 +105,10 @@ jobs:
           MESSAGE=$(bash commits.sh)
           echo "VERSION=$COMMIT_COUNT" >> $GITHUB_ENV
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
-          echo "MESSAGE=$MESSAGE" >> $GITHUB_ENV
+          
+          echo "MESSAGE<<EOF" >> $GITHUB_ENV
+          echo "$MESSAGE" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Upload files to Telegram
         if: github.event.inputs.send_telegram == 'true'
