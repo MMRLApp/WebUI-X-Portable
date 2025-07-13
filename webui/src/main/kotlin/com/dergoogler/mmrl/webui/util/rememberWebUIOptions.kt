@@ -180,7 +180,8 @@ data class WebUIOptions(
             val versionCode = PackageInfoCompat.getLongVersionCode(currentPackageInfo!!)
 
             val findPkgFromCfg = config.require.packages.find { pkg ->
-                packageName in pkg.packageNames
+                val packageNames = pkg.packageNames ?: emptyList()
+                packageName in packageNames
             }
 
             if (findPkgFromCfg == null) {

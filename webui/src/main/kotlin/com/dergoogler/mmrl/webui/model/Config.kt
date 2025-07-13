@@ -11,6 +11,8 @@ import android.graphics.drawable.Icon
 import android.os.Process
 import android.util.Log
 import android.widget.Toast
+import com.dergoogler.mmrl.ext.writeText
+import com.dergoogler.mmrl.ext.readText
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
@@ -20,6 +22,9 @@ import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
+import com.dergoogler.mmrl.webui.JSONArray
+import com.dergoogler.mmrl.webui.JSONCollection
+import com.dergoogler.mmrl.webui.JSONString
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
@@ -34,6 +39,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
@@ -69,17 +76,15 @@ data class WebUIConfigRequireVersion(
 @JsonClass(generateAdapter = true)
 data class WebUIConfigRequireVersionPackages(
     val code: Int = -1,
-    val packageName: Any,
+    val packageName: JSONCollection,
     val supportText: String? = null,
     val supportLink: String? = null,
 ) {
-    val packageNames
-        get(): List<String> {
-            return when (packageName) {
-                is String -> listOf(packageName)
-                is List<*> -> packageName.filterIsInstance<String>()
-                else -> emptyList()
-            }
+    val packageNames: List<String>?
+        get() = when (packageName) {
+            is JSONString -> listOf(packageName.string)
+            is JSONArray -> packageName.array
+            else -> null
         }
 }
 
@@ -335,19 +340,22 @@ data class WebUIConfig(
         val updates = buildMutableConfig(builderAction)
         if (updates.isEmpty()) return
 
-        withContext(Dispatchers.IO) {
-            val (_, overrideFile) = modId.configFiles
-            val overrideMap = overrideFile.readConfig().toConfigMap()?.toMutableMap()
-            overrideMap?.putAll(updates)
-            overrideFile.writeText(mapAdapter.indent("  ").toJson(overrideMap))
+        val mutex = modConfigLocks.getOrPut(modId) { Mutex() }
 
-            val newConfig = modId.loadConfig()
-            _configState.update { it + (modId to newConfig) }
+        mutex.withLock {
+            withContext(Dispatchers.IO) {
+                val (_, overrideFile) = modId.configFiles
+                val overrideMap = overrideFile.readConfig().toConfigMap()?.toMutableMap()
+                    ?: mutableMapOf()
+                overrideMap.putAll(updates)
+                overrideFile.writeText(mapAdapter.indent("  ").toJson(overrideMap), Charsets.UTF_8)
 
-            synchronized(configFlows) {
-                val flow = configFlows[modId]
-                if (flow != null) {
-                    flow.value = newConfig
+                val newConfig = modId.loadConfig()
+                _configState.update { it + (modId to newConfig) }
+
+                synchronized(configFlows) {
+                    val flow = configFlows[modId]
+                    if (flow != null) flow.value = newConfig
                 }
             }
         }
@@ -365,6 +373,7 @@ data class WebUIConfig(
 
         private val _configState = MutableStateFlow<Map<ModId, WebUIConfig>>(emptyMap())
 
+        private val modConfigLocks = ConcurrentHashMap<ModId, Mutex>()
         private val configFlows = mutableMapOf<ModId, MutableStateFlow<WebUIConfig>>()
 
         private val ModId.configFiles: Pair<SuFile?, SuFile>
@@ -374,7 +383,7 @@ data class WebUIConfig(
 
                 if (!moduleConfigConfig.exists()) {
                     moduleConfigDir.mkdirs()
-                    moduleConfigConfig.writeText("{}")
+                    moduleConfigConfig.writeText("{}", Charsets.UTF_8)
                 }
 
                 return Pair(
@@ -402,7 +411,7 @@ data class WebUIConfig(
         private fun ModId.loadConfig(): WebUIConfig {
             val (baseFile, overrideFile) = configFiles
             val baseJson = baseFile.readConfig()
-            val overrideJson = overrideFile.readText()
+            val overrideJson = overrideFile.readText(Charsets.UTF_8)
             val override = overrideJson.toConfigMap() ?: mutableMapOf()
             val mergedMap = baseJson.toConfigMap()?.deepMerge(override)
             return mergedMap?.let { jsonAdapter.fromJson(mapAdapter.toJson(it)) }
@@ -410,7 +419,7 @@ data class WebUIConfig(
         }
 
         private fun SuFile?.readConfig(): String? = try {
-            this?.takeIf { it.exists() }?.readText()
+            this?.takeIf { it.exists() }?.readText(Charsets.UTF_8)
         } catch (e: Exception) {
             Log.e(TAG, "Error reading config file ${this?.path}", e)
             null
