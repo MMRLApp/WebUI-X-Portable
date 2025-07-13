@@ -113,4 +113,10 @@
     <string name="plugins_desc">Extend the WebUI to fit it your needs</string>
     <string name="settings_security_auto_open_eruda">Auto Open Eruda</string>
     <string name="settings_security_auto_open_eruda_desc">Automatically opens the Eruda console when a WebUI is launched</string>
+    <string name="webui_config_content_security_policy_title">Content Security Policy</string>
+    <string name="webui_config_content_security_policy_desc">Defines the security policy that restricts what web content (scripts, styles, images, etc.) the WebUI can load and execute to protect against malicious code.</string>
+    <string name="webui_config_caching_desc">Enables or disables caching to improve WebUI performance by storing resources locally.</string>
+    <string name="webui_config_caching_title">Caching</string>
+    <string name="webui_config_caching_max_age_title">Cache Max Age</string>
+    <string name="webui_config_caching_max_age_desc">Sets the maximum time (in seconds) that cached resources are considered valid before refreshing.</string>
 </resources>

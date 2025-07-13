@@ -334,6 +334,40 @@ fun ConfigEditorScreen(module: LocalModule) {
                 }
             )
 
+            ListEditTextItem(
+                title = stringResource(R.string.webui_config_content_security_policy_title),
+                desc = stringResource(R.string.webui_config_content_security_policy_desc),
+                value = config.contentSecurityPolicy,
+                onConfirm = {
+                    slave {
+                        "contentSecurityPolicy" change it
+                    }
+                }
+            )
+
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_caching_title),
+                desc = stringResource(R.string.webui_config_caching_desc),
+                checked = config.caching,
+                onChange = { isChecked ->
+                    slave {
+                        "caching" change isChecked
+                    }
+                }
+            )
+
+            ListEditTextItem(
+                enabled = config.caching,
+                title = stringResource(R.string.webui_config_caching_max_age_title),
+                desc = stringResource(R.string.webui_config_caching_max_age_desc),
+                value = config.cachingMaxAge.toString(),
+                onConfirm = {
+                    slave {
+                        "cachingMaxAge" change it.toInt()
+                    }
+                }
+            )
+
 //            ListHeader(title = stringResource(R.string.module_config))
 
 //            moduleConfigMap.nullable { config ->
