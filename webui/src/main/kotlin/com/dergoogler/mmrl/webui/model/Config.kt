@@ -345,7 +345,8 @@ data class WebUIConfig(
         mutex.withLock {
             withContext(Dispatchers.IO) {
                 val (_, overrideFile) = modId.configFiles
-                val overrideMap = overrideFile.readConfig().toConfigMap()?.toMutableMap()
+                val overrideText = overrideFile.readText(Charsets.UTF_8)
+                val overrideMap = overrideText.toConfigMap()?.toMutableMap()
                     ?: mutableMapOf()
                 overrideMap.putAll(updates)
                 overrideFile.writeText(mapAdapter.indent("  ").toJson(overrideMap), Charsets.UTF_8)
@@ -378,6 +379,7 @@ data class WebUIConfig(
 
         private val ModId.configFiles: Pair<SuFile?, SuFile>
             get() {
+                // Do not write to this file
                 val webrootConfig = webrootDir.fromPaths("config.json", "config.mmrl.json")
                 val moduleConfigConfig = SuFile(moduleConfigDir, "config.webroot.json")
 
@@ -410,19 +412,12 @@ data class WebUIConfig(
 
         private fun ModId.loadConfig(): WebUIConfig {
             val (baseFile, overrideFile) = configFiles
-            val baseJson = baseFile.readConfig()
+            val baseJson = baseFile?.readText(Charsets.UTF_8) ?: "{}"
             val overrideJson = overrideFile.readText(Charsets.UTF_8)
             val override = overrideJson.toConfigMap() ?: mutableMapOf()
             val mergedMap = baseJson.toConfigMap()?.deepMerge(override)
             return mergedMap?.let { jsonAdapter.fromJson(mapAdapter.toJson(it)) }
                 ?.copy(modId = this) ?: WebUIConfig(modId = this)
-        }
-
-        private fun SuFile?.readConfig(): String? = try {
-            this?.takeIf { it.exists() }?.readText(Charsets.UTF_8)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error reading config file ${this?.path}", e)
-            null
         }
 
         private fun String?.toConfigMap(): Map<String, Any?>? {
