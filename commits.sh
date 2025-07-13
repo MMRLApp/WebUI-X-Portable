@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REPO_URL="https://github.com/MMRLApp/WebUI-X-Portable"
-MAX_CHARS=4000
+MAX_CHARS="${1:-4000}"
 
 get_latest_tag() {
     git describe --tags --abbrev=0 master 2>/dev/null
@@ -24,33 +24,35 @@ get_commits_since() {
 format_markdown_list() {
     local commits=("$@")
     local result=""
-    local line
     local total_len=0
+    local max_len=$MAX_CHARS
+
+    local compare_link=""
+    if [ -n "$latest_tag" ]; then
+        compare_link="[See all changes here](${REPO_URL}/compare/${latest_tag}...master)"
+    fi
+
+    # Reserve space for compare_link + newline (1 char)
+    local reserved_len=$(( ${#compare_link} + 1 ))
+
+    local line formatted len
 
     for line in "${commits[@]}"; do
-        local formatted="- $line"
-        local len=$(( ${#result} + ${#formatted} + 1 )) # +1 for newline
-        if (( len > MAX_CHARS )); then
+        formatted="- $line"$'\n'
+        len=${#formatted}
+
+        if (( total_len + len + reserved_len > max_len )); then
+            # No room to add this line without exceeding limit after adding compare link
             break
         fi
-        result+="$formatted"$'\n'
+
+        result+="$formatted"
+        total_len=$(( total_len + len ))
     done
 
-    # Check if we have more commits than included
-    local all_len=0
-    for line in "${commits[@]}"; do
-        all_len=$(( all_len + ${#line} + 3 )) # "- " + line + "\n"
-    done
-
-    if (( all_len > ${#result} )); then
-        if [ -n "$latest_tag" ]; then
-            local compare_link="\n[See all changes here](${REPO_URL}/compare/${latest_tag}...master)"
-            if (( ${#result} + ${#compare_link} <= MAX_CHARS )); then
-                result+="$compare_link"
-            else
-                result+=$'\n'"$compare_link"
-            fi
-        fi
+    # Always add compare link (if present) after newline
+    if [ -n "$compare_link" ]; then
+        result+=$'\n'"$compare_link"
     fi
 
     printf "%s" "$result"

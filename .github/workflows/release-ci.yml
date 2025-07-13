@@ -102,12 +102,17 @@ jobs:
         run: |
           BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S")
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          MESSAGE=$(bash commits.sh)
+          MESSAGE_TG=$(bash commits.sh 1024)
+          MESSAGE_GH=$(bash commits.sh 10000)
           echo "VERSION=$COMMIT_COUNT" >> $GITHUB_ENV
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
           
-          echo "MESSAGE<<EOF" >> $GITHUB_ENV
-          echo "$MESSAGE" >> $GITHUB_ENV
+          echo "MESSAGE_TG<<EOF" >> $GITHUB_ENV
+          echo "MESSAGE_TG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          echo "MESSAGE_GH<<EOF" >> $GITHUB_ENV
+          echo "MESSAGE_GH" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Upload files to Telegram
@@ -121,7 +126,7 @@ jobs:
 
             **What's new?**
 
-            ${{ env.MESSAGE }}
+            ${{ env.MESSAGE_TG }}
             
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           files: |
@@ -153,7 +158,7 @@ jobs:
           body: |
             ## What's new?
             
-            ${{ env.MESSAGE }}
+            ${{ env.MESSAGE_GH }}
             
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
