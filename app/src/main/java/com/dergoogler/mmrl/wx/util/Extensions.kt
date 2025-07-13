@@ -13,6 +13,7 @@ import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
 import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
@@ -138,16 +139,7 @@ suspend fun initPlatform(
 fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
     val config = modId.asModuleConfig
 
-    val baseDir = if (PlatformManager.platform.isNonRoot) {
-        context.getExternalFilesDir(null)?.path
-    } else {
-        ModId.ADB_DIR
-    }
-
-    if (baseDir == null) {
-        Toast.makeText(context, "Failed to get base directory", Toast.LENGTH_SHORT).show()
-        return
-    }
+    val baseDir = context.getBaseDir().path
 
     val applyIntent: Intent.() -> Unit = {
         putBaseDir(baseDir)
@@ -206,3 +198,17 @@ inline fun <reified T> Map<String, Any?>?.getProp(key: String, def: T): T {
 }
 
 inline fun <reified T> Map<String, Any?>?.getPropOrNull(key: String): T? = getProp(key, null)
+
+fun Context.getBaseDir(): SuFile {
+    val platform = PlatformManager.platform
+
+    return if (platform.isNonRoot) {
+        if (filesDir == null) {
+            throw BrickException("Failed to get filesDir")
+        }
+
+        SuFile(filesDir)
+    } else {
+        SuFile(ModId.ADB_DIR)
+    }
+}

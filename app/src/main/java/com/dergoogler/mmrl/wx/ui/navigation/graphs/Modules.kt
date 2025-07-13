@@ -16,6 +16,7 @@ import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.ModulesScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.screens.ConfigEditorScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.screens.PluginsScreen
+import com.dergoogler.mmrl.wx.util.getBaseDir
 
 enum class ModulesScreen(val route: String) {
     Home("Modules"),
@@ -44,7 +45,7 @@ fun NavGraphBuilder.modulesScreen() = navigation(
         val args = it.panicArguments
         val id = args.panicString("id")
 
-        val baseDir = context.getExternalFilesDir(null) ?: return@composable
+        val baseDir = context.getBaseDir()
         val module = PlatformManager.moduleManager.getModuleById(id.toModId(baseDir.path))
 
         if (module == null) {
@@ -63,7 +64,7 @@ fun NavGraphBuilder.modulesScreen() = navigation(
         val args = it.panicArguments
         val id = args.panicString("id")
 
-        val baseDir = context.getExternalFilesDir(null) ?: return@composable
+        val baseDir = context.getBaseDir()
         val module = PlatformManager.moduleManager.getModuleById(id.toModId(baseDir.path))
 
         if (module == null) {

@@ -19,9 +19,9 @@ class App : Application() {
 
         try {
             // KSU WebUI Demo by KOWX712 @ GitHub
-            val output = File(getExternalFilesDir(null), "modules/ksuwebui_demo")
+            val output = File(filesDir, "modules/ksuwebui_demo")
             //  bad apple by xx (backslashxx) & KOWX712 @ GitHub
-            val output2 = File(getExternalFilesDir(null), "modules/bad_apple")
+            val output2 = File(filesDir, "modules/bad_apple")
             extractZipFromAssets("webuix-demo.zip", output)
             extractZipFromAssets("webuix-demo2.zip", output2)
         } catch (e: Exception) {

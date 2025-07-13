@@ -109,7 +109,7 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
             )
         }
 
-        val baseDir = context.getExternalFilesDir(null)
+        val baseDir = context.filesDir
         if (baseDir == null) {
             return ResultData(
                 title = "Failed",

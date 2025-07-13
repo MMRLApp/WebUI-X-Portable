@@ -23,7 +23,7 @@ class NonRootModuleManager(
     override fun getVersionCode(): Int = 0
 
     override fun getModules(): List<LocalModule> {
-        val baseDir = context.getExternalFilesDir(null) ?: return emptyList()
+        val baseDir = context.filesDir
 
         val modulesDir = ExtFile(baseDir, ModId.MODULES_DIR)
 
@@ -40,8 +40,7 @@ class NonRootModuleManager(
     }
 
     override fun getModuleById(id: ModId): LocalModule? {
-        val baseDir = context.getExternalFilesDir(null) ?: return null
-        return id.readProps?.toModule(baseDir.path)
+        return id.readProps?.toModule(context.filesDir.path)
     }
 
     override fun getModuleCompatibility(): ModuleCompatibility = ModuleCompatibility(
