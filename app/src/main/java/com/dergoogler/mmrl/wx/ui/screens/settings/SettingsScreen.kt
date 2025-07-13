@@ -50,10 +50,8 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.End
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.LearnMore
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
-import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.FeaturedManager
-import com.dergoogler.mmrl.wx.model.managers
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
 import com.dergoogler.mmrl.wx.ui.component.NavButton
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.SettingsScreen
@@ -96,14 +94,14 @@ fun SettingsScreen() {
                 )
 
                 val manager: FeaturedManager? =
-                    managers.find { userPreferences.workingMode.toPlatform() == it.platform }
+                    FeaturedManager.managers.find { userPreferences.workingMode == it.workingMode }
 
                 manager.nullable { mng ->
                     RadioDialogItem(
-                        selection = mng.platform,
-                        options = managers.map { it.toRadioOption() },
+                        selection = mng.workingMode,
+                        options = FeaturedManager.managers.map { it.toRadioDialogItem() },
                         onConfirm = {
-                            viewModel.setWorkingMode(it.value.toWorkingMode())
+                            viewModel.setWorkingMode(it.value)
                         },
                     ) {
                         Icon(

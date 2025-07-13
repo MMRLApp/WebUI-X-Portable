@@ -39,7 +39,6 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.FeaturedManager
-import com.dergoogler.mmrl.wx.model.managers
 import com.dergoogler.mmrl.wx.util.toWorkingMode
 
 @Composable
@@ -79,8 +78,8 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(
-                        items = managers,
-                        key = { it.platform.name }
+                        items = FeaturedManager.managers,
+                        key = { it.workingMode.name }
                     ) { manager ->
                         val interactionSource = remember { MutableInteractionSource() }
                         val selected =
@@ -109,10 +108,9 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        enabled = currentSelection != null
-                                && currentSelection!!.platform != Platform.Unknown,
+                        enabled = currentSelection != null,
                         onClick = {
-                            setWorkingMode(currentSelection!!.platform.toWorkingMode())
+                            setWorkingMode(currentSelection!!.workingMode)
                         },
                         modifier = Modifier
                             .fillMaxWidth()

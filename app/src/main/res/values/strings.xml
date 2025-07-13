@@ -31,6 +31,7 @@
     <string name="kernelsu">KernelSU</string>
     <string name="kernelsu_next">KernelSU Next</string>
     <string name="apatch">APatch</string>
+    <string name="sukisu">SukiSU Ultra</string>
     <string name="platform">Platform</string>
     <string name="mh_seems_like_root_isn_t_authorized">Mh… Seems like root isn\'t authorized</string>
     <string name="modules_empty">No modules found</string>
