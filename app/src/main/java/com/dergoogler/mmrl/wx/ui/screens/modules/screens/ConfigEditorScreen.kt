@@ -208,11 +208,13 @@ fun ConfigEditorScreen(module: LocalModule) {
                 }
             )
 
+            val hasNoJsBackInterceptor = config.backInterceptor != "javascript"
 
             ListSwitchItem(
+                enabled = hasNoJsBackInterceptor,
                 title = stringResource(R.string.webui_config_exit_confirm_title),
                 desc = stringResource(R.string.webui_config_exit_confirm_desc),
-                checked = config.exitConfirm,
+                checked = hasNoJsBackInterceptor && config.exitConfirm,
                 onChange = { isChecked ->
                     slave {
                         "exitConfirm" change isChecked
