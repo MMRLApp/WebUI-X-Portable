@@ -121,7 +121,7 @@ jobs:
 
             **What's new?**
 
-            ${{ env.message }}
+            ${{ env.MESSAGE }}
             
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           files: |
@@ -153,7 +153,7 @@ jobs:
           body: |
             ## What's new?
             
-            ${{ env.message }}
+            ${{ env.MESSAGE }}
             
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
         env:
