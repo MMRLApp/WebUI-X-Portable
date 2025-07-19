@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.dergoogler.mmrl.platform.PLATFORM_KEY
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.Platform.Companion.putPlatform
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 
@@ -36,8 +37,8 @@ class WebUILauncher(
             val intent = Intent().apply {
                 component = ComponentName(packageName, X)
 
-                putModId(modId)
-                putExtra(PLATFORM_KEY, platform)
+                putModId(modId.toString())
+                putPlatform(platform)
 
                 if (transformer != null) {
                     transformer()
@@ -62,8 +63,8 @@ class WebUILauncher(
             val intent = Intent().apply {
                 component = ComponentName(packageName, LEGACY)
 
-                putModId(modId)
-                putExtra(PLATFORM_KEY, platform)
+                putModId(modId.toString())
+                putPlatform(platform)
 
                 if (transformer != null) {
                     transformer()
