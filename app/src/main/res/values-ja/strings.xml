@@ -109,4 +109,13 @@
     <string name="dex_source_type_apk_desc">完全な APK ファイルをリソース付きのモジュラープラグインとして読み込みます。</string>
     <string name="plugins">プラグイン</string>
     <string name="plugins_desc">ニーズに合わせて WebUI を拡張します。</string>
+    <string name="sukisu">SukiSU Ultra</string>
+    <string name="settings_security_auto_open_eruda">Eruda を自動で開く</string>
+    <string name="settings_security_auto_open_eruda_desc">WebUI を起動すると Eruda コンソールを自動的に開きます。</string>
+    <string name="webui_config_content_security_policy_title">コンテンツのセキュリティポリシー</string>
+    <string name="webui_config_content_security_policy_desc">悪意のあるコードから保護するために、WebUI が読み込んで実行できる Web コンテンツ (スクリプト、スタイル、画像など) を制限するセキュリティポリシーを定義します。</string>
+    <string name="webui_config_caching_desc">リソースをローカルに保存することで WebUI のパフォーマンスを向上させるためにキャッシュを有効化または無効化します。</string>
+    <string name="webui_config_caching_title">キャッシュ</string>
+    <string name="webui_config_caching_max_age_title">キャッシュの最大保存時間</string>
+    <string name="webui_config_caching_max_age_desc">キャッシュされたリソースが更新される前に有効であるとみなされる最大保存時間 (秒単位) を設定します。</string>
 </resources>
