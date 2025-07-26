@@ -199,8 +199,10 @@ inline fun <reified T> Map<String, Any?>?.getProp(key: String, def: T): T {
 
 inline fun <reified T> Map<String, Any?>?.getPropOrNull(key: String): T? = getProp(key, null)
 
-fun Context.getBaseDir(): SuFile {
-    val platform = PlatformManager.platform
+fun Context.getBaseDir(
+    platform: Platform = PlatformManager.platform,
+): SuFile {
+    val filesDir = getExternalFilesDir(null)
 
     return if (platform.isNonRoot) {
         if (filesDir == null) {

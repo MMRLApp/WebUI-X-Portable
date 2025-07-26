@@ -71,13 +71,13 @@ fun webrootPathHandler(
             val file = directory.getCanonicalFileIfChild(path) ?: run {
                 Log.e(
                     "webrootPathHandler",
-                    "The requested file: $path is outside the mounted directory: ${options.webRoot}",
+                    "The requested file: $path is outside the mounted directory: $directory",
                 )
                 return@handler notFoundResponse
             }
 
             if (!file.exists() && options.config.historyFallback) {
-                val fallbackFile = SuFile(options.webRoot, options.config.historyFallbackFile)
+                val fallbackFile = SuFile(directory, options.config.historyFallbackFile)
                 val fallbackResponse = fallbackFile.asResponse()
 
                 if (options.config.contentSecurityPolicy.isNotNullOrBlank()) {

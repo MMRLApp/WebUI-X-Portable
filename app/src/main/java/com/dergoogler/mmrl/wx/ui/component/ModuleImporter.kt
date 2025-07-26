@@ -23,6 +23,7 @@ import com.dergoogler.mmrl.platform.file.ExtFile
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.rememberConfirm
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.util.getBaseDir
 import java.io.BufferedInputStream
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -109,13 +110,7 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
             )
         }
 
-        val baseDir = context.filesDir
-        if (baseDir == null) {
-            return ResultData(
-                title = "Failed",
-                message = "Unable to access the external files directory. Storage may not be available or accessible."
-            )
-        }
+        val baseDir = context.getBaseDir()
 
         val targetDir = ExtFile(baseDir, "modules/${newModule.id}")
         if (targetDir.exists()) {

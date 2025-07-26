@@ -1,7 +1,7 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
-import android.util.Log
+import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.ModuleCompatibility
 import com.dergoogler.mmrl.platform.content.NullableBoolean
@@ -15,6 +15,7 @@ import kotlin.collections.orEmpty
 
 class NonRootModuleManager(
     private val context: Context,
+    private val platform: Platform,
 ) : BaseModuleManager() {
     override fun getManagerName(): String = "NonRoot"
 
@@ -23,7 +24,7 @@ class NonRootModuleManager(
     override fun getVersionCode(): Int = 0
 
     override fun getModules(): List<LocalModule> {
-        val baseDir = context.filesDir
+        val baseDir = context.getBaseDir(platform)
 
         val modulesDir = ExtFile(baseDir, ModId.MODULES_DIR)
 
@@ -40,7 +41,8 @@ class NonRootModuleManager(
     }
 
     override fun getModuleById(id: ModId): LocalModule? {
-        return id.readProps?.toModule(context.filesDir.path)
+        val baseDir = context.getBaseDir(platform).path
+        return id.readProps?.toModule(baseDir)
     }
 
     override fun getModuleCompatibility(): ModuleCompatibility = ModuleCompatibility(
