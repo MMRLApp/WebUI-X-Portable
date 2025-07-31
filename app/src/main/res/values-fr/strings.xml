@@ -97,4 +97,6 @@
     <string name="webui_config">Configuration de la WebUI</string>
     <string name="module_config">Configuration du module</string>
     <string name="webui_config_back_interceptor_title">Intercepteur de retour</string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
 </resources>
