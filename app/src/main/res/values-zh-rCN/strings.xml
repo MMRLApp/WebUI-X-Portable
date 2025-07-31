@@ -109,4 +109,5 @@
     <string name="dex_source_type_apk_desc">将完整的 APK 文件作为带有资源的模块化插件加载</string>
     <string name="plugins">插件</string>
     <string name="plugins_desc">扩展 WebUI 以满足您的需求</string>
+    <string name="sukisu">SukiSU Ultra</string>
 </resources>
