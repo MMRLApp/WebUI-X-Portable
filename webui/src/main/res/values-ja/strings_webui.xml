@@ -26,4 +26,16 @@
     <string name="shortcut_removed_message">このショートカットは利用できなくなりました。</string>
     <string name="shortcut_already_exists">ショートカットは既に存在します。</string>
     <string name="class_not_found">定義されたアクティビティクラスが見つかりません</string>
+    <string name="failed_to_load">読み込みに失敗しました</string>
+    <string name="failed_to_open_ssl">SSL のため開けません</string>
+    <string name="check_your_internet_connection">インターネット接続を確認してください</string>
+    <string name="refreshing_the_page">ページを更新中です</string>
+    <string name="restarting_the_webui_x">WebUI X を再起動中です</string>
+    <string name="renderer_crashed">WebView レンダリングプロセスが応答しません。終了しますか？</string>
+    <string name="refresh">更新</string>
+    <string name="more_info">詳しい情報</string>
+    <string name="failed_to_load_desc">[b]%1$s[/b] を読み込めませんでした\nエラー: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">SSL エラーのため [b]%1$s[/b] を読み込めませんでした</string>
+    <string name="please_try_the_following">以下をお試しください:</string>
+    <string name="proceed">進む</string>
 </resources>

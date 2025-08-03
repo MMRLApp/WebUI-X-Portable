@@ -28,4 +28,14 @@
     <string name="shortcut_add_request_failed">向启动器发送快捷方式请求失败。</string>
     <string name="shortcut_removed_successfully">快捷方式移除或禁用成功。</string>
     <string name="shortcut_removed_message">此快捷方式不可用。</string>
+    <string name="failed_to_load">加载失败</string>
+    <string name="failed_to_open_ssl">由于SSL错误，无法打开</string>
+    <string name="check_your_internet_connection">请检查你的网络连接</string>
+    <string name="refreshing_the_page">正在刷新</string>
+    <string name="restarting_the_webui_x">正在重启WebUI X</string>
+    <string name="renderer_crashed">WebView渲染进程未响应，是否强行停止？</string>
+    <string name="refresh">刷新</string>
+    <string name="more_info">更多</string>
+    <string name="failed_to_load_desc">无法加载 [b]%1$s[/b]\n\n错误信息: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">由于SSL错误，无法加载 [b]%1$s[/b]</string>
 </resources>
