@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.self.application)
     alias(libs.plugins.self.compose)
     alias(libs.plugins.self.hilt)
+    alias(libs.plugins.licensee)
     alias(libs.plugins.ksp)
 }
 
@@ -159,6 +160,14 @@ android {
             (this as? ApkVariantOutputImpl)?.outputFileName =
                 "WebUI-X-$versionName.apk"
         }
+    }
+}
+
+licensee {
+    bundleAndroidAsset.set(true)
+    allow("Apache-2.0")
+    allowUrl("https://opensource.org/license/mit") {
+        because("MIT")
     }
 }
 

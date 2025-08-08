@@ -16,6 +16,7 @@ androidxLifecycle = "2.8.7"
 androidxNavigation = "2.8.9"
 arbor = "2.0.103"
 foundation = "1.7.3"
+cashLicensee = "1.13.0"
 kotlinxHtmlJvm = "0.9.1"
 multiplatformMarkdownRenderer = "0.27.0"
 processPhoenix = "3.0.0"
@@ -169,6 +170,7 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 rikka-refine = { id = "dev.rikka.tools.refine", version.ref = "hiddenApiRefine" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+licensee = { id = "app.cash.licensee", version.ref = "cashLicensee" }
 
 # Plugins defined by this project
 self-application = { id = "self.application", version = "unspecified" }
