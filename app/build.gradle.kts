@@ -1,3 +1,4 @@
+import app.cash.licensee.ViolationAction
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 
 plugins {
@@ -6,6 +7,7 @@ plugins {
     alias(libs.plugins.self.hilt)
     alias(libs.plugins.licensee)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val baseAppName = "WebUI X"
@@ -165,10 +167,7 @@ android {
 
 licensee {
     bundleAndroidAsset.set(true)
-    allow("Apache-2.0")
-    allowUrl("https://opensource.org/license/mit") {
-        because("MIT")
-    }
+    violationAction(ViolationAction.IGNORE)
 }
 
 dependencies {

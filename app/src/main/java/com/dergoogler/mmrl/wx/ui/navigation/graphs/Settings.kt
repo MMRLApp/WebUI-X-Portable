@@ -7,11 +7,13 @@ import androidx.compose.animation.fadeOut
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.dergoogler.mmrl.wx.ui.screens.settings.LicensesScreen
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.AppThemeScreen
 
 enum class SettingsScreen(val route: String) {
     Home("Settings"),
     AppTheme("AppTheme"),
+    Licenses("Licenses"),
 }
 
 fun NavGraphBuilder.settingsScreen() = navigation(
@@ -32,5 +34,13 @@ fun NavGraphBuilder.settingsScreen() = navigation(
         exitTransition = { fadeOut() }
     ) {
         AppThemeScreen()
+    }
+
+    composable(
+        route = SettingsScreen.Licenses.route,
+        enterTransition = { fadeIn() },
+        exitTransition = { fadeOut() }
+    ) {
+        LicensesScreen()
     }
 }

@@ -39,6 +39,7 @@ import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.ui.component.TopAppBar
 import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.ui.component.listItem.dsl.List
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.ButtonItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Section
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
@@ -53,6 +54,7 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.FeaturedManager
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
+import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavButton
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.SettingsScreen
 import com.dergoogler.mmrl.wx.util.toWorkingMode
@@ -162,7 +164,6 @@ fun SettingsScreen() {
 
             Section(
                 title = stringResource(R.string.developer),
-                divider = false
             ) {
                 SwitchItem(
                     checked = userPreferences.developerMode,
@@ -305,6 +306,24 @@ fun SettingsScreen() {
                         }
                     }
                 }
+            }
+
+            Section(
+                title = stringResource(com.dergoogler.mmrl.ui.R.string.learn_more),
+                divider = false
+            ) {
+                LinkButton(
+                    uri = "https://mmrl.dev/guide/webuix",
+                    title = R.string.settings_documentation,
+                    icon = R.drawable.api
+                )
+
+                NavButton(
+                    route = SettingsScreen.Licenses.route,
+                    icon = R.drawable.license,
+                    title = R.string.setting_licenses,
+                    desc = R.string.setting_licenses_desc
+                )
             }
         }
     }
