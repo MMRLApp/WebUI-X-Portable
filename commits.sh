@@ -1,5 +1,6 @@
 #!/bin/bash
 
+REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 MAX_CHARS="${1:-4000}"
 
 get_latest_tag() {
@@ -53,11 +54,6 @@ format_markdown_list() {
 }
 
 main() {
-    if [ -z "$REPO_URL" ]; then
-        echo "Error: REPO_URL is not set or is empty."
-        exit 1
-    fi
-
     latest_tag=$(get_latest_tag)
     mapfile -t commits < <(get_commits_since "$latest_tag")
 
