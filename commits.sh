@@ -1,6 +1,5 @@
 #!/bin/bash
 
-REPO_URL="https://github.com/MMRLApp/WebUI-X-Portable"
 MAX_CHARS="${1:-4000}"
 
 get_latest_tag() {
@@ -16,7 +15,6 @@ get_commits_since() {
         rev_range="master"
     fi
 
-    # Get commit messages and filter out undesired ones
     git log --format=%s "$rev_range" | grep -v -e '^.$' \
         -e "^Merge branch 'master'" -e "^Merge pull request #"
 }
@@ -32,17 +30,14 @@ format_markdown_list() {
         compare_link="[See all changes here](${REPO_URL}/compare/${latest_tag}...master)"
     fi
 
-    # Reserve space for compare_link + newline (1 char)
     local reserved_len=$(( ${#compare_link} + 1 ))
 
     local line formatted len
-
     for line in "${commits[@]}"; do
         formatted="- $line"$'\n'
         len=${#formatted}
 
         if (( total_len + len + reserved_len > max_len )); then
-            # No room to add this line without exceeding limit after adding compare link
             break
         fi
 
@@ -50,7 +45,6 @@ format_markdown_list() {
         total_len=$(( total_len + len ))
     done
 
-    # Always add compare link (if present) after newline
     if [ -n "$compare_link" ]; then
         result+=$'\n'"$compare_link"
     fi
@@ -59,6 +53,11 @@ format_markdown_list() {
 }
 
 main() {
+    if [ -z "$REPO_URL" ]; then
+        echo "Error: REPO_URL is not set or is empty."
+        exit 1
+    fi
+
     latest_tag=$(get_latest_tag)
     mapfile -t commits < <(get_commits_since "$latest_tag")
 
