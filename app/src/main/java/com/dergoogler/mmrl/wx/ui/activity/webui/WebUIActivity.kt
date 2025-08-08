@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -48,40 +50,9 @@ class WebUIActivity : WXActivity() {
         initPlatform(userPrefs)
         super.onRender(savedInstanceState)
 
-        val modId = this.modId ?: throw BrickException("modId cannot be null or empty")
+        val colorScheme = userPrefs.colorScheme(this)
 
-        val options = WebUIOptions(
-            modId = modId,
-            context = this,
-            debug = userPrefs.developerMode,
-            appVersionCode = BuildConfig.VERSION_CODE,
-            remoteDebug = userPrefs.useWebUiDevUrl,
-            enableEruda = userPrefs.enableErudaConsole,
-            autoOpenEruda = userPrefs.enableAutoOpenEruda,
-            debugDomain = userPrefs.webUiDevUrl,
-            userAgentString = userAgent,
-            isDarkMode = userPrefs.isDarkMode(),
-            colorScheme = userPrefs.colorScheme(this),
-            cls = WebUIActivity::class.java
-        )
-
-        val view = WebUIXView(options).apply {
-            wx.addJavascriptInterface<KernelSUInterface>()
-            // not required anymore since onInit() handles it
-            // wx.loadDomain()
-        }
-
-        this.options = options
-        this.view = view
-
-        // Activity Title
-        config {
-            if (title != null) {
-                setActivityTitle("WebUI X - $title")
-            }
-        }
-
-        val loading = createLoadingRenderer()
+        val loading = createLoadingRenderer(colorScheme)
         setContentView(loading)
 
         lifecycleScope.launch {
@@ -97,10 +68,40 @@ class WebUIActivity : WXActivity() {
                             finish()
                         },
                     ),
-                    colorScheme = options.colorScheme
+                    colorScheme = colorScheme
                 )
 
                 return@launch
+            }
+
+            val modId = this@WebUIActivity.modId ?: throw BrickException("modId cannot be null or empty")
+
+            this@WebUIActivity.options = WebUIOptions(
+                modId = modId,
+                context = this@WebUIActivity,
+                debug = userPrefs.developerMode,
+                appVersionCode = BuildConfig.VERSION_CODE,
+                remoteDebug = userPrefs.useWebUiDevUrl,
+                enableEruda = userPrefs.enableErudaConsole,
+                autoOpenEruda = userPrefs.enableAutoOpenEruda,
+                debugDomain = userPrefs.webUiDevUrl,
+                userAgentString = userAgent,
+                isDarkMode = userPrefs.isDarkMode(),
+                colorScheme = colorScheme,
+                cls = WebUIActivity::class.java
+            )
+
+            this@WebUIActivity.view = WebUIXView(options).apply {
+                wx.addJavascriptInterface<KernelSUInterface>()
+                // not required anymore since onInit() handles it
+                // wx.loadDomain()
+            }
+
+            // Activity Title
+            config {
+                if (title != null) {
+                    setActivityTitle("WebUI X - $title")
+                }
             }
 
             setContentView(view)

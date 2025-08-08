@@ -15,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.CallSuper
+import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -298,20 +299,20 @@ open class WXActivity : ComponentActivity() {
      *
      * @return A [View] instance representing the loading indicator.
      */
-    protected fun createLoadingRenderer(): View =
+    protected fun createLoadingRenderer(colorScheme: ColorScheme = options.colorScheme): View =
         FrameLayout(baseContext).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
-            setBackgroundColor(options.colorScheme.background.toArgb())
+            setBackgroundColor(colorScheme.background.toArgb())
             addView(ProgressBar(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     Gravity.CENTER
                 )
-                indeterminateDrawable.setTint(options.colorScheme.primary.toArgb())
+                indeterminateDrawable.setTint(colorScheme.primary.toArgb())
             })
         }
 
