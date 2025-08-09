@@ -118,4 +118,9 @@
     <string name="webui_config_caching_title">Buforowanie</string>
     <string name="webui_config_caching_max_age_title">Maks. wiek pamięci podręcznej</string>
     <string name="webui_config_caching_max_age_desc">Ustawia maksymalny czas (w sekundach), przez jaki buforowane zasoby są uznawane za ważne przed odświeżeniem.</string>
+    <string name="setting_about">O aplikacji</string>
+    <string name="setting_licenses">Licencje</string>
+    <string name="setting_licenses_desc">Zobacz licencje open source</string>
+    <string name="license_title">Licencje</string>
+    <string name="settings_documentation">Dokumentacja API</string>
 </resources>
