@@ -19,10 +19,10 @@
     <string name="missing_mod_id">缺少模块 ID</string>
     <string name="class_not_found">无法找到已定义的 activity 类</string>
     <!-- Shortcut -->
-    <string name="shortcut_already_exists">快捷方式已存在</string>
+    <string name="shortcut_already_exists">快捷方式已存在。</string>
     <string name="shortcut_creation_requirements_not_met">无法添加快捷方式：缺少标题或图标文件。</string>
     <string name="shortcut_icon_not_found">无法添加快捷方式：没有找到图标文件。</string>
-    <string name="shortcut_icon_loading_error">无法加载快捷方式图标</string>
+    <string name="shortcut_icon_loading_error">无法加载快捷方式图标。</string>
     <string name="shortcut_icon_decode_error">解码快捷方式图标失败。</string>
     <string name="pin_shortcut_not_supported">此设备或启动器不支持 Pin 快捷方式。</string>
     <string name="shortcut_add_request_failed">向启动器发送快捷方式请求失败。</string>
@@ -36,6 +36,8 @@
     <string name="renderer_crashed">WebView渲染进程未响应，是否强行停止？</string>
     <string name="refresh">刷新</string>
     <string name="more_info">更多</string>
-    <string name="failed_to_load_desc">无法加载 [b]%1$s[/b]\n\n错误信息: [i]%2$s[/i]</string>
+    <string name="failed_to_load_desc">无法加载 [b]%1$s[/b]\n错误信息: [i]%2$s[/i]</string>
     <string name="failed_to_open_ssl_desc">由于SSL错误，无法加载 [b]%1$s[/b]</string>
+    <string name="please_try_the_following">请尝试以下操作：</string>
+    <string name="proceed">继续</string>
 </resources>
