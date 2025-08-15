@@ -1,7 +1,13 @@
 package com.dergoogler.mmrl.webui.model
 
-import com.dergoogler.mmrl.webui.interfaces.WXOptions
+import android.os.Process
+import android.util.Log
+import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.SuFilePermissions
+import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
+import com.dergoogler.mmrl.webui.interfaces.WXOptions
+import com.sun.jna.Native
 
 /**
  * Represents a JavaScript interface that can be exposed to a web view.
@@ -18,12 +24,17 @@ data class JavaScriptInterface<T : WXInterface>(
     val clazz: Class<T>,
     val initargs: Array<Any>? = null,
     val parameterTypes: Array<Class<*>>? = null,
+    val sharedObjects: List<String> = emptyList(),
 ) {
     data class Instance(
-        private val inst: WXInterface
+        private val inst: WXInterface,
     ) {
         val name: String = inst.name
         val instance: WXInterface = inst
+
+        fun unregister() {
+            Native.unregister(inst.javaClass)
+        }
     }
 
     fun createNew(wxOptions: WXOptions): Instance {
@@ -37,6 +48,31 @@ data class JavaScriptInterface<T : WXInterface>(
             constructor.newInstance(wxOptions, *initargs)
         } else {
             constructor.newInstance(wxOptions)
+        }
+
+        val modId = wxOptions.options.modId
+        val context = wxOptions.options.context
+
+        try {
+            for (sharedObject in sharedObjects) {
+                val sharedObjectFile = SuFile(modId.webrootDir, sharedObject)
+                val name = "${sharedObjectFile.nameWithoutExtension}_$modId.so"
+                val sharedObjectDestinationFile =
+                    SuFile(context.applicationInfo.nativeLibraryDir, name)
+
+                if (!sharedObjectFile.exists()) continue
+
+                val uid = Process.myUid()
+
+                sharedObjectFile.setOwner(uid, uid)
+                sharedObjectFile.setPermissions(SuFilePermissions.PERMISSION_755)
+                sharedObjectFile.copyTo(sharedObjectDestinationFile, overwrite = true)
+
+                val libName = name.substringBeforeLast(".").replace(Regex("^lib"), "")
+                Native.register(newInstance.javaClass, libName)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error copying shared objects", e)
         }
 
         return Instance((newInstance as WXInterface))
@@ -60,5 +96,9 @@ data class JavaScriptInterface<T : WXInterface>(
         result = 31 * result + initargs.contentHashCode()
         result = 31 * result + parameterTypes.contentHashCode()
         return result
+    }
+
+    private companion object {
+        const val TAG = "JavaScriptInterface"
     }
 }

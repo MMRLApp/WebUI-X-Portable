@@ -26,7 +26,6 @@ import com.dergoogler.mmrl.webui.JSONString
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
-import com.dergoogler.mmrl.webui.interfaces.WXLibrary
 import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -111,60 +110,6 @@ enum class DexSourceType {
 }
 
 private val interfaceCache = ConcurrentHashMap<String, JavaScriptInterface<out WXInterface>>()
-private val sharedObjectCache = ConcurrentHashMap<String, SharedObject<out WXLibrary>>()
-
-@JsonClass(generateAdapter = true)
-data class WebUIConfigSharedObject(
-    val path: String? = null,
-    val className: String? = null,
-    val cache: Boolean = true,
-) : WebUIConfigBaseLoader() {
-    private companion object {
-        const val TAG = "WebUIConfigSharedObject"
-    }
-
-    fun getSharedObject(
-        context: Context,
-        modId: ModId,
-    ): SharedObject<out WXLibrary>? {
-        // Use guard clauses for cleaner validation at the start.
-        val currentClassName = className ?: return null
-        val currentPath = path ?: return null
-
-        if (cache) {
-            // 1. Check cache first for immediate retrieval.
-            sharedObjectCache[currentClassName]?.let { return it }
-        }
-
-        return try {
-            // 2. Create the appropriate class loader.
-            val loader = createDexLoader(context, modId, currentPath)
-                ?: return null // Return null if loader creation failed.
-
-            // 3. Load the class and create an instance.
-            val rawClass = loader.loadClass(currentClassName)
-            if (!WXLibrary::class.java.isAssignableFrom(rawClass)) {
-                Log.e(TAG, "Loaded class $currentClassName does not implement com.sun.jna.Library")
-                return null
-            }
-
-            @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXLibrary>
-
-            val instance = SharedObject(clazz)
-
-            // 4. Cache the new instance and return it.
-            sharedObjectCache.putIfAbsent(currentClassName, instance)
-            instance
-        } catch (e: ClassNotFoundException) {
-            Log.e(TAG, "Class $currentClassName not found in path: $currentPath", e)
-            null
-        } catch (e: Exception) {
-            // Generic catch for any other instantiation or loading errors.
-            Log.e(TAG, "Error loading class $currentClassName from path: $currentPath", e)
-            null
-        }
-    }
-}
 
 @JsonClass(generateAdapter = true)
 data class WebUIConfigDexFile(
@@ -172,7 +117,7 @@ data class WebUIConfigDexFile(
     val path: String? = null,
     val className: String? = null,
     val cache: Boolean = true,
-    val sharedObjects: List<WebUIConfigSharedObject> = emptyList(),
+    val sharedObjects: List<String> = emptyList(),
 ) : WebUIConfigBaseLoader() {
     private companion object {
         const val TAG = "WebUIConfigDexFile"
@@ -216,7 +161,7 @@ data class WebUIConfigDexFile(
 
             @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
 
-            val instance = JavaScriptInterface(clazz)
+            val instance = JavaScriptInterface(clazz, sharedObjects = sharedObjects)
 
             // 4. Cache the new instance and return it.
             interfaceCache.putIfAbsent(currentClassName, instance)
