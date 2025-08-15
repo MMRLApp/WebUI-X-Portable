@@ -261,11 +261,11 @@ open class WXInterface(
         }
     }
 
-    fun registerLibrary(clazz: Class<out WXInterface>, name: String) {
+    fun registerLibrary(clazz: Class<*>, name: String) {
         Native.register(clazz, name)
     }
 
-    fun unregisterLibrary(clazz: Class<out WXInterface>) {
+    fun unregisterLibrary(clazz: Class<*>) {
         Native.unregister(clazz)
     }
 
