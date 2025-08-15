@@ -251,6 +251,7 @@ data class WebUIConfig(
             "style-src 'self' 'unsafe-inline' {domain}; connect-src *",
     val caching: Boolean = true,
     val cachingMaxAge: Int = 86400,
+    val extra: Map<String, Any?> = emptyMap(),
 ) {
     val hasRootPathPermission get() = WebUIPermissions.WX_ROOT_PATH in permissions
 
