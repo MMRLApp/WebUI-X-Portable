@@ -24,5 +24,6 @@ include(
     ":app",
     ":webui",
     ":helper",
-    ":datastore"
+    ":datastore",
+    ":jna"
 )

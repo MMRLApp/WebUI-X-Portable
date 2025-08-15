@@ -172,6 +172,7 @@ licensee {
 
 dependencies {
     implementation(projects.webui)
+    implementation(projects.jna)
     implementation(libs.mmrl.ext)
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.platform)

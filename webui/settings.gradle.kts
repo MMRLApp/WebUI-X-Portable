@@ -15,5 +15,6 @@ include(
     ":ui",
     ":ext",
     ":platform",
-    ":hidden-api"
+    ":hidden-api",
+    ":jna"
 )

@@ -31,7 +31,7 @@ import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXInsetsEventData.Companion.toEventData
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
-import com.dergoogler.mmrl.webui.util.getRequireNewVersion
+import com.sun.jna.Native
 
 /**
  * WXView is a custom [WebView] component designed for the **WebUI X Engine**.
@@ -187,6 +187,14 @@ open class WXView(
 
         if (options.config.dexFiles.isNotEmpty()) {
             for (dexFile in options.config.dexFiles) {
+
+                for (sharedObject in dexFile.sharedObjects) {
+                    val soRaw = sharedObject.getSharedObject(context, options.modId)
+                    val so = soRaw?.createNew(createDefaultWxOptions(options))
+                    if (so == null) continue
+                    Native.load(so.instance.javaClass)
+                }
+
                 val interfaceObj = dexFile.getInterface(context, options.modId)
                 if (interfaceObj != null) {
                     addJavascriptInterface(interfaceObj)

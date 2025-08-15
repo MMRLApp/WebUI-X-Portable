@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.webui.model
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -8,11 +7,10 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
-import android.os.Process
 import android.util.Log
 import android.widget.Toast
-import com.dergoogler.mmrl.ext.writeText
 import com.dergoogler.mmrl.ext.readText
+import com.dergoogler.mmrl.ext.writeText
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
@@ -28,6 +26,7 @@ import com.dergoogler.mmrl.webui.JSONString
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
+import com.dergoogler.mmrl.webui.interfaces.WXLibrary
 import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -112,6 +111,60 @@ enum class DexSourceType {
 }
 
 private val interfaceCache = ConcurrentHashMap<String, JavaScriptInterface<out WXInterface>>()
+private val sharedObjectCache = ConcurrentHashMap<String, SharedObject<out WXLibrary>>()
+
+@JsonClass(generateAdapter = true)
+data class WebUIConfigSharedObject(
+    val path: String? = null,
+    val className: String? = null,
+    val cache: Boolean = true,
+) : WebUIConfigBaseLoader() {
+    private companion object {
+        const val TAG = "WebUIConfigSharedObject"
+    }
+
+    fun getSharedObject(
+        context: Context,
+        modId: ModId,
+    ): SharedObject<out WXLibrary>? {
+        // Use guard clauses for cleaner validation at the start.
+        val currentClassName = className ?: return null
+        val currentPath = path ?: return null
+
+        if (cache) {
+            // 1. Check cache first for immediate retrieval.
+            sharedObjectCache[currentClassName]?.let { return it }
+        }
+
+        return try {
+            // 2. Create the appropriate class loader.
+            val loader = createDexLoader(context, modId, currentPath)
+                ?: return null // Return null if loader creation failed.
+
+            // 3. Load the class and create an instance.
+            val rawClass = loader.loadClass(currentClassName)
+            if (!WXLibrary::class.java.isAssignableFrom(rawClass)) {
+                Log.e(TAG, "Loaded class $currentClassName does not implement com.sun.jna.Library")
+                return null
+            }
+
+            @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXLibrary>
+
+            val instance = SharedObject(clazz)
+
+            // 4. Cache the new instance and return it.
+            sharedObjectCache.putIfAbsent(currentClassName, instance)
+            instance
+        } catch (e: ClassNotFoundException) {
+            Log.e(TAG, "Class $currentClassName not found in path: $currentPath", e)
+            null
+        } catch (e: Exception) {
+            // Generic catch for any other instantiation or loading errors.
+            Log.e(TAG, "Error loading class $currentClassName from path: $currentPath", e)
+            null
+        }
+    }
+}
 
 @JsonClass(generateAdapter = true)
 data class WebUIConfigDexFile(
@@ -119,28 +172,10 @@ data class WebUIConfigDexFile(
     val path: String? = null,
     val className: String? = null,
     val cache: Boolean = true,
-    val sharedObjects: List<String> = emptyList(),
-) {
+    val sharedObjects: List<WebUIConfigSharedObject> = emptyList(),
+) : WebUIConfigBaseLoader() {
     private companion object {
         const val TAG = "WebUIConfigDexFile"
-    }
-
-    @SuppressLint("DiscouragedPrivateApi")
-    private fun loadLibraries(files: List<SuFile>) {
-        val libs = files.map { file ->
-            if (!file.exists()) return
-            if (file.extension != "so") return
-
-            try {
-                file.setOwner(Process.myUid(), Process.myUid())
-            } catch (e: Exception) {
-                Log.e(TAG, "Error setting owner for ${file.path}", e)
-            }
-
-            file.absolutePath
-        }
-
-        SuFile.loadSharedObjects(*libs.toTypedArray())
     }
 
     /**
@@ -181,9 +216,6 @@ data class WebUIConfigDexFile(
 
             @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
 
-            val sharedObjectFiles = sharedObjects.map { SuFile(modId.webrootDir, it) }
-            loadLibraries(sharedObjectFiles)
-
             val instance = JavaScriptInterface(clazz)
 
             // 4. Cache the new instance and return it.
@@ -198,11 +230,13 @@ data class WebUIConfigDexFile(
             null
         }
     }
+}
 
+open class WebUIConfigBaseLoader() {
     /**
      * Creates a ClassLoader for a standalone .dex file.
      */
-    private fun createDexLoader(
+    fun createDexLoader(
         context: Context,
         modId: ModId,
         dexPath: String,
@@ -222,7 +256,7 @@ data class WebUIConfigDexFile(
     /**
      * Creates a ClassLoader for a class within an installed APK.
      */
-    private fun createApkLoader(context: Context, packageName: String): BaseDexClassLoader? {
+    fun createApkLoader(context: Context, packageName: String): BaseDexClassLoader? {
         return try {
             val pm: HiddenPackageManager = PlatformManager.packageManager
             val um: HiddenUserManager = PlatformManager.userManager
@@ -242,6 +276,10 @@ data class WebUIConfigDexFile(
             Log.e(TAG, "Could not find package: $packageName", e)
             null
         }
+    }
+
+    private companion object {
+        const val TAG = "WebUIConfigBaseLoader"
     }
 }
 
