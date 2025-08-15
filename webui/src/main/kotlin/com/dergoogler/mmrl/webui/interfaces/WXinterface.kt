@@ -14,6 +14,7 @@ import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.webui.view.WebUIView
+import com.sun.jna.Native
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
@@ -256,5 +257,13 @@ open class WXInterface(
             console.error(e)
             return default
         }
+    }
+
+    fun registerLibrary(clazz: Class<out WXInterface>, name: String) {
+        Native.register(clazz, name)
+    }
+
+    fun unregisterLibrary(clazz: Class<out WXInterface>) {
+        Native.unregister(clazz)
     }
 }
