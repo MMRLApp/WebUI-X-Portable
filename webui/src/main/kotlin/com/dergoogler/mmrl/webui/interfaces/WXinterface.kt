@@ -15,9 +15,11 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.webui.view.WebUIView
 import com.sun.jna.Native
+import com.sun.jna.NativeLibrary
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Runnable
+
 
 data class WXOptions(
     val webView: WebUIView,
@@ -265,5 +267,14 @@ open class WXInterface(
 
     fun unregisterLibrary(clazz: Class<out WXInterface>) {
         Native.unregister(clazz)
+    }
+
+    fun isLibraryRegistered(libName: String): Boolean {
+        try {
+            val lib: NativeLibrary? = NativeLibrary.getInstance(libName)
+            return lib != null
+        } catch (e: UnsatisfiedLinkError) {
+            return false
+        }
     }
 }
