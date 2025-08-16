@@ -266,7 +266,7 @@ open class WXInterface(
     }
 
     fun registerLibrary(clazz: Class<*>, name: String) {
-        Native.register(clazz, name)
+        Native.register(clazz, "${name}_$modId")
     }
 
     fun unregisterLibrary(clazz: Class<*>) {
@@ -275,7 +275,7 @@ open class WXInterface(
 
     fun isLibraryRegistered(libName: String): Boolean {
         try {
-            val lib: NativeLibrary? = NativeLibrary.getInstance(libName)
+            val lib: NativeLibrary? = NativeLibrary.getInstance("${libName}_$modId")
             return lib != null
         } catch (e: UnsatisfiedLinkError) {
             return false
