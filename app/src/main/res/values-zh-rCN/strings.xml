@@ -110,4 +110,17 @@
     <string name="plugins">插件</string>
     <string name="plugins_desc">扩展 WebUI 以满足您的需求</string>
     <string name="sukisu">SukiSU Ultra</string>
+    <string name="settings_documentation">API 文档</string>
+    <string name="settings_security_auto_open_eruda">自动打开 Eruda</string>
+    <string name="settings_security_auto_open_eruda_desc">在启动 WebUI 时自动打开 Eruda 控制台</string>
+    <string name="webui_config_content_security_policy_title">内容安全策略</string>
+    <string name="webui_config_content_security_policy_desc">定义了安全策略，以限制 WebUI 可以加载和执行的网络内容（脚本、样式、图像等），以防止恶意代码的攻击。</string>
+    <string name="webui_config_caching_desc">启用或禁用缓存，通过将资源存储在本地来改善 WebUI 性能。</string>
+    <string name="webui_config_caching_title">启用缓存</string>
+    <string name="webui_config_caching_max_age_desc">设置缓存资源在刷新之前被认为有效的最大时间（以秒为单位）。</string>
+    <string name="setting_about">关于</string>
+    <string name="setting_licenses">开放源代码许可</string>
+    <string name="setting_licenses_desc">查看开放源代码许可</string>
+    <string name="license_title">开放源代码许可</string>
+    <string name="webui_config_caching_max_age_title">缓存最大刷新时间</string>
 </resources>
