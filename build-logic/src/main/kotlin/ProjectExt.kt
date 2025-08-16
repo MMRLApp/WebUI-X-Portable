@@ -1,8 +1,18 @@
+@file:Suppress("unused", "UnusedReceiverParameter")
+
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.extra
 import java.io.File
-import java.util.Properties
 import java.security.SecureRandom
+import java.util.Properties
+
+// #### CONFIG START ####
+
+const val COMPILE_SDK = 36
+const val BUILD_TOOLS_VERSION = "$COMPILE_SDK.0.0"
+const val MIN_SDK = 26
+
+// ####  CONFIG END  ####
 
 val Project.commitId: String get() = exec("git rev-parse --short HEAD")
 val Project.commitCount: Int get() = exec("git rev-list --count HEAD").toInt()
