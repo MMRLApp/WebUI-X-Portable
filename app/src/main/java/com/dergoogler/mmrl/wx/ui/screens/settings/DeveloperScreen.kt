@@ -30,6 +30,8 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.listItem.dsl.List
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Item
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Section
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.TextEditDialogItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
@@ -39,6 +41,7 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.LearnMore
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.component.scaffold.Scaffold
 import com.dergoogler.mmrl.ui.providable.LocalNavController
+import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
@@ -68,132 +71,151 @@ fun DeveloperScreen() {
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-            SwitchItem(
-                checked = userPreferences.developerMode,
-                onChange = viewModel::setDeveloperMode
-            ) {
-                Title(R.string.settings_developer_mode)
-                Description(R.string.settings_developer_mode_desc)
-            }
+            Section {
+                SwitchItem(
+                    checked = userPreferences.developerMode,
+                    onChange = viewModel::setDeveloperMode
+                ) {
+                    Title(R.string.settings_developer_mode)
+                    Description(R.string.settings_developer_mode_desc)
+                }
 
-            var webuiRemoteUrlInfo by remember { mutableStateOf(false) }
-            if (webuiRemoteUrlInfo) AlertDialog(
-                title = {
-                    Text(text = stringResource(id = R.string.settings_webui_remote_url))
-                },
-                text = {
-                    Text(text = stringResource(id = R.string.settings_webui_remote_url_alert_desc))
-                },
-                onDismissRequest = {
-                    webuiRemoteUrlInfo = false
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            webuiRemoteUrlInfo = false
+                var webuiRemoteUrlInfo by remember { mutableStateOf(false) }
+                if (webuiRemoteUrlInfo) AlertDialog(
+                    title = {
+                        Text(text = stringResource(id = R.string.settings_webui_remote_url))
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.settings_webui_remote_url_alert_desc))
+                    },
+                    onDismissRequest = {
+                        webuiRemoteUrlInfo = false
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                webuiRemoteUrlInfo = false
+                            }
+                        ) {
+                            Text(text = stringResource(id = android.R.string.ok))
                         }
-                    ) {
-                        Text(text = stringResource(id = android.R.string.ok))
+                    },
+                )
+
+                DeveloperSwitch(
+                    enabled = !userPreferences.useWebUiDevUrl,
+                    checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
+                    onChange = viewModel::setEnableEruda
+                ) {
+                    Title(R.string.settings_security_inject_eruda)
+                    Description(R.string.settings_security_inject_eruda_desc)
+                }
+
+                DeveloperSwitch(
+                    enabled = userPreferences.enableErudaConsole,
+                    checked = userPreferences.enableErudaConsole && userPreferences.enableAutoOpenEruda,
+                    onChange = viewModel::setEnableAutoOpenEruda
+                ) {
+                    Title(R.string.settings_security_auto_open_eruda)
+                    Description(R.string.settings_security_auto_open_eruda_desc)
+                }
+
+                TextEditDialogItem(
+                    enabled = userPreferences.developerMode,
+                    value = userPreferences.webUiDevUrl,
+                    onConfirm = {
+                        viewModel.setWebUiDevUrl(it)
+                    },
+                    onValid = { !it.isLocalWifiUrl() },
+                ) {
+                    Title(R.string.settings_webui_remote_url)
+                    Description(R.string.settings_webui_remote_url_desc)
+
+                    End {
+                        val interactionSource = remember { MutableInteractionSource() }
+
+                        Layout(
+                            content = {
+                                VerticalDivider(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    thickness = 1.dp
+                                )
+
+                                Switch(
+                                    modifier = Modifier
+                                        .toggleable(
+                                            value = userPreferences.useWebUiDevUrl,
+                                            onValueChange = viewModel::setUseWebUiDevUrl,
+                                            enabled = userPreferences.developerMode,
+                                            role = Role.Switch,
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ),
+                                    checked = userPreferences.useWebUiDevUrl,
+                                    onCheckedChange = null,
+                                    interactionSource = interactionSource
+                                )
+                            }
+                        ) { measurables, constraints ->
+                            val dividerMeasurable = measurables[0]
+                            val switchMeasurable = measurables[1]
+
+                            // Measure switch first
+                            val switchPlaceable = switchMeasurable.measure(constraints)
+
+                            // Define divider height = switch height + padding
+                            val dividerHeight = switchPlaceable.height + 36
+                            val dividerPlaceable = dividerMeasurable.measure(
+                                constraints.copy(
+                                    minHeight = dividerHeight,
+                                    maxHeight = dividerHeight
+                                )
+                            )
+
+                            val width = dividerPlaceable.width + switchPlaceable.width
+                            val height = maxOf(dividerPlaceable.height, switchPlaceable.height)
+
+                            layout(width, height) {
+                                // Center divider vertically relative to the full layout
+                                val dividerY = (height - dividerPlaceable.height) / 2
+                                val switchY = (height - switchPlaceable.height) / 2
+
+                                dividerPlaceable.place(0, dividerY)
+                                switchPlaceable.place(dividerPlaceable.width, switchY)
+                            }
+                        }
                     }
-                },
-            )
 
-            DeveloperSwitch(
-                enabled = !userPreferences.useWebUiDevUrl,
-                checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
-                onChange = viewModel::setEnableEruda
-            ) {
-                Title(R.string.settings_security_inject_eruda)
-                Description(R.string.settings_security_inject_eruda_desc)
-            }
+                    LearnMore {
+                        webuiRemoteUrlInfo = true
+                    }
 
-            DeveloperSwitch(
-                enabled = userPreferences.enableErudaConsole,
-                checked = userPreferences.enableErudaConsole && userPreferences.enableAutoOpenEruda,
-                onChange = viewModel::setEnableAutoOpenEruda
-            ) {
-                Title(R.string.settings_security_auto_open_eruda)
-                Description(R.string.settings_security_auto_open_eruda_desc)
-            }
-
-            TextEditDialogItem(
-                enabled = userPreferences.developerMode,
-                value = userPreferences.webUiDevUrl,
-                onConfirm = {
-                    viewModel.setWebUiDevUrl(it)
-                },
-                onValid = { !it.isLocalWifiUrl() },
-            ) {
-                Title(R.string.settings_webui_remote_url)
-                Description(R.string.settings_webui_remote_url_desc)
-
-                End {
-                    val interactionSource = remember { MutableInteractionSource() }
-
-                    Layout(
-                        content = {
-                            VerticalDivider(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                thickness = 1.dp
+                    it.isError.takeTrue {
+                        DialogSupportingText {
+                            Text(
+                                text = stringResource(R.string.invalid_ip),
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelSmall
                             )
-
-                            Switch(
-                                modifier = Modifier
-                                    .toggleable(
-                                        value = userPreferences.useWebUiDevUrl,
-                                        onValueChange = viewModel::setUseWebUiDevUrl,
-                                        enabled = userPreferences.developerMode,
-                                        role = Role.Switch,
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    ),
-                                checked = userPreferences.useWebUiDevUrl,
-                                onCheckedChange = null,
-                                interactionSource = interactionSource
-                            )
-                        }
-                    ) { measurables, constraints ->
-                        val dividerMeasurable = measurables[0]
-                        val switchMeasurable = measurables[1]
-
-                        // Measure switch first
-                        val switchPlaceable = switchMeasurable.measure(constraints)
-
-                        // Define divider height = switch height + padding
-                        val dividerHeight = switchPlaceable.height + 36
-                        val dividerPlaceable = dividerMeasurable.measure(
-                            constraints.copy(
-                                minHeight = dividerHeight,
-                                maxHeight = dividerHeight
-                            )
-                        )
-
-                        val width = dividerPlaceable.width + switchPlaceable.width
-                        val height = maxOf(dividerPlaceable.height, switchPlaceable.height)
-
-                        layout(width, height) {
-                            // Center divider vertically relative to the full layout
-                            val dividerY = (height - dividerPlaceable.height) / 2
-                            val switchY = (height - switchPlaceable.height) / 2
-
-                            dividerPlaceable.place(0, dividerY)
-                            switchPlaceable.place(dividerPlaceable.width, switchY)
                         }
                     }
                 }
+            }
 
-                LearnMore {
-                    webuiRemoteUrlInfo = true
+            Section(
+                divider = false
+            ) {
+                Item {
+                    Title(stringResource(R.string.latest_commit_id))
+                    Description(BuildConfig.LATEST_COMMIT_ID)
                 }
-
-                it.isError.takeTrue {
-                    DialogSupportingText {
-                        Text(
-                            text = stringResource(R.string.invalid_ip),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
+                Item {
+                    Title(stringResource(R.string.build_tools_version))
+                    Description(BuildConfig.BUILD_TOOLS_VERSION)
+                }
+                Item {
+                    Title(stringResource(R.string.compile_sdk))
+                    Description(BuildConfig.COMPILE_SDK)
                 }
             }
         }
