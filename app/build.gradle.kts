@@ -133,6 +133,10 @@ android {
 
         all {
             signingConfig = releaseSigning
+            buildConfigField("String", "COMPILE_SDK", "\"$COMPILE_SDK\"")
+            buildConfigField("String", "BUILD_TOOLS_VERSION", "\"${BUILD_TOOLS_VERSION}\"")
+            buildConfigField("String", "MIN_SDK", "\"$MIN_SDK\"")
+            buildConfigField("String", "LATEST_COMMIT_ID", "\"${commitId}\"")
         }
     }
 
