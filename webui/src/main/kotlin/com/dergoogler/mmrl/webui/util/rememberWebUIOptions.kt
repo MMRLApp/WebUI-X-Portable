@@ -22,6 +22,7 @@ import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import com.dergoogler.mmrl.ui.theme.Colors.Companion.getColorScheme
+import com.dergoogler.mmrl.webui.PathHandler
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.client.WXClient
 import com.dergoogler.mmrl.webui.model.Insets
@@ -74,7 +75,7 @@ data class WebUIOptions(
     val isDarkMode: Boolean = false,
     val userAgentString: String = "DON'T TRACK ME DOWN MOTHERFUCKER!",
     val colorScheme: ColorScheme = context.getColorScheme(id = 0, darkMode = isDarkMode),
-    val client: ((WebUIOptions, Insets) -> WXClient)? = null,
+    val client: ((WebUIOptions, Insets, assetHandlers: List<Pair<String, PathHandler>>) -> WXClient)? = null,
     val cls: Class<out WXActivity>? = null,
 ) : ContextWrapper(context) {
     private val packageManager

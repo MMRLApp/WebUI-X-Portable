@@ -140,9 +140,9 @@ open class WXView(
             if (options.debug) Log.d(TAG, "Insets: $newInsets")
 
             val client = if (options.client != null) {
-                options.client(options, newInsets)
+                options.client(options, newInsets, assetHandlers)
             } else {
-                WXClient(options, newInsets)
+                WXClient(options, newInsets, assetHandlers)
             }
 
             client.mSwipeView = mSwipeView

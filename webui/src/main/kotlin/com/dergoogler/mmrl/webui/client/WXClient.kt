@@ -16,6 +16,7 @@ import android.webkit.WebViewClient
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
+import com.dergoogler.mmrl.webui.PathHandler
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.WXAssetLoader
 import com.dergoogler.mmrl.webui.component.ErrorScreen
@@ -36,7 +37,11 @@ open class WXClient : WebViewClient {
     private val mWxAssetsLoader: WXAssetLoader
     internal var mSwipeView: WXSwipeRefresh? = null
 
-    constructor(options: WebUIOptions, insets: Insets) {
+    constructor(
+        options: WebUIOptions,
+        insets: Insets,
+        assetHandlers: List<Pair<String, PathHandler>> = emptyList(),
+    ) {
         mOptions = options
         mWxAssetsLoader = wxAssetLoader(
             handlers = buildList {
@@ -50,6 +55,8 @@ open class WXClient : WebViewClient {
                 if (mOptions.config.hasRootPathPermission) {
                     add("/__root__" to suPathHandler("/".toSuFile()))
                 }
+
+                addAll(assetHandlers)
 
                 add("/" to webrootPathHandler(mOptions, insets))
             }

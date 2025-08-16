@@ -22,6 +22,7 @@ import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.moshi.moshi
+import com.dergoogler.mmrl.webui.PathHandler
 import com.dergoogler.mmrl.webui.interfaces.WXConsole
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
@@ -36,7 +37,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.text.replace
 
 /**
  * A custom WebView class that provides additional functionality for WebUI.
@@ -88,7 +88,8 @@ open class WebUIView(
         options = options
     )
 
-    protected val interfaces = hashSetOf<JavaScriptInterface.Instance>()
+    protected val interfaces: HashSet<JavaScriptInterface.Instance> = hashSetOf()
+    protected val assetHandlers: MutableList<Pair<String, PathHandler>> = mutableListOf()
 
     protected open suspend fun onInit(isInitialized: Boolean) {}
 
@@ -351,6 +352,13 @@ open class WebUIView(
     fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
         try {
             val js = obj.createNew(createDefaultWxOptions(options))
+
+            val assetHandlers = js.instance.assetHandlers
+            if (assetHandlers.isNotEmpty()) {
+                Log.d(TAG, "Adding ${assetHandlers.size} asset handlers")
+                this.assetHandlers.addAll(assetHandlers)
+            }
+
             addJavascriptInterface(js.instance, js.name)
         } catch (e: Exception) {
             throw BrickException(

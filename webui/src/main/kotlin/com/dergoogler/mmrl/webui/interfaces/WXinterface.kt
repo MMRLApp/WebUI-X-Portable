@@ -10,6 +10,7 @@ import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.platform.model.ModId
+import com.dergoogler.mmrl.webui.PathHandler
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
@@ -70,6 +71,8 @@ open class WXInterface(
      * in subclasses to provide more specific identification.
      */
     open var tag: String = "WXInterface"
+
+    open val assetHandlers: List<Pair<String, PathHandler>> = emptyList()
 
     /**
      * Executes the given JavaScript script within the WebView.
@@ -175,7 +178,8 @@ open class WXInterface(
         requestCode: Int,
         resultCode: Int,
         data: Intent?,
-    ) {}
+    ) {
+    }
 
     @UiThread
     fun runMainLooperPost(action: Activity.() -> Unit) {
