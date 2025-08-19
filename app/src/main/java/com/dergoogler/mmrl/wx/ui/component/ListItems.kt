@@ -26,29 +26,15 @@ internal fun ListScope.NavButton(
     @DrawableRes icon: Int? = null,
     @StringRes title: Int,
     @StringRes desc: Int? = null,
-) {
-    val navController = LocalNavController.current
-
-    ButtonItem(
-        onClick = {
-            navController.navigateSingleTopTo(route)
-        },
-        content = {
-            icon.nullable {
-                Icon(
-                    painter = painterResource(it)
-                )
-            }
-            Title(title)
-            desc.nullable {
-                Description(it)
-            }
-        }
-    )
-}
+) = NavButton<String>(
+    route = route,
+    icon = icon,
+    title = title,
+    desc = desc
+)
 
 @Composable
-internal fun <T: Any> ListScope.NavButton(
+internal fun <T : Any> ListScope.NavButton(
     route: T,
     @DrawableRes icon: Int? = null,
     @StringRes title: Int,
