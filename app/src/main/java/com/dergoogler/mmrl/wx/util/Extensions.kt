@@ -4,11 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavOptionsBuilder
 import com.dergoogler.mmrl.datastore.model.WorkingMode
-import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.exception.BrickException
+import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
@@ -20,6 +21,9 @@ import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import com.dergoogler.mmrl.platform.stub.IServiceManager
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUI
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.activity.webui.KsuWebUIActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import kotlinx.coroutines.CoroutineScope
@@ -213,4 +217,34 @@ fun Context.getBaseDir(
     } else {
         SuFile(ModId.ADB_DIR)
     }
+}
+
+fun <T : Any> NavController.navigateSingleTopTo(
+    route: T,
+    launchSingleTop: Boolean = true,
+    builder: NavOptionsBuilder.() -> Unit = {},
+) = navigate(
+    route = route
+) {
+    this.launchSingleTop = launchSingleTop
+    restoreState = true
+    builder()
+}
+
+fun <T : Any> NavController.navigatePopUpTo(
+    route: T,
+    launchSingleTop: Boolean = true,
+    restoreState: Boolean = true,
+    inclusive: Boolean = true,
+) = navigateSingleTopTo(
+    route = route
+) {
+    popUpTo(
+        id = currentDestination?.parent?.id ?: graph.findStartDestination().id
+    ) {
+        this.saveState = restoreState
+        this.inclusive = inclusive
+    }
+    this.launchSingleTop = launchSingleTop
+    this.restoreState = restoreState
 }

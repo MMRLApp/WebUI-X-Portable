@@ -32,7 +32,7 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.FeaturedManager
 import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavButton
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.SettingsScreen
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.SettingsRoute
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +63,7 @@ fun SettingsScreen() {
                 title = stringResource(R.string.general)
             ) {
                 NavButton(
-                    route = SettingsScreen.AppTheme.route,
+                    route = SettingsRoute.AppTheme,
                     icon = R.drawable.color_swatch,
                     title = R.string.settings_app_theme,
                     desc = R.string.settings_app_theme_desc
@@ -136,7 +136,7 @@ fun SettingsScreen() {
                 }
 
                 NavButton(
-                    route = SettingsScreen.Developer.route,
+                    route = SettingsRoute.Developer,
                     icon = R.drawable.bug,
                     title = R.string.developer,
                 )
@@ -153,7 +153,7 @@ fun SettingsScreen() {
                 )
 
                 NavButton(
-                    route = SettingsScreen.Licenses.route,
+                    route = SettingsRoute.Licenses,
                     icon = R.drawable.license,
                     title = R.string.setting_licenses,
                     desc = R.string.setting_licenses_desc

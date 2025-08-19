@@ -5,49 +5,49 @@ import androidx.compose.animation.fadeOut
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
+import com.dergoogler.mmrl.wx.ui.navigation.MainRoute
 import com.dergoogler.mmrl.wx.ui.screens.settings.DeveloperScreen
 import com.dergoogler.mmrl.wx.ui.screens.settings.LicensesScreen
 import com.dergoogler.mmrl.wx.ui.screens.settings.SettingsScreen
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.AppThemeScreen
+import kotlinx.serialization.Serializable
 
-enum class SettingsScreen(val route: String) {
-    Home("Settings"),
-    AppTheme("AppTheme"),
-    Licenses("Licenses"),
-    Developer("Developer"),
+sealed interface SettingsRoute {
+    @Serializable
+    data object Home : SettingsRoute
+    @Serializable
+    data object AppTheme : SettingsRoute
+    @Serializable
+    data object Licenses : SettingsRoute
+    @Serializable
+    data object Developer : SettingsRoute
 }
 
-fun NavGraphBuilder.settingsScreen() = navigation(
-    startDestination = SettingsScreen.Home.route,
-    route = MainScreen.Settings.route
+fun NavGraphBuilder.settingsRoute() = navigation<MainRoute.Settings>(
+    startDestination = SettingsRoute.Home,
 ) {
-    composable(
-        route = SettingsScreen.Home.route,
+    composable<SettingsRoute.Home>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
         SettingsScreen()
     }
 
-    composable(
-        route = SettingsScreen.AppTheme.route,
+    composable<SettingsRoute.AppTheme>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
         AppThemeScreen()
     }
 
-    composable(
-        route = SettingsScreen.Licenses.route,
+    composable<SettingsRoute.Licenses>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
         LicensesScreen()
     }
 
-    composable(
-        route = SettingsScreen.Developer.route,
+    composable<SettingsRoute.Developer>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {

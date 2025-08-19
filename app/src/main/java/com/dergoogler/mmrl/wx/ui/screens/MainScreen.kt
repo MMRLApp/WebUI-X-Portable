@@ -19,25 +19,25 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isRoot
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.ext.navigatePopUpTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.App.Companion.TAG
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.service.PlatformService
-import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesScreen
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsScreen
+import com.dergoogler.mmrl.wx.ui.navigation.MainRoute
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesRoute
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsRoute
+import com.dergoogler.mmrl.wx.util.navigatePopUpTo
 
 @Composable
 fun MainScreen() {
@@ -52,8 +52,8 @@ fun MainScreen() {
     val mainScreens by remember(isRoot) {
         derivedStateOf {
             return@derivedStateOf listOf(
-                MainScreen.Modules,
-                MainScreen.Settings
+                MainRoute.Modules,
+                MainRoute.Settings
             )
         }
     }
@@ -81,17 +81,17 @@ fun MainScreen() {
         NavHost(
             modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
             navController = navController,
-            startDestination = MainScreen.Modules.route
+            startDestination = MainRoute.Modules
         ) {
-            modulesScreen()
-            settingsScreen()
+            modulesRoute()
+            settingsRoute()
         }
     }
 }
 
 @Composable
 private fun BottomNav(
-    mainScreens: List<MainScreen>,
+    mainScreens: List<MainRoute>,
 ) {
     val navController = LocalNavController.current
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -109,7 +109,7 @@ private fun BottomNav(
     ) {
         mainScreens.forEach { screen ->
             val selected =
-                currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                currentDestination?.hierarchy?.any { it.route == screen::class.java.name } == true
 
             NavigationBarItem(
                 icon = {
@@ -136,7 +136,7 @@ private fun BottomNav(
                     if (selected) return@NavigationBarItem
 
                     navController.navigatePopUpTo(
-                        route = screen.route,
+                        route = screen,
                     )
                 }
             )

@@ -1,11 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.util.Log
 import android.widget.Toast
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.content.State
-import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,17 +22,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
+import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
+import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.webUiConfig
+import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesScreen
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesRoute
+import com.dergoogler.mmrl.wx.util.navigateSingleTopTo
 
 @Composable
 fun ModulesList(
@@ -93,10 +92,7 @@ fun ModuleItem(
         leadingButton = {
             ConfigButton(
                 onClick = {
-                    navController.navigateSingleTopTo(
-                        route = ModulesScreen.Config.route,
-                        args = mapOf("id" to module.id.toString())
-                    )
+                    navController.navigateSingleTopTo(ModulesRoute.Config(module.id.toString()))
                 },
                 enabled = module.state != State.REMOVE
             )

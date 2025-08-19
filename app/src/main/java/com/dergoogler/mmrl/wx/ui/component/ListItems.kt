@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ui.component.listItem.dsl.ListItemScope
@@ -19,10 +18,38 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 
 @Composable
 internal fun ListScope.NavButton(
     route: String,
+    @DrawableRes icon: Int? = null,
+    @StringRes title: Int,
+    @StringRes desc: Int? = null,
+) {
+    val navController = LocalNavController.current
+
+    ButtonItem(
+        onClick = {
+            navController.navigateSingleTopTo(route)
+        },
+        content = {
+            icon.nullable {
+                Icon(
+                    painter = painterResource(it)
+                )
+            }
+            Title(title)
+            desc.nullable {
+                Description(it)
+            }
+        }
+    )
+}
+
+@Composable
+internal fun <T: Any> ListScope.NavButton(
+    route: T,
     @DrawableRes icon: Int? = null,
     @StringRes title: Int,
     @StringRes desc: Int? = null,

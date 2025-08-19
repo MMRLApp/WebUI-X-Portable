@@ -46,7 +46,7 @@ import com.dergoogler.mmrl.webui.model.MutableConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesScreen
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesRoute
 import kotlinx.coroutines.launch
 
 
@@ -201,10 +201,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 title = stringResource(R.string.plugins),
                 desc = stringResource(R.string.plugins_desc),
                 onClick = {
-                    navController.navigateSingleTopTo(
-                        route = ModulesScreen.Plugins.route,
-                        args = mapOf("id" to module.id.toString())
-                    )
+                    navController.navigateSingleTopTo(ModulesRoute.Plugins(module.id.toString()))
                 }
             )
 

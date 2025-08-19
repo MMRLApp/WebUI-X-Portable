@@ -1,52 +1,51 @@
 package com.dergoogler.mmrl.wx.ui.navigation.graphs
 
-import android.util.Log
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.dergoogler.mmrl.ext.panicArguments
-import com.dergoogler.mmrl.ext.panicString
+import androidx.navigation.toRoute
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
-import com.dergoogler.mmrl.ui.providable.LocalNavController
-import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
+import com.dergoogler.mmrl.wx.ui.navigation.MainRoute
 import com.dergoogler.mmrl.wx.ui.screens.modules.ModulesScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.screens.ConfigEditorScreen
 import com.dergoogler.mmrl.wx.ui.screens.modules.screens.PluginsScreen
 import com.dergoogler.mmrl.wx.util.getBaseDir
+import kotlinx.serialization.Serializable
 
-enum class ModulesScreen(val route: String) {
-    Home("Modules"),
-    Config("Config/{id}"),
-    Plugins("Plugins/{id}"),
+sealed interface ModulesRoute {
+    @Serializable
+    data object Home : ModulesRoute
+
+    @Serializable
+    data class Config(val id: String) : ModulesRoute
+
+    @Serializable
+    data class Plugins(val id: String) : ModulesRoute
 }
 
-fun NavGraphBuilder.modulesScreen() = navigation(
-    startDestination = ModulesScreen.Home.route,
-    route = MainScreen.Modules.route
+fun NavGraphBuilder.modulesRoute() = navigation<MainRoute.Modules>(
+    startDestination = ModulesRoute.Home,
 ) {
-    composable(
-        route = ModulesScreen.Home.route,
+    composable<ModulesRoute.Home>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
         ModulesScreen()
     }
 
-    composable(
-        route = ModulesScreen.Config.route,
+    composable<ModulesRoute.Config>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
         val context = LocalContext.current
-        val args = it.panicArguments
-        val id = args.panicString("id")
+        val route = it.toRoute<ModulesRoute.Config>()
 
         val baseDir = context.getBaseDir()
-        val module = PlatformManager.moduleManager.getModuleById(id.toModId(baseDir.path))
+        val module = PlatformManager.moduleManager.getModuleById(route.id.toModId(baseDir.path))
 
         if (module == null) {
             return@composable
@@ -55,20 +54,17 @@ fun NavGraphBuilder.modulesScreen() = navigation(
         ConfigEditorScreen(module)
     }
 
-    composable(
-        route = ModulesScreen.Plugins.route,
+    composable<ModulesRoute.Plugins>(
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
         val context = LocalContext.current
-        val args = it.panicArguments
-        val id = args.panicString("id")
+        val route = it.toRoute<ModulesRoute.Config>()
 
         val baseDir = context.getBaseDir()
-        val module = PlatformManager.moduleManager.getModuleById(id.toModId(baseDir.path))
+        val module = PlatformManager.moduleManager.getModuleById(route.id.toModId(baseDir.path))
 
         if (module == null) {
-            LocalNavController.current.popBackStack()
             return@composable
         }
 
