@@ -123,4 +123,7 @@
     <string name="setting_licenses_desc">Ver licencias de código abierto</string>
     <string name="license_title">Licencias</string>
     <string name="settings_documentation">Documentación de la API</string>
+    <string name="build_tools_version">Versión de Build Tools</string>
+    <string name="compile_sdk">Compilación de SDK</string>
+    <string name="latest_commit_id">ID del último commit</string>
 </resources>
