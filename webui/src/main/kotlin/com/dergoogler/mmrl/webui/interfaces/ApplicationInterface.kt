@@ -7,6 +7,7 @@ import androidx.annotation.Keep
 import androidx.core.content.pm.PackageInfoCompat
 import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.exit
 import com.dergoogler.mmrl.webui.model.App
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +22,8 @@ class ApplicationInterface(
 
     @JavascriptInterface
     fun exit() {
-        withActivity<Unit> {
-            finish()
+        withActivity {
+            exit(options)
         }
     }
 

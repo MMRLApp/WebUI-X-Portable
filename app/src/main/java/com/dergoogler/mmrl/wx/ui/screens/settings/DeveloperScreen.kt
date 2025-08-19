@@ -120,6 +120,14 @@ fun DeveloperScreen() {
                     Description(R.string.settings_security_auto_open_eruda_desc)
                 }
 
+                DeveloperSwitch(
+                    checked = userPreferences.forceKillWebUIProcess,
+                    onChange = viewModel::setForceKillWebUIProcess
+                ) {
+                    Title(R.string.settings_force_kill_webui_process)
+                    Description(R.string.settings_force_kill_webui_process_desc)
+                }
+
                 TextEditDialogItem(
                     enabled = userPreferences.developerMode,
                     value = userPreferences.webUiDevUrl,

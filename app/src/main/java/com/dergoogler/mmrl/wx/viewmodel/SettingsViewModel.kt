@@ -2,13 +2,12 @@ package com.dergoogler.mmrl.wx.viewmodel
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
-import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.datastore.model.Homepage
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -82,6 +81,12 @@ class SettingsViewModel @Inject constructor(
     fun setEnableAutoOpenEruda(value: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setEnableAutoOpenEruda(value)
+        }
+    }
+
+    fun setForceKillWebUIProcess(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setForceKillWebUIProcess(value)
         }
     }
 

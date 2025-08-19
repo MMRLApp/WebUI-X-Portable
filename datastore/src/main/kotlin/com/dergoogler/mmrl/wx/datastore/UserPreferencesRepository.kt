@@ -2,8 +2,8 @@ package com.dergoogler.mmrl.wx.datastore
 
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,6 +38,9 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setEnableAutoOpenEruda(value: Boolean) =
         userPreferencesDataSource.setEnableAutoOpenEruda(value)
+
+    suspend fun setForceKillWebUIProcess(value: Boolean) =
+        userPreferencesDataSource.setForceKillWebUIProcess(value)
 
     suspend fun setWebUIEngine(value: WebUIEngine) =
         userPreferencesDataSource.setWebUIEngine(value)

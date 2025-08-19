@@ -95,6 +95,14 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setForceKillWebUIProcess(value: Boolean) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                forceKillWebUIProcess = value
+            )
+        }
+    }
+
     suspend fun setWebUIEngine(value: WebUIEngine) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
             it.copy(

@@ -1,10 +1,12 @@
 package com.dergoogler.mmrl.webui.activity
 
+import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.Process
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -40,6 +42,7 @@ import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.webui.view.WebUIXView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.system.exitProcess
 
 /**
  * Base activity class for displaying web content using [WXView].
@@ -178,53 +181,55 @@ open class WXActivity : ComponentActivity() {
     private fun registerBackEvents() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                view.nullply {
-                    val backHandler = options.config.backHandler
-                    val interceptor = options.config.backInterceptor
+                val options = view?.options ?: return
+                val wx = view?.wx ?: return
 
-                    if (backHandler != true) {
-                        handleNativeBack()
-                        return
-                    }
+                val backHandler = options.config.backHandler
+                val interceptor = options.config.backInterceptor
 
-                    when (interceptor) {
-                        "native" -> handleNativeBack()
-                        "javascript" -> wx.postWXEvent(
-                            WXEventHandler(WXEvent.WX_ON_BACK, null)
-                        )
+                if (backHandler != true) {
+                    handleNativeBack()
+                    return
+                }
 
-                        true -> handleNativeBack()
-                        null -> handleNativeBack()
-                        false -> finish()
-                        else -> finish()
-                    }
+                when (interceptor) {
+                    "native" -> handleNativeBack()
+                    "javascript" -> wx.postWXEvent(
+                        WXEventHandler(WXEvent.WX_ON_BACK, null)
+                    )
+
+                    true -> handleNativeBack()
+                    null -> handleNativeBack()
+                    false -> exit(options)
+                    else -> exit(options)
                 }
             }
         })
     }
 
     private fun handleNativeBack() {
-        view.nullply {
-            if (wx.canGoBack()) {
-                wx.goBack()
-                return
-            }
+        val options = view?.options ?: return
+        val wx = view?.wx ?: return
 
-            if (options.config.exitConfirm) {
-                confirm(
-                    confirmData = ConfirmData(
-                        title = getString(R.string.exit),
-                        description = getString(R.string.exit_desc),
-                        onConfirm = { finish() },
-                        onClose = {}
-                    ),
-                    colorScheme = options.colorScheme
-                )
-                return
-            }
-
-            finish()
+        if (wx.canGoBack()) {
+            wx.goBack()
+            return
         }
+
+        if (options.config.exitConfirm) {
+            confirm(
+                confirmData = ConfirmData(
+                    title = getString(R.string.exit),
+                    description = getString(R.string.exit_desc),
+                    onConfirm = { exit(options) },
+                    onClose = {}
+                ),
+                colorScheme = options.colorScheme
+            )
+            return
+        }
+
+        exit(options)
     }
 
     @CallSuper
@@ -335,6 +340,17 @@ open class WXActivity : ComponentActivity() {
                 }
 
             this.startActivity(intent)
+        }
+
+        internal fun Activity.exit(options: WebUIOptions) {
+            if (!options.forceKillWebUIProcess) {
+                finish()
+                return
+            }
+
+            finish()
+            Process.killProcess(Process.myPid())
+            exitProcess(0)
         }
 
         /**
