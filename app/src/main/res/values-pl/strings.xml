@@ -126,4 +126,6 @@
     <string name="latest_commit_id">Najnowsze ID zatwierdzenia</string>
     <string name="build_tools_version">Wersja narzędzi budowania</string>
     <string name="compile_sdk">Kompilacja SDK</string>
+    <string name="settings_force_kill_webui_process">Wymuś zamknięcie procesu WebUI</string>
+    <string name="settings_force_kill_webui_process_desc">Natychmiastowo zatrzymuje aktualnie działający proces WebUI X. [bold]Nie ma to wpływu na KSU WebUI.[/bold]</string>
 </resources>
