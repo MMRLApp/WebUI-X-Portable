@@ -1,6 +1,12 @@
 package com.dergoogler.mmrl.wx.ui.screens
 
 import android.util.Log
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -15,7 +21,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -24,20 +29,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isRoot
+import androidx.navigation.NavBackStackEntry
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.App.Companion.TAG
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.service.PlatformService
-import com.dergoogler.mmrl.wx.ui.navigation.MainRoute
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesRoute
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsRoute
-import com.dergoogler.mmrl.wx.util.navigatePopUpTo
+import com.dergoogler.mmrl.wx.ui.navigation.MainDestination
+import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
+import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 
 @Composable
 fun MainScreen() {
@@ -46,17 +49,6 @@ fun MainScreen() {
 
     val navController = LocalNavController.current
     val snackbarHostState = remember { SnackbarHostState() }
-
-    val isRoot = userPreferences.workingMode.isRoot && PlatformManager.isAlive
-
-    val mainScreens by remember(isRoot) {
-        derivedStateOf {
-            return@derivedStateOf listOf(
-                MainRoute.Modules,
-                MainRoute.Settings
-            )
-        }
-    }
 
     LaunchedEffect(Unit) {
         val platform = userPreferences.workingMode.toPlatform()
@@ -73,29 +65,29 @@ fun MainScreen() {
 
     Scaffold(
         bottomBar = {
-            BottomNav(mainScreens)
+            BottomNav()
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets.none
     ) { paddingValues ->
-        NavHost(
+        DestinationsNavHost(
             modifier = Modifier.padding(bottom = paddingValues.calculateBottomPadding()),
+            navGraph = NavGraphs.root,
             navController = navController,
-            startDestination = MainRoute.Modules
-        ) {
-            modulesRoute()
-            settingsRoute()
-        }
+            defaultTransitions = object : NavHostAnimatedDestinationStyle() {
+                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition
+                    get() = { fadeIn(animationSpec = tween(340)) }
+                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition
+                    get() = { fadeOut(animationSpec = tween(340)) }
+            }
+        )
     }
 }
 
 @Composable
-private fun BottomNav(
-    mainScreens: List<MainRoute>,
-) {
+private fun BottomNav() {
     val navController = LocalNavController.current
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
+    val navigator = LocalDestinationsNavigator.current
 
     NavigationBar(
         modifier = Modifier
@@ -107,15 +99,14 @@ private fun BottomNav(
                 )
             )
     ) {
-        mainScreens.forEach { screen ->
-            val selected =
-                currentDestination?.hierarchy?.any { it.route == screen::class.java.name } == true
+        MainDestination.entries.forEach { screen ->
+            val isSelected by navController.isRouteOnBackStackAsState(screen.direction)
 
             NavigationBarItem(
                 icon = {
                     Icon(
                         painter = painterResource(
-                            id = if (selected) {
+                            id = if (isSelected) {
                                 screen.iconFilled
                             } else {
                                 screen.icon
@@ -131,13 +122,19 @@ private fun BottomNav(
                     )
                 },
                 alwaysShowLabel = true,
-                selected = selected,
+                selected = isSelected,
                 onClick = {
-                    if (selected) return@NavigationBarItem
+                    if (isSelected) {
+                        navigator.popBackStack(screen.direction, false)
+                    }
 
-                    navController.navigatePopUpTo(
-                        route = screen,
-                    )
+                    navigator.navigate(screen.direction) {
+                        popUpTo(NavGraphs.root) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                 }
             )
         }

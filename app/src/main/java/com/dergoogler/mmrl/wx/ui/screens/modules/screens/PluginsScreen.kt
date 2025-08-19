@@ -72,6 +72,8 @@ import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import com.dergoogler.mmrl.wx.R
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import kotlinx.coroutines.launch
 
 private val Context.dexTypeList: List<RadioDialogItem<DexSourceType>>
@@ -88,6 +90,7 @@ private val Context.dexTypeList: List<RadioDialogItem<DexSourceType>>
         ),
     )
 
+@Destination<RootGraph>()
 @Composable
 fun PluginsScreen(module: LocalModule) {
     val navController = LocalNavController.current

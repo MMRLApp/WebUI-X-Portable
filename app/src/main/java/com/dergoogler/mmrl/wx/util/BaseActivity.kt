@@ -13,16 +13,18 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
-import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.platform.Platform.Companion.getPlatform
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.ui.theme.MMRLAppTheme
 import com.dergoogler.mmrl.wx.App.Companion.TAG
+import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.service.PlatformService
+import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -68,6 +70,7 @@ fun BaseActivity.setBaseContent(
     val settings = hiltViewModel<SettingsViewModel>()
 
     val navController = rememberNavController()
+    val navigator = navController.rememberDestinationsNavigator()
 
     val preferences = if (userPreferences == null) {
         return@setContent
@@ -82,7 +85,8 @@ fun BaseActivity.setBaseContent(
         providerValues = arrayOf(
             LocalUserPreferences provides preferences,
             LocalNavController provides navController,
-            LocalSettings provides settings
+            LocalSettings provides settings,
+            LocalDestinationsNavigator provides navigator
         ),
         content = content
     )

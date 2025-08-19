@@ -30,13 +30,12 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
-import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.webUiConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesRoute
-import com.dergoogler.mmrl.wx.util.navigateSingleTopTo
+import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 
 @Composable
 fun ModulesList(
@@ -78,7 +77,7 @@ fun ModuleItem(
     isProviderAlive: Boolean,
 ) {
     val context = LocalContext.current
-    val navController = LocalNavController.current
+    val navigator = LocalDestinationsNavigator.current
 
     ModuleItem(
         module = module,
@@ -92,7 +91,7 @@ fun ModuleItem(
         leadingButton = {
             ConfigButton(
                 onClick = {
-                    navController.navigateSingleTopTo(ModulesRoute.Config(module.id.toString()))
+                    navigator.navigate(ConfigEditorScreenDestination(module))
                 },
                 enabled = module.state != State.REMOVE
             )

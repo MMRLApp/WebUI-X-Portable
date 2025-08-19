@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ui.component.listItem.dsl.ListItemScope
 import com.dergoogler.mmrl.ui.component.listItem.dsl.ListItemSlot
@@ -16,35 +15,24 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
-import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.ramcosta.composedestinations.spec.Direction
+
 
 @Composable
-internal fun ListScope.NavButton(
-    route: String,
-    @DrawableRes icon: Int? = null,
-    @StringRes title: Int,
-    @StringRes desc: Int? = null,
-) = NavButton<String>(
-    route = route,
-    icon = icon,
-    title = title,
-    desc = desc
-)
-
-@Composable
-internal fun <T : Any> ListScope.NavButton(
+internal fun <T : Direction> ListScope.NavButton(
     route: T,
     @DrawableRes icon: Int? = null,
     @StringRes title: Int,
     @StringRes desc: Int? = null,
 ) {
-    val navController = LocalNavController.current
+    val navigator = LocalDestinationsNavigator.current
 
     ButtonItem(
         onClick = {
-            navController.navigateSingleTopTo(route)
+            navigator.navigate(route)
         },
         content = {
             icon.nullable {

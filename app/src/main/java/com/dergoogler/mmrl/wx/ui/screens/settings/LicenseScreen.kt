@@ -2,7 +2,6 @@ package com.dergoogler.mmrl.wx.ui.screens.settings
 
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -36,7 +35,10 @@ import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.license.UiLicense
 import com.dergoogler.mmrl.wx.viewmodel.LicenseViewModel
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 
+@Destination<RootGraph>()
 @Composable
 fun LicensesScreen(
     viewModel: LicenseViewModel = hiltViewModel(),

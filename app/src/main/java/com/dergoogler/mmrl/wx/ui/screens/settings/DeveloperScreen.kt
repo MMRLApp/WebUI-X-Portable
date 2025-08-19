@@ -46,7 +46,10 @@ import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 
+@Destination<RootGraph>()
 @Composable
 fun DeveloperScreen() {
     val userPreferences = LocalUserPreferences.current

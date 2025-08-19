@@ -32,13 +32,16 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
-import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.ui.component.SearchTopBar
 import com.dergoogler.mmrl.ui.component.text.TextRow
+import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
+@Destination<RootGraph>(start = true)
 @Composable
 fun ModulesScreen(
     viewModel: ModulesViewModel = hiltViewModel(),

@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.shareText
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -41,12 +40,14 @@ import com.dergoogler.mmrl.ui.component.listItem.ListHeader
 import com.dergoogler.mmrl.ui.component.listItem.ListItemDefaults
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
-import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.MutableConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesRoute
+import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.PluginsScreenDestination
 import kotlinx.coroutines.launch
 
 
@@ -62,10 +63,10 @@ private val Context.interceptorList: List<RadioOptionItem<String?>>
         ),
     )
 
-
+@Destination<RootGraph>()
 @Composable
 fun ConfigEditorScreen(module: LocalModule) {
-    val navController = LocalNavController.current
+    val navigator = LocalDestinationsNavigator.current
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val modId = module.id
@@ -133,7 +134,7 @@ fun ConfigEditorScreen(module: LocalModule) {
             NavigateUpTopBar(
                 title = "Config",
                 subtitle = module.name,
-                onBack = { navController.popBackStack() },
+                onBack = { navigator.popBackStack() },
                 actions = {
                     IconButton(
                         onClick = {
@@ -201,7 +202,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 title = stringResource(R.string.plugins),
                 desc = stringResource(R.string.plugins_desc),
                 onClick = {
-                    navController.navigateSingleTopTo(ModulesRoute.Plugins(module.id.toString()))
+                    navigator.navigate(PluginsScreenDestination(module))
                 }
             )
 

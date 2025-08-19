@@ -3,25 +3,26 @@ package com.dergoogler.mmrl.wx.ui.navigation
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.dergoogler.mmrl.wx.R
-import kotlinx.serialization.Serializable
+import com.ramcosta.composedestinations.generated.destinations.ModulesScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
+import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 
-@Serializable
-sealed class MainRoute(
+enum class MainDestination(
+    val direction: DirectionDestinationSpec,
     @StringRes val label: Int,
     @DrawableRes val icon: Int,
     @DrawableRes val iconFilled: Int,
 ) {
-    @Serializable
-    data object Modules : MainRoute(
+    Modules(
+        direction = ModulesScreenDestination,
         label = R.string.modules,
         icon = R.drawable.stack_2,
         iconFilled = R.drawable.stack_2_filled
-    )
-
-    @Serializable
-    data object Settings : MainRoute(
+    ),
+    Settings(
+        direction = SettingsScreenDestination,
         label = R.string.settings,
         icon = R.drawable.settings,
         iconFilled = R.drawable.settings_filled
-    )
+    ),
 }

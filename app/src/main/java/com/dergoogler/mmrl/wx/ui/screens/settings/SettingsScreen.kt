@@ -32,10 +32,15 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.FeaturedManager
 import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavButton
-import com.dergoogler.mmrl.wx.ui.navigation.graphs.SettingsRoute
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AppThemeScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.DeveloperScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.LicensesScreenDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Destination<RootGraph>()
 @Composable
 fun SettingsScreen() {
     val userPreferences = LocalUserPreferences.current
@@ -63,7 +68,7 @@ fun SettingsScreen() {
                 title = stringResource(R.string.general)
             ) {
                 NavButton(
-                    route = SettingsRoute.AppTheme,
+                    route = AppThemeScreenDestination,
                     icon = R.drawable.color_swatch,
                     title = R.string.settings_app_theme,
                     desc = R.string.settings_app_theme_desc
@@ -136,7 +141,7 @@ fun SettingsScreen() {
                 }
 
                 NavButton(
-                    route = SettingsRoute.Developer,
+                    route = DeveloperScreenDestination,
                     icon = R.drawable.bug,
                     title = R.string.developer,
                 )
@@ -153,7 +158,7 @@ fun SettingsScreen() {
                 )
 
                 NavButton(
-                    route = SettingsRoute.Licenses,
+                    route = LicensesScreenDestination,
                     icon = R.drawable.license,
                     title = R.string.setting_licenses,
                     desc = R.string.setting_licenses_desc

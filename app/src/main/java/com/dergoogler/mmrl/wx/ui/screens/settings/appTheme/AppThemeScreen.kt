@@ -14,17 +14,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.DarkModeItem
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.ExampleItem
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.ThemePaletteItem
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.TitleItem
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 
+@Destination<RootGraph>()
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppThemeScreen() {
