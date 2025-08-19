@@ -3,7 +3,7 @@ package com.dergoogler.mmrl.wx.ui.activity.webui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.view.ViewGroup.MarginLayoutParams
+import android.view.ViewGroup
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -12,9 +12,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
+import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
+import com.dergoogler.mmrl.ui.component.dialog.confirm
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.createLoadingRenderer
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WebUIView
@@ -24,11 +28,14 @@ import com.dergoogler.mmrl.wx.util.BaseActivity
 import com.dergoogler.mmrl.wx.util.initPlatform
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @SuppressLint("SetJavaScriptEnabled")
 @AndroidEntryPoint
 class KsuWebUIActivity : BaseActivity() {
+    val modId get() = intent.getModId() ?: throw BrickException("Invalid Module ID")
+    val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Enable edge to edge
@@ -39,11 +46,43 @@ class KsuWebUIActivity : BaseActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val userPrefs = runBlocking { userPreferencesRepository.data.first() }
+        val colorScheme = userPrefs.colorScheme(this)
+        val loading = createLoadingRenderer(colorScheme)
+        setContentView(loading)
 
-        initPlatform(userPrefs)
+        lifecycleScope.launch {
+            val ready = initPlatform(
+                context = this@KsuWebUIActivity,
+                platform = userPrefs.workingMode.toPlatform(),
+                scope = this
+            )
 
-        val modId = intent.getModId() ?: throw BrickException("Invalid Module ID")
+            if (ready.await()) {
+                init()
+                return@launch
+            }
+
+            confirm(
+                ConfirmData(
+                    title = "Failed!",
+                    description = "Failed to initialize platform. Please try again.",
+                    confirmText = "Close",
+                    onConfirm = {
+                        finish()
+                    },
+                ),
+                colorScheme = colorScheme
+            )
+        }
+
+    }
+
+    private fun init() {
+        val options = WebUIOptions(
+            modId = modId,
+            debug = userPrefs.developerMode,
+            context = this,
+        )
 
         val webViewClient = object : WebViewClient() {
             val assetLoader = wxAssetLoader(
@@ -60,16 +99,10 @@ class KsuWebUIActivity : BaseActivity() {
             }
         }
 
-        val options = WebUIOptions(
-            modId = modId,
-            debug = userPrefs.developerMode,
-            context = this,
-        )
-
         val webView = WebUIView(options).apply {
             ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
                 val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                view.updateLayoutParams<MarginLayoutParams> {
+                view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     leftMargin = inset.left
                     rightMargin = inset.right
                     topMargin = inset.top

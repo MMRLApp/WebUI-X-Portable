@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
+import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.platform.model.ModId
@@ -37,6 +38,8 @@ import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.webui.view.WebUIXView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Base activity class for displaying web content using [WXView].
@@ -63,24 +66,7 @@ import com.dergoogler.mmrl.webui.view.WebUIXView
 open class WXActivity : ComponentActivity() {
     private var isKeyboardShowing by mutableStateOf(false)
     private lateinit var rootView: View
-    private var mView: WebUIXView? = null
-    private var mOptions: WebUIOptions? = null
-
-    var view
-        get() = checkNotNull(mView) {
-            "mView cannot be null"
-        }
-        set(value) {
-            mView = value
-        }
-
-    var options
-        get() = checkNotNull(mOptions) {
-            "mOptions cannot be null"
-        }
-        set(value) {
-            mOptions = value
-        }
+    var view: WebUIXView? = null
 
     /**
      * Lazily initializes the [ModId] from the intent extras.
@@ -121,16 +107,17 @@ open class WXActivity : ComponentActivity() {
     }
 
     /**
-     * Called when the activity is ready to render its content.
+     * Called to render the initial UI of the activity.
      *
-     * This method is responsible for initializing the `rootView` by finding it in the layout.
-     * Subclasses can override this method to perform additional setup before the UI is displayed.
+     * This function is invoked within a [CoroutineScope] during the `onCreate` lifecycle method.
+     * Subclasses should override this method to set up their specific UI elements,
+     * such as initializing and adding the [WXView] to the layout.
      *
-     * @param savedInstanceState If the activity is being re-initialized after
-     *     previously being shut down then this Bundle contains the data it most
-     *     recently supplied in [onSaveInstanceState].  **Note: Otherwise it is null.**
+     * The base implementation initializes `rootView` by finding the content view of the activity.
+     *
+     * @param scope The [CoroutineScope] in which this function is executed, typically the activity's `lifecycleScope`.
      */
-    open fun onRender(savedInstanceState: Bundle?) {
+    open suspend fun onRender(scope: CoroutineScope) {
         rootView = findViewById(android.R.id.content)
     }
 
@@ -140,33 +127,35 @@ open class WXActivity : ComponentActivity() {
 
         modId = intent.getModId()
 
-        onRender(savedInstanceState)
-        registerBackEvents()
+        lifecycleScope.launch {
+            onRender(this)
+            registerBackEvents()
 
-        config {
-            if (windowResize) {
-                rootView.viewTreeObserver.addOnGlobalLayoutListener {
-                    val r = Rect()
-                    rootView.getWindowVisibleDisplayFrame(r)
+            config {
+                if (windowResize) {
+                    rootView.viewTreeObserver.addOnGlobalLayoutListener {
+                        val r = Rect()
+                        rootView.getWindowVisibleDisplayFrame(r)
 
-                    val screenHeight = rootView.rootView.height
-                    val keypadHeight = screenHeight - r.bottom
-                    val keyboardVisibleNow = keypadHeight > screenHeight * 0.15
+                        val screenHeight = rootView.rootView.height
+                        val keypadHeight = screenHeight - r.bottom
+                        val keyboardVisibleNow = keypadHeight > screenHeight * 0.15
 
-                    if (keyboardVisibleNow != isKeyboardShowing) {
-                        isKeyboardShowing = keyboardVisibleNow
+                        if (keyboardVisibleNow != isKeyboardShowing) {
+                            isKeyboardShowing = keyboardVisibleNow
 
-                        view.wx.postWXEvent(
-                            WXEventHandler(
-                                WXEvent.WX_ON_KEYBOARD,
-                                WXKeyboardEventData(visible = keyboardVisibleNow)
+                            view?.wx?.postWXEvent(
+                                WXEventHandler(
+                                    WXEvent.WX_ON_KEYBOARD,
+                                    WXKeyboardEventData(visible = keyboardVisibleNow)
+                                )
                             )
-                        )
 
-                        if (keyboardVisibleNow) {
-                            adjustWebViewHeight(keypadHeight)
-                        } else {
-                            resetWebViewHeight()
+                            if (keyboardVisibleNow) {
+                                adjustWebViewHeight(keypadHeight)
+                            } else {
+                                resetWebViewHeight()
+                            }
                         }
                     }
                 }
@@ -175,63 +164,67 @@ open class WXActivity : ComponentActivity() {
     }
 
     private fun adjustWebViewHeight(keypadHeight: Int) {
-        val params = view.layoutParams
-        params.height = rootView.height - keypadHeight
-        view.layoutParams = params
+        val params = view?.layoutParams
+        params?.height = rootView.height - keypadHeight
+        view?.layoutParams = params
     }
 
     private fun resetWebViewHeight() {
-        val params = view.layoutParams
-        params.height = LinearLayout.LayoutParams.MATCH_PARENT
-        view.layoutParams = params
+        val params = view?.layoutParams
+        params?.height = LinearLayout.LayoutParams.MATCH_PARENT
+        view?.layoutParams = params
     }
 
     private fun registerBackEvents() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val backHandler = options.config.backHandler
-                val interceptor = options.config.backInterceptor
+                view.nullply {
+                    val backHandler = options.config.backHandler
+                    val interceptor = options.config.backInterceptor
 
-                if (backHandler != true) {
-                    handleNativeBack()
-                    return
-                }
+                    if (backHandler != true) {
+                        handleNativeBack()
+                        return
+                    }
 
-                when (interceptor) {
-                    "native" -> handleNativeBack()
-                    "javascript" -> view.wx.postWXEvent(
-                        WXEventHandler(WXEvent.WX_ON_BACK, null)
-                    )
+                    when (interceptor) {
+                        "native" -> handleNativeBack()
+                        "javascript" -> wx.postWXEvent(
+                            WXEventHandler(WXEvent.WX_ON_BACK, null)
+                        )
 
-                    true -> handleNativeBack()
-                    null -> handleNativeBack()
-                    false -> finish()
-                    else -> finish()
+                        true -> handleNativeBack()
+                        null -> handleNativeBack()
+                        false -> finish()
+                        else -> finish()
+                    }
                 }
             }
         })
     }
 
     private fun handleNativeBack() {
-        if (view.wx.canGoBack()) {
-            view.wx.goBack()
-            return
-        }
+        view.nullply {
+            if (wx.canGoBack()) {
+                wx.goBack()
+                return
+            }
 
-        if (options.config.exitConfirm) {
-            confirm(
-                confirmData = ConfirmData(
-                    title = getString(R.string.exit),
-                    description = getString(R.string.exit_desc),
-                    onConfirm = { finish() },
-                    onClose = {}
-                ),
-                colorScheme = options.colorScheme
-            )
-            return
-        }
+            if (options.config.exitConfirm) {
+                confirm(
+                    confirmData = ConfirmData(
+                        title = getString(R.string.exit),
+                        description = getString(R.string.exit_desc),
+                        onConfirm = { finish() },
+                        onClose = {}
+                    ),
+                    colorScheme = options.colorScheme
+                )
+                return
+            }
 
-        finish()
+            finish()
+        }
     }
 
     @CallSuper
@@ -241,15 +234,13 @@ open class WXActivity : ComponentActivity() {
         data: Intent?,
     ) {
         super.onActivityResult(requestCode, resultCode, data)
-        view.wx.onActivityResult(requestCode, resultCode, data)
+        view?.wx?.onActivityResult(requestCode, resultCode, data)
     }
 
     @CallSuper
     override fun onDestroy() {
-        with(view.wx) {
-            onActivityDestroyInterfaces()
-            // leave it commented out to prevent crashes
-            // destroy()
+        view.nullply {
+            wx.onActivityDestroyInterfaces()
         }
 
         super.onDestroy()
@@ -257,11 +248,11 @@ open class WXActivity : ComponentActivity() {
 
     @CallSuper
     override fun onResume() {
-        with(view.wx) {
-            this.onResume()
-            resumeTimers()
-            postWXEvent(WXEvent.WX_ON_RESUME)
-            onActivityResumeInterfaces()
+        view.nullply {
+            wx.onResume()
+            wx.resumeTimers()
+            wx.postWXEvent(WXEvent.WX_ON_RESUME)
+            wx.onActivityResumeInterfaces()
         }
 
         super.onResume()
@@ -269,11 +260,11 @@ open class WXActivity : ComponentActivity() {
 
     @CallSuper
     override fun onPause() {
-        with(view.wx) {
-            this.onPause()
-            pauseTimers()
-            postWXEvent(WXEvent.WX_ON_PAUSE)
-            onActivityPauseInterfaces()
+        view.nullply {
+            wx.onPause()
+            wx.pauseTimers()
+            wx.postWXEvent(WXEvent.WX_ON_PAUSE)
+            wx.onActivityPauseInterfaces()
         }
 
         super.onPause()
@@ -281,40 +272,12 @@ open class WXActivity : ComponentActivity() {
 
     @CallSuper
     override fun onStop() {
-        with(view.wx) {
-            onActivityStopInterfaces()
+        view.nullply {
+            wx.onActivityStopInterfaces()
         }
 
         super.onStop()
-
     }
-
-    /**
-     * Creates and returns a [View] to be used as a loading indicator.
-     *
-     * This function constructs a [FrameLayout] that fills its parent.
-     * It sets the background color based on the `options.colorScheme.background`.
-     * Inside the [FrameLayout], a [ProgressBar] is added and centered.
-     * The indeterminate drawable of the [ProgressBar] is tinted with the `options.colorScheme.primary` color.
-     *
-     * @return A [View] instance representing the loading indicator.
-     */
-    protected fun createLoadingRenderer(colorScheme: ColorScheme = options.colorScheme): View =
-        FrameLayout(baseContext).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            setBackgroundColor(colorScheme.background.toArgb())
-            addView(ProgressBar(context).apply {
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    Gravity.CENTER
-                )
-                indeterminateDrawable.setTint(colorScheme.primary.toArgb())
-            })
-        }
 
     /**
      * Sets the title of the activity in the recent apps list.
@@ -403,5 +366,32 @@ open class WXActivity : ComponentActivity() {
 
             this.startActivity(intent)
         }
+
+        /**
+         * Creates and returns a [View] to be used as a loading indicator.
+         *
+         * This function constructs a [FrameLayout] that fills its parent.
+         * It sets the background color based on the `options.colorScheme.background`.
+         * Inside the [FrameLayout], a [ProgressBar] is added and centered.
+         * The indeterminate drawable of the [ProgressBar] is tinted with the `options.colorScheme.primary` color.
+         *
+         * @return A [View] instance representing the loading indicator.
+         */
+        fun ComponentActivity.createLoadingRenderer(colorScheme: ColorScheme): View =
+            FrameLayout(baseContext).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                setBackgroundColor(colorScheme.background.toArgb())
+                addView(ProgressBar(context).apply {
+                    layoutParams = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        Gravity.CENTER
+                    )
+                    indeterminateDrawable.setTint(colorScheme.primary.toArgb())
+                })
+            }
     }
 }

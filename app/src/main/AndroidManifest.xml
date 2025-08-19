@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <uses-permission
@@ -69,6 +70,7 @@
             android:exported="true"
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"
+            android:process="${webuiPermissionId}.process.webuix"
             android:taskAffinity="${applicationId}.WEBUI_X">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -83,6 +85,7 @@
             android:exported="true"
             android:label="WebUI Legacy"
             android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
+            android:process="${webuiPermissionId}.process.webui"
             android:taskAffinity="${applicationId}.KSU_WEBUI">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
