@@ -53,26 +53,28 @@ data class JavaScriptInterface<T : WXInterface>(
         val modId = wxOptions.options.modId
         val context = wxOptions.options.context
 
-        try {
-            for (sharedObject in sharedObjects) {
-                val sharedObjectFile = SuFile(modId.webrootDir, sharedObject)
-                val name = "${sharedObjectFile.nameWithoutExtension}_$modId.so"
-                val sharedObjectDestinationFile =
-                    SuFile(context.applicationInfo.nativeLibraryDir, name)
+        if (wxOptions.options.pluginsEnabled) {
+            try {
+                for (sharedObject in sharedObjects) {
+                    val sharedObjectFile = SuFile(modId.webrootDir, sharedObject)
+                    val name = "${sharedObjectFile.nameWithoutExtension}_$modId.so"
+                    val sharedObjectDestinationFile =
+                        SuFile(context.applicationInfo.nativeLibraryDir, name)
 
-                if (!sharedObjectFile.exists()) continue
+                    if (!sharedObjectFile.exists()) continue
 
-                val uid = Process.myUid()
+                    val uid = Process.myUid()
 
-                sharedObjectFile.setOwner(uid, uid)
-                sharedObjectFile.setPermissions(SuFilePermissions.PERMISSION_755)
-                sharedObjectFile.copyTo(sharedObjectDestinationFile, overwrite = true)
+                    sharedObjectFile.setOwner(uid, uid)
+                    sharedObjectFile.setPermissions(SuFilePermissions.PERMISSION_755)
+                    sharedObjectFile.copyTo(sharedObjectDestinationFile, overwrite = true)
 
-                val libName = name.substringBeforeLast(".").replace(Regex("^lib"), "")
-                Native.register(newInstance.javaClass, libName)
+                    val libName = name.substringBeforeLast(".").replace(Regex("^lib"), "")
+                    Native.register(newInstance.javaClass, libName)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error copying shared objects", e)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error copying shared objects", e)
         }
 
         return Instance((newInstance as WXInterface))
