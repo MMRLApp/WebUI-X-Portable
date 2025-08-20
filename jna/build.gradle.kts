@@ -10,8 +10,12 @@ android {
         minSdk = 26
     }
 
+    publishing {
+        singleVariant("release")
+    }
+
     buildTypes {
-        release { 
+        release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
