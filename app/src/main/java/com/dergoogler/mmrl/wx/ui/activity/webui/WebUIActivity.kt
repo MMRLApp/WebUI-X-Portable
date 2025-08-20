@@ -90,6 +90,7 @@ class WebUIActivity : WXActivity() {
             autoOpenEruda = userPrefs.enableAutoOpenEruda,
             debugDomain = userPrefs.webUiDevUrl,
             userAgentString = userAgent,
+            pluginsEnabled = true,
             isDarkMode = userPrefs.isDarkMode(),
             colorScheme = colorScheme,
             cls = WebUIActivity::class.java

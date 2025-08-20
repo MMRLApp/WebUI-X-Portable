@@ -184,7 +184,7 @@ open class WXView(
         addJavascriptInterface<PackageManagerInterface>()
         addJavascriptInterface<IntentInterface>()
 
-        if (options.config.dexFiles.isNotEmpty()) {
+        if (options.pluginsEnabled && options.config.dexFiles.isNotEmpty()) {
             for (dexFile in options.config.dexFiles) {
                 val interfaceObj = dexFile.getInterface(context, options.modId)
                 if (interfaceObj != null) {

@@ -81,6 +81,7 @@ class KsuWebUIActivity : BaseActivity() {
         val options = WebUIOptions(
             modId = modId,
             debug = userPrefs.developerMode,
+            pluginsEnabled = false,
             context = this,
         )
 

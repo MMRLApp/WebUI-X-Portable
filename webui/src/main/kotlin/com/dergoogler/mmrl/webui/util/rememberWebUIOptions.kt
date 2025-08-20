@@ -74,6 +74,7 @@ data class WebUIOptions(
     val onUnsafeDomainRequest: ((Uri) -> Unit)? = null,
     val isDarkMode: Boolean = false,
     val forceKillWebUIProcess: Boolean = false,
+    val pluginsEnabled: Boolean = false,
     val userAgentString: String = "DON'T TRACK ME DOWN MOTHERFUCKER!",
     val colorScheme: ColorScheme = context.getColorScheme(id = 0, darkMode = isDarkMode),
     val client: ((WebUIOptions, Insets, assetHandlers: List<Pair<String, PathHandler>>) -> WXClient)? = null,
