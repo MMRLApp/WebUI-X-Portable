@@ -120,7 +120,10 @@
     <string name="webui_config_caching_max_age_desc">キャッシュされたリソースが更新される前に有効であるとみなされる最大保存時間 (秒単位) を設定します。</string>
     <string name="setting_about">アプリについて</string>
     <string name="setting_licenses">ライセンス</string>
-    <string name="setting_licenses_desc">オープンソースライセンスを表示します</string>
+    <string name="setting_licenses_desc">オープンソースライセンスを表示します。</string>
     <string name="license_title">ライセンス</string>
     <string name="settings_documentation">API ドキュメント</string>
+    <string name="latest_commit_id">最新のコミット ID</string>
+    <string name="build_tools_version">ビルドツールのバージョン</string>
+    <string name="compile_sdk">コンパイル SDK</string>
 </resources>
