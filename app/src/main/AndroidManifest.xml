@@ -32,16 +32,16 @@
         android:protectionLevel="dangerous" />
 
     <permission
-        android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="${__packageName__}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature"
         tools:node="remove" />
 
     <uses-permission
-        android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+        android:name="${__packageName__}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         tools:node="remove" />
 
     <application
-        android:name=".App"
+        android:name="${__packageName__}.App"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="false"
@@ -53,7 +53,7 @@
         android:theme="@style/AppTheme"
         tools:targetApi="33">
         <activity
-            android:name=".ui.activity.MainActivity"
+            android:name="${__packageName__}.ui.activity.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
@@ -64,14 +64,14 @@
         </activity>
 
         <activity
-            android:name=".ui.activity.webui.WebUIActivity"
+            android:name="${__packageName__}.ui.activity.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="true"
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"
             android:process="${webuiPermissionId}.process.webuix"
-            android:taskAffinity="${applicationId}.WEBUI_X">
+            android:taskAffinity="${__packageName__}.WEBUI_X">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -79,14 +79,14 @@
         </activity>
 
         <activity
-            android:name=".ui.activity.webui.KsuWebUIActivity"
+            android:name="${__packageName__}.ui.activity.webui.KsuWebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="true"
             android:label="WebUI Legacy"
             android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
             android:process="${webuiPermissionId}.process.webui"
-            android:taskAffinity="${applicationId}.KSU_WEBUI">
+            android:taskAffinity="${__packageName__}.KSU_WEBUI">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -94,7 +94,7 @@
         </activity>
 
         <service
-            android:name=".util.NonRootService"
+            android:name="${__packageName__}.util.NonRootService"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BIND_AUTO_CREATE">
@@ -104,13 +104,13 @@
         </service>
 
         <service
-            android:name=".service.PlatformService"
+            android:name="${__packageName__}.service.PlatformService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="${__packageName__}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

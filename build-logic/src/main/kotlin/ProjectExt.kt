@@ -42,6 +42,25 @@ fun Project.generateRandomName(minLength: Int = 5, maxLength: Int = 12): String 
         .joinToString("")
 }
 
+fun Project.generateRandomPackageName(
+    segments: Int = 3,
+    minLength: Int = 5,
+    maxLength: Int = 20
+): String {
+    val letters = "abcdefghijklmnopqrstuvwxyz"
+    val lettersAndDigits = "abcdefghijklmnopqrstuvwxyz0123456789"
+    val random = SecureRandom()
+
+    return (1..segments).joinToString(".") {
+        val length = random.nextInt(maxLength - minLength + 1) + minLength
+        val firstChar = letters[random.nextInt(letters.length)] // must start with a letter
+        val rest = (1 until length)
+            .map { lettersAndDigits[random.nextInt(lettersAndDigits.length)] }
+            .joinToString("")
+        firstChar + rest
+    }
+}
+
 
 private fun signingProperties(rootDir: File): Properties {
     val properties = Properties()

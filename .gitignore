@@ -18,6 +18,7 @@ app/beta/*
 app/alpha/*
 app/debugMin/*
 app/playstore/*
+app/spoofed/*
 .externalNativeBuild/
 .cxx/
 

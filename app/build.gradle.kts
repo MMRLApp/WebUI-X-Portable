@@ -12,9 +12,10 @@ plugins {
 
 val baseAppName = "WebUI X"
 val mmrlBaseApplicationId = "com.dergoogler.mmrl"
+val basePackageName = "$mmrlBaseApplicationId.wx"
 
 android {
-    namespace = "$mmrlBaseApplicationId.wx"
+    namespace = basePackageName
     compileSdk = 36
 
     defaultConfig {
@@ -79,29 +80,13 @@ android {
             versionNameSuffix = "-playstore"
         }
 
-        create("releaseCandidate") {
-            initWith(buildTypes.getByName("release"))
-            matchingFallbacks += listOf("debug", "release")
-            versionNameSuffix = "-rc"
-        }
-
-        create("beta") {
-            initWith(buildTypes.getByName("release"))
-            matchingFallbacks += listOf("debug", "release")
-            versionNameSuffix = "-beta"
-        }
-
         create("spoofed") {
             initWith(buildTypes.getByName("release"))
             resValue("string", "app_name", generateRandomName())
             matchingFallbacks += listOf("debug", "release")
             versionNameSuffix = "-spoofed"
-        }
 
-        create("alpha") {
-            initWith(buildTypes.getByName("release"))
-            matchingFallbacks += listOf("debug", "release")
-            versionNameSuffix = "-alpha"
+            defaultConfig.applicationId = generateRandomPackageName()
         }
 
         debug {
@@ -137,6 +122,8 @@ android {
             buildConfigField("String", "BUILD_TOOLS_VERSION", "\"${BUILD_TOOLS_VERSION}\"")
             buildConfigField("String", "MIN_SDK", "\"$MIN_SDK\"")
             buildConfigField("String", "LATEST_COMMIT_ID", "\"${commitId}\"")
+
+            manifestPlaceholders["__packageName__"] = basePackageName
         }
     }
 
