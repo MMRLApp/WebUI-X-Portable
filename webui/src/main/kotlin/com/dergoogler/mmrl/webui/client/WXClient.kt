@@ -24,7 +24,6 @@ import com.dergoogler.mmrl.webui.handler.internalPathHandler
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.handler.webrootPathHandler
 import com.dergoogler.mmrl.webui.model.Insets
-import com.dergoogler.mmrl.webui.model.SslErrors
 import com.dergoogler.mmrl.webui.model.WebResourceErrors
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.drawCompose
@@ -97,34 +96,7 @@ open class WXClient : WebViewClient {
         handler: SslErrorHandler,
         error: SslError,
     ) {
-        // Cancel the SSL handshake
-        handler.cancel()
-
-        val errCode = SslErrors.from(error.primaryError)
-
-        mOptions.drawCompose {
-            ErrorScreen(
-                icon = R.drawable.certificate_off,
-                title = getString(R.string.failed_to_open_ssl),
-                description = getString(
-                    R.string.failed_to_open_ssl_desc,
-                    view.url,
-                ),
-                errorCode = errCode?.name ?: "UNDEFINED",
-                onRefresh = {
-                    if (view is WebUIView) {
-                        view.loadDomain()
-                        return@ErrorScreen
-                    }
-
-                    view.reload()
-                },
-                moreInfoText = R.string.proceed,
-                onMoreInfo = {
-                    handler.proceed()
-                }
-            )
-        }
+        handler.proceed()
     }
 
     override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail): Boolean {
