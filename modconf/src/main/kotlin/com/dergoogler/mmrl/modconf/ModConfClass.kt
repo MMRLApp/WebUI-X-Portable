@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.modconf
 import androidx.compose.runtime.Composable
 import com.dergoogler.mmrl.modconf.model.TargetPackage
 import com.dergoogler.mmrl.platform.file.SuFile
-import com.sun.jna.Native
 import java.io.InputStreamReader
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -36,10 +35,6 @@ data class ModConfClass<T : ModConfModule>(
         fun Content() {
             inst.Content()
         }
-
-        fun unregister() {
-            Native.unregister(inst.javaClass)
-        }
     }
 
     fun createNew(kontext: Kontext): Instance {
@@ -55,15 +50,7 @@ data class ModConfClass<T : ModConfModule>(
             constructor.newInstance(kontext)
         }
 
-        val modId = kontext.modId
-
-
-
         return Instance((newInstance as ModConfModule))
-    }
-
-    private companion object {
-        const val TAG = "ModConfClass"
     }
 
     override fun equals(other: Any?): Boolean {
