@@ -101,12 +101,12 @@
         </activity>
 
         <activity
-            android:name="${__packageName__}.ui.activity.webui.KsuWebUIActivity"
+            android:name="${__packageName__}.ui.activity.webui.ModConfActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="true"
-            android:label="WebUI Legacy"
-            android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
+            android:label="ModConf"
+            android:permission="${webuiPermissionId}.permission.MODCONF"
             android:process="${webuiPermissionId}.process.modconf"
             android:taskAffinity="${applicationId}.MODCONF">
             <intent-filter>
