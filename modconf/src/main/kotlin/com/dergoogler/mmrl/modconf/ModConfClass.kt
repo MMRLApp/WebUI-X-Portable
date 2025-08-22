@@ -29,7 +29,8 @@ data class ModConfClass<T : ModConfModule>(
         val onDestroy: () -> Unit = inst::onDestroy
         val onStop: () -> Unit = inst::onStop
         val onPause: () -> Unit = inst::onPause
-        val instance: ModConfModule = inst
+
+        private val instance: ModConfModule = inst
 
         @Composable
         fun Content() {

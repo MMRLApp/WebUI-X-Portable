@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.dergoogler.mmrl.webui"
+    namespace = "com.dergoogler.mmrl.modconf"
     compileSdk = 36
 
     defaultConfig {
