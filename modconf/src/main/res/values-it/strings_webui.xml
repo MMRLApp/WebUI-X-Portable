@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="requireNewVersion_cannot_load_webui">Impossibile caricare WebUI X</string>
+    <string name="requireNewVersion_require_text">versione minima richiesta: %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following">Possibili soluzioni:</string>
+    <string name="requireNewVersion_try_the_following_one">Aggiorna %1$s all\'ultima versione da Google Play o GitHub.</string>
+    <string name="requireNewVersion_try_the_following_two">Contatta lo svilupatore per una possibile alternativa.</string>
+    <string name="requireNewVersion_refresh">Aggiorna</string>
+
+    <string name="confirm">Conferma</string>
+    <string name="cancel">Annulla</string>
+    <string name="says">%1$s dice</string>
+    <string name="title_or_icon_not_found">Titolo o icona non trovata</string>
+    <string name="icon_not_found">Icona non trovata</string>
+    <string name="exit">Esci</string>
+    <string name="exit_desc">Sei sicuro di voler uscire da WebUI?</string>
+    <string name="loading">Caricamento…</string>
+    <string name="unknown_error">Errore sconosciuto</string>
+    <string name="missing_mod_id">ID Modulo mancante</string>
+    <string name="class_not_found">Cannot find defined activity class</string>
+
+    <!-- Shortcut -->
+    <string name="shortcut_already_exists">Collegamento già esistente.</string>
+    <string name="shortcut_creation_requirements_not_met">Impossibile aggiungere il collegamento: Manca il titolo o il file icona.</string>
+    <string name="shortcut_icon_not_found">Impossibile aggiungere il collegamento: file icona non trovato.</string>
+    <string name="shortcut_icon_loading_error">Errore caricamento icona del collegamento.</string>
+    <string name="shortcut_icon_decode_error">Impossibile decodificare l\'icona del collegamento.</string>
+    <string name="pin_shortcut_not_supported">Pinning shortcuts is not supported on this device/launcher.</string>
+    <string name="shortcut_add_request_failed">Impossibile inviare la richiesta di collegamneto al launcher.</string>
+    <string name="shortcut_removed_successfully">Collegamento rimosso/disabilitato correttamente.</string>
+    <string name="shortcut_removed_message">Questo collegamento non è più disponibile.</string>
+    <string name="failed_to_load">Impossibile eseguire il caricamento</string>
+    <string name="failed_to_open_ssl">Impossibile aprire a causa del SSL</string>
+    <string name="check_your_internet_connection">Verifica la tua connessione ad internet</string>
+    <string name="refreshing_the_page">Aggiornamento della pagina</string>
+    <string name="restarting_the_webui_x">Riavvio WebUI X</string>
+    <string name="renderer_crashed">Il processo di rendering del WebView non risponde. Vuoi terminarlo?</string>
+    <string name="refresh">Aggiornamento</string>
+    <string name="more_info">Altre info</string>
+    <string name="failed_to_load_desc">Impossibile caricare [b]%1$s[/b]\nErrore: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">Impossibile caricare [b]%1$s[/b] a causa di un errore SSL</string>
+    <string name="please_try_the_following">Prova quanto segue:</string>
+    <string name="proceed">Procedere</string>
+    
+</resources>

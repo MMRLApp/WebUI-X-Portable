@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">Tidak dapat memuat WebUI</string>
+    <string name="requireNewVersion_try_the_following">Cobalah hal berikut ini:</string>
+    <string name="requireNewVersion_try_the_following_one">Perbarui %1$s ke versi terbaru dari Google Play atau GitHub Releases.</string>
+    <string name="requireNewVersion_try_the_following_two">Hubungi pengembang modul untuk solusi sementara.</string>
+    <string name="requireNewVersion_refresh">Muat ulang</string>
+    <string name="requireNewVersion_require_text">membutuhkan versi %1$s sekurang-kurangnya &gt;=</string>
+</resources>

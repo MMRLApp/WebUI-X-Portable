@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">Impossible de charger l\'interface WebUI X</string>
+    <string name="requireNewVersion_require_text">nécessite au moins %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following">Essayez ce qui suit :</string>
+    <string name="requireNewVersion_try_the_following_two">Contactez le développeur du module pour trouver une solution.</string>
+    <string name="requireNewVersion_refresh">Rafraîchir</string>
+    <string name="requireNewVersion_try_the_following_one">Mettre à jour %1$s vers la dernière version de Google Play ou des GitHub Releases.</string>
+    <string name="icon_not_found">Icône introuvable</string>
+    <string name="exit">Quitter</string>
+    <string name="loading">Chargement…</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="exit_desc">Êtes-vous sûr de vouloir quitter cette WebUI ?</string>
+    <string name="missing_mod_id">ID du module manquant</string>
+    <string name="class_not_found">Impossible de trouver une classe d\'activité définie</string>
+    <string name="shortcut_already_exists">Le raccourci existe déjà.</string>
+    <string name="shortcut_creation_requirements_not_met">Impossible d\'ajouter un raccourci : titre ou fichier d\'icône manquant.</string>
+    <string name="shortcut_icon_not_found">Impossible d\'ajouter un raccourci : fichier d\'icône introuvable.</string>
+    <string name="shortcut_icon_loading_error">Erreur de chargement de l\'icône du raccourci.</string>
+    <string name="shortcut_icon_decode_error">Échec du décodage de l\'icône du raccourci.</string>
+    <string name="pin_shortcut_not_supported">L\'épinglage de raccourcis n\'est pas pris en charge sur cet appareil/lanceur.</string>
+    <string name="shortcut_removed_successfully">Raccourci supprimé/désactivé avec succès.</string>
+    <string name="confirm">Confirmer</string>
+    <string name="shortcut_removed_message">Ce raccourci n\'est plus disponible.</string>
+    <string name="shortcut_add_request_failed">Échec de l\'envoi de la demande de raccourci au lanceur.</string>
+    <string name="cancel">Annuler</string>
+    <string name="title_or_icon_not_found">Titre ou icône introuvable</string>
+    <string name="says">%1$s dit</string>
+</resources>

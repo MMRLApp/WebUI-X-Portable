@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">Nevar ielādēt WebUI</string>
+    <string name="requireNewVersion_require_text">nepieciešams vismaz %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following_one">Atjauniniet %1$s uz jaunāko versiju Google veikalā vai lejupielādējot no GitHub izlaidumu vietnes.</string>
+    <string name="requireNewVersion_try_the_following_two">Lai atrastu iespējamo risinājumu, sazinieties ar moduļa izstrādātāju.</string>
+    <string name="requireNewVersion_refresh">Atsvaidzināt</string>
+    <string name="requireNewVersion_try_the_following">Izmēģiniet sekojošo:</string>
+</resources>

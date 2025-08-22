@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="requireNewVersion_require_text">نیازمند %1$s نگارش &gt;=</string>
+    <string name="requireNewVersion_cannot_load_webui">نمی‌توان رابط کاربری وب را بارگذاری کرد</string>
+    <string name="requireNewVersion_try_the_following">موارد زیر را امتحان کنید:</string>
+    <string name="requireNewVersion_try_the_following_one">%1$s را به آخرین نگارش در گوگل‌پلی یا انتشارهای گیت‌هاب به‌روزرسانی کنید.</string>
+    <string name="requireNewVersion_try_the_following_two">برای پیدا کردن راه‌حل ممکن با توسعه‌دهنده ماژول تماس بگیرید.</string>
+    <string name="requireNewVersion_refresh">تازه‌سازی</string>
+</resources>

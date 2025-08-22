@@ -25,5 +25,6 @@ include(
     ":webui",
     ":helper",
     ":datastore",
-    ":jna"
+    ":jna",
+    ":modconf"
 )

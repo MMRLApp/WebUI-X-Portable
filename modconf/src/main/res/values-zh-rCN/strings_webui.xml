@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- requireNewVersion.html -->
+    <string name="requireNewVersion_cannot_load_webui">无法加载 WebUI X</string>
+    <string name="requireNewVersion_require_text">至少需要 %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following">尝试以下方案：</string>
+    <string name="requireNewVersion_try_the_following_one">从 Google Play 或 GitHub Releases 中更新 %1$s。</string>
+    <string name="requireNewVersion_try_the_following_two">联系模块开发人员寻求可能的解决方法。</string>
+    <string name="requireNewVersion_refresh">刷新</string>
+    <string name="confirm">确认</string>
+    <string name="cancel">取消</string>
+    <string name="says">%1$s 询问</string>
+    <string name="title_or_icon_not_found">没有找到标题或图标</string>
+    <string name="icon_not_found">没有找到图标</string>
+    <string name="exit">退出</string>
+    <string name="exit_desc">你确定要退出这个 WebUI 吗？</string>
+    <string name="loading">加载中 …</string>
+    <string name="unknown_error">未知错误</string>
+    <string name="missing_mod_id">缺少模块 ID</string>
+    <string name="class_not_found">无法找到已定义的 activity 类</string>
+    <!-- Shortcut -->
+    <string name="shortcut_already_exists">快捷方式已存在。</string>
+    <string name="shortcut_creation_requirements_not_met">无法添加快捷方式：缺少标题或图标文件。</string>
+    <string name="shortcut_icon_not_found">无法添加快捷方式：没有找到图标文件。</string>
+    <string name="shortcut_icon_loading_error">无法加载快捷方式图标。</string>
+    <string name="shortcut_icon_decode_error">解码快捷方式图标失败。</string>
+    <string name="pin_shortcut_not_supported">此设备或启动器不支持 Pin 快捷方式。</string>
+    <string name="shortcut_add_request_failed">向启动器发送快捷方式请求失败。</string>
+    <string name="shortcut_removed_successfully">快捷方式移除或禁用成功。</string>
+    <string name="shortcut_removed_message">此快捷方式不可用。</string>
+    <string name="failed_to_load">加载失败</string>
+    <string name="failed_to_open_ssl">由于SSL错误，无法打开</string>
+    <string name="check_your_internet_connection">请检查你的网络连接</string>
+    <string name="refreshing_the_page">正在刷新</string>
+    <string name="restarting_the_webui_x">正在重启WebUI X</string>
+    <string name="renderer_crashed">WebView渲染进程未响应，是否强行停止？</string>
+    <string name="refresh">刷新</string>
+    <string name="more_info">更多</string>
+    <string name="failed_to_load_desc">无法加载 [b]%1$s[/b]\n错误信息: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">由于SSL错误，无法加载 [b]%1$s[/b]</string>
+    <string name="please_try_the_following">请尝试以下操作：</string>
+    <string name="proceed">继续</string>
+</resources>

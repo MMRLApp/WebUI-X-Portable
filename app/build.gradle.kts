@@ -160,6 +160,7 @@ licensee {
 
 dependencies {
     implementation(projects.webui)
+    implementation(projects.modconf)
     implementation(projects.jna)
     implementation(libs.mmrl.ext)
     implementation(libs.mmrl.ui)

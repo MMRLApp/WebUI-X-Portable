@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">WebUI X を読み込めません</string>
+    <string name="requireNewVersion_refresh">更新</string>
+    <string name="requireNewVersion_try_the_following">こちらをお試しください:</string>
+    <string name="requireNewVersion_require_text">最低限必要: 最新の %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following_one">Google Play または GitHub のリリースから %1$s を最新バージョンに更新する。</string>
+    <string name="requireNewVersion_try_the_following_two">回避策については、モジュールの開発者にお問い合わせください。</string>
+    <string name="cancel">キャンセル</string>
+    <string name="says">%1$s の発言</string>
+    <string name="exit">終了</string>
+    <string name="exit_desc">この WebUI を終了してもよろしいですか？</string>
+    <string name="loading">読み込み中…</string>
+    <string name="missing_mod_id">モジュール ID がありません</string>
+    <string name="shortcut_creation_requirements_not_met">ショートカットを追加できません: タイトルまたはアイコンファイルが見つかりません。</string>
+    <string name="shortcut_icon_loading_error">ショートカットアイコンの読み込み中にエラーが発生しました。</string>
+    <string name="shortcut_icon_decode_error">ショートカットアイコンのデコードに失敗しました。</string>
+    <string name="pin_shortcut_not_supported">このデバイスまたはランチャーではショートカットのピン留めはサポートされていません。</string>
+    <string name="shortcut_add_request_failed">ランチャーへのショートカットリクエストの送信に失敗しました。</string>
+    <string name="shortcut_removed_successfully">ショートカットの削除または無効化に成功しました。</string>
+    <string name="title_or_icon_not_found">タイトルまたはアイコンが見つかりません</string>
+    <string name="icon_not_found">アイコンが見つかりません</string>
+    <string name="shortcut_icon_not_found">ショートカットを追加できません: アイコン ファイルが見つかりません。</string>
+    <string name="confirm">確認</string>
+    <string name="unknown_error">不明なエラー</string>
+    <string name="shortcut_removed_message">このショートカットは利用できなくなりました。</string>
+    <string name="shortcut_already_exists">ショートカットは既に存在します。</string>
+    <string name="class_not_found">定義されたアクティビティクラスが見つかりません</string>
+    <string name="failed_to_load">読み込みに失敗しました</string>
+    <string name="failed_to_open_ssl">SSL のため開けません</string>
+    <string name="check_your_internet_connection">インターネット接続を確認してください</string>
+    <string name="refreshing_the_page">ページを更新中です</string>
+    <string name="restarting_the_webui_x">WebUI X を再起動中です</string>
+    <string name="renderer_crashed">WebView レンダリングプロセスが応答しません。終了しますか？</string>
+    <string name="refresh">更新</string>
+    <string name="more_info">詳しい情報</string>
+    <string name="failed_to_load_desc">[b]%1$s[/b] を読み込めませんでした\nエラー: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">SSL エラーのため [b]%1$s[/b] を読み込めませんでした</string>
+    <string name="please_try_the_following">以下をお試しください:</string>
+    <string name="proceed">進む</string>
+</resources>
