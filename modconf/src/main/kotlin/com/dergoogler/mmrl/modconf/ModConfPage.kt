@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.modconf
 
 import androidx.compose.runtime.Composable
+import com.dergoogler.mmrl.modconf.model.TargetPackage
 
 interface ModConfPage {
     /**
@@ -17,29 +18,23 @@ interface ModConfPage {
     val version: Long
 
     /**
-     * Minimum version of the module that this configuration page is for.
-     * This is used to determine if the configuration page is compatible with the module.
-     * If the module version is less than this value, the configuration page will not be shown.
-     * If this value is -1, the configuration page will always be shown.
-     */
-    val minVersion: Long get() = -1L
-
-    /**
-     * The minimum SDK version required for this ModConfPage.
-     * Defaults to -1, which means no minimum SDK version is required.
-     */
-    val minSdk: Int get() = -1
-
-    /**
-     * A list of mod IDs that this ModConfPage is associated with or should be applied to.
+     * Specifies the target packages that this ModConfPage is designed for.
+     * This property is used by the ModConf system to determine if the ModConfPage
+     * is applicable to a specific version of a target application.
      *
-     * This property defines which modules the ModConf system will run this specific configuration page for.
-     * If this list is empty, the ModConf page might be considered global or not specific to any particular mod,
-     * depending on the ModConf system's implementation.
+     * If this list contains only one `TargetPackage`, the ModConfPage will only be
+     * considered compatible with that specific package and its defined version constraints.
      *
-     * @return A list of mod IDs.
+     * If the list is empty, it implies that the ModConfPage is not restricted to any
+     * particular package, or its applicability is determined by other means.
+     *
+     * Each `TargetPackage` in the list defines a package name and optional version constraints
+     * (minimum and/or maximum version codes) for that package.
+     *
+     * @return A list of `TargetPackage` objects. Defaults to an empty list.
+     * @see TargetPackage
      */
-    val reserved: List<String> get() = emptyList()
+    val targetPackages: List<TargetPackage> get() = emptyList()
 
     /**
      * This function defines the content to be displayed on the module configuration page.

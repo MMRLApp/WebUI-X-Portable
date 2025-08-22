@@ -1,14 +1,13 @@
 package com.dergoogler.mmrl.wx.ui.activity.modconf
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.remember
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.modconf.Kontext
 import com.dergoogler.mmrl.modconf.ModConfView
+import com.dergoogler.mmrl.modconf.component.ErrorScreen
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
@@ -21,14 +20,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-@SuppressLint("SetJavaScriptEnabled")
 @AndroidEntryPoint
 class ModConfActivity : BaseActivity() {
     val modId get() = intent.getModId() ?: throw BrickException("Invalid Module ID")
     val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
 
+    private var kontext: Kontext? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Enable edge to edge
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
@@ -48,10 +47,23 @@ class ModConfActivity : BaseActivity() {
             )
 
             if (ready.await()) {
+                // Initialize kontext once
+                kontext = Kontext(baseContext, modId)
+
                 setBaseContent {
-                    val kontext = remember { Kontext(baseContext, modId) }
-                    ModConfView(kontext)
+                    if (kontext == null) {
+                        ErrorScreen(
+                            title = "Failed!",
+                            description = "Failed to initialize Kontext. Please try again.",
+                            errorCode = "WX_MODULE_LOAD_FAILED"
+                        )
+
+                        return@setBaseContent
+                    }
+
+                    ModConfView(kontext!!)
                 }
+
                 return@launch
             }
 
@@ -60,13 +72,40 @@ class ModConfActivity : BaseActivity() {
                     title = "Failed!",
                     description = "Failed to initialize platform. Please try again.",
                     confirmText = "Close",
-                    onConfirm = {
-                        finish()
-                    },
+                    onConfirm = { finish() },
                 ),
                 colorScheme = colorScheme
             )
         }
+    }
 
+    override fun onStop() {
+        super.onStop()
+        kontext?.modconf?.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        kontext?.modconf?.onDestroy()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        kontext?.modconf?.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        kontext?.modconf?.onResume()
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        kontext?.modconf?.onPostResume()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        kontext?.modconf?.onLowMemory()
     }
 }

@@ -16,9 +16,12 @@ class Kontext(
     val modId: ModId,
 ) : ContextWrapper(context) {
 
-    var dexLoader: ClassLoader? = null
-        private set
+    private var dexLoader: ClassLoader? = null
 
+    /**
+     * Indicates whether the dex file was loaded successfully.
+     * This is set to true if [dexLoader] is not null after initialization.
+     */
     var dexLoadedSuccessfully: Boolean = false
         private set
 
@@ -27,7 +30,46 @@ class Kontext(
         dexLoadedSuccessfully = dexLoader != null
     }
 
+    /**
+     * Retrieves the ModConfConfig associated with this Kontext's modId.
+     * This config contains metadata about the ModConf module, such as its entry point and dependencies.
+     */
     val config get() = modId.asModconfConfig
+
+    /**
+     * Lazily initializes and returns an instance of the `ModConfModule` defined in the module's configuration.
+     *
+     * This property attempts to:
+     * 1. Access the `dexLoader`. If it's null (meaning DEX loading failed or wasn't attempted), it returns `null`.
+     * 2. Load the class specified by `config.className` using the `dexLoader`.
+     * 3. Check if the loaded class is a subclass of `ModConfModule`. If not, an error is logged, and `null` is returned.
+     * 4. If the class is valid, it creates a new instance of it using `ModConfClass(clazz).createNew(this)`.
+     * 5. Logs a success message with the loaded class name.
+     *
+     * If any exception occurs during this process (e.g., `ClassNotFoundException`, issues during instantiation),
+     * an error is logged, and `null` is returned.
+     *
+     * @return An instance of the loaded `ModConfModule` if successful, or `null` otherwise.
+     */
+    val modconf: ModConfClass.Instance? by lazy {
+        val loader = dexLoader ?: return@lazy null
+        try {
+            val rawClass = loader.loadClass(config.className)
+            if (!ModConfModule::class.java.isAssignableFrom(rawClass)) {
+                Log.e(TAG, "Loaded class ${config.className} does not extend ModConfModule")
+                null
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                val clazz = rawClass as Class<out ModConfModule>
+                ModConfClass(clazz).createNew(this).also {
+                    Log.i(TAG, "Successfully loaded ModConfModule: ${clazz.name}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load class ${config.className}", e)
+            null
+        }
+    }
 
     private fun createDexLoader(): ClassLoader? {
         val entryPointPath: String? = config.entryPoint

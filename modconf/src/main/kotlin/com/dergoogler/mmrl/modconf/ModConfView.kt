@@ -3,67 +3,49 @@
 package com.dergoogler.mmrl.modconf
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.core.content.pm.PackageInfoCompat
+import com.dergoogler.mmrl.modconf.component.ErrorScreen
+import com.dergoogler.mmrl.platform.PlatformManager
 
 @Composable
 fun ModConfView(kontext: Kontext) {
-    val config = kontext.config
-    val loader = kontext.dexLoader ?: run {
-        ErrorUI("No dexLoader available")
+    val instance = kontext.modconf
+    if (instance == null) {
+        ErrorScreen(
+            title = "Failed to load module",
+            description = "Failed to load module: ${kontext.config.className}",
+            errorCode = "WX_MODULE_LOAD_FAILED"
+        )
         return
     }
 
-    val instance = remember(loader, config.className) {
-        try {
-            val rawClass = loader.loadClass(config.className)
+    val targetPackages = instance.targetPackages
+    if (targetPackages.isNotEmpty()) {
+        val myUserId = try {
+            PlatformManager.userManager.myUserId
+        } catch (_: Exception) {
+            0
+        }
+        val info = PlatformManager.packageManager.getPackageInfo(kontext.packageName, 0, myUserId)
+        val versionCode = PackageInfoCompat.getLongVersionCode(info)
 
-            if (!ModConfModule::class.java.isAssignableFrom(rawClass)) {
-                Log.e(TAG, "Loaded class ${config.className} does not extend ModConfModule")
-                null
-            } else {
-                @Suppress("UNCHECKED_CAST")
-                val clazz = rawClass as Class<out ModConfModule>
-                val modconfClass = ModConfClass(clazz)
-                modconfClass.createNew(kontext).also {
-                    Log.i(TAG, "Successfully loaded ModConfModule: ${clazz.name}")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to load class ${config.className}", e)
-            null
+        val isSupported = targetPackages.any { target ->
+            target.name.matches(kontext.packageName) && versionCode >= target.minVersion
+        }
+
+        if (!isSupported) {
+            ErrorScreen(
+                title = "Unsupported",
+                description = "This module does not support the current package or version",
+                errorCode = "WX_MODULE_NOT_SUPPORTED"
+            )
+            return
         }
     }
 
-    if (instance == null) {
-        ErrorUI("Failed to load module: ${config.className}")
-        return
-    }
-
-    CompositionLocalProvider(
-        LocalKontext provides kontext
-    ) {
+    CompositionLocalProvider(LocalKontext provides kontext) {
         instance.Content()
     }
 }
-
-@Composable
-private fun ErrorUI(message: String) {
-    Text(
-        text = message,
-        color = MaterialTheme.colorScheme.error,
-        modifier = Modifier.padding(16.dp)
-    )
-}
-
-private const val TAG = "ModConfView"
-
-
-

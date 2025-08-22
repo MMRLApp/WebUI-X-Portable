@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.modconf
 
 import androidx.compose.runtime.Composable
+import com.dergoogler.mmrl.modconf.model.TargetPackage
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.sun.jna.Native
 import java.io.InputStreamReader
@@ -23,14 +24,13 @@ data class ModConfClass<T : ModConfModule>(
         val name: String = inst.name
         val description: String = inst.description
         val version: Long = inst.version
-        val minVersion: Long = inst.minVersion
-        val minSdk: Int = inst.minSdk
-        val reserved: List<String> = inst.reserved
+        val targetPackages: List<TargetPackage> = inst.targetPackages
         val onDestroy: () -> Unit = inst::onDestroy
         val onStop: () -> Unit = inst::onStop
         val onPause: () -> Unit = inst::onPause
-
-        private val instance: ModConfModule = inst
+        val onLowMemory: () -> Unit = inst::onLowMemory
+        val onPostResume: () -> Unit = inst::onPostResume
+        val onResume: () -> Unit = inst::onResume
 
         @Composable
         fun Content() {
