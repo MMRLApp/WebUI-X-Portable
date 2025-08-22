@@ -34,7 +34,6 @@ import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -428,7 +427,7 @@ data class WebUIConfig(
                 )
             }
 
-        val ModId.asWebUIConfigFlow: StateFlow<WebUIConfig>
+        val ModId.asWebUIConfigFlow: MutableStateFlow<WebUIConfig>
             get() = synchronized(configFlows) {
                 configFlows.getOrPut(this) {
                     val initialConfig = loadConfig()
