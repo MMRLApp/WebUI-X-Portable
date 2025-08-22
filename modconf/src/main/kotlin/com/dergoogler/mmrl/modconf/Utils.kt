@@ -14,5 +14,5 @@ val LocalKontext = staticCompositionLocalOf<Kontext> {
  * Stores the original app context. {@link LocalContext} will be overriden by {@link Kontext}
  */
 val LocalAppContext = staticCompositionLocalOf<Context> {
-    error("CompositionLocal LocalKontext not present")
+    error("CompositionLocal LocalAppContext not present")
 }

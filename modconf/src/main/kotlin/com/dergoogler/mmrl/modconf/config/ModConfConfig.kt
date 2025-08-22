@@ -1,8 +1,8 @@
 package com.dergoogler.mmrl.modconf.config
 
+import com.dergoogler.mmrl.modconf.__modconf__adapters__
 import com.dergoogler.mmrl.modconf.readText
 import com.dergoogler.mmrl.modconf.writeText
-import com.dergoogler.mmrl.modconf.__modconf__adapters__
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 data class ModConfConfig(
     val entryPoint: String? = null,
     val className: String? = null,
+    val resources: String? = null,
     val dependencies: List<String> = emptyList(),
 ) {
     companion object {

@@ -15,7 +15,7 @@ import dalvik.system.InMemoryDexClassLoader
 import java.nio.ByteBuffer
 
 class Kontext(
-    context: Context,
+    private val context: Context,
     val modId: ModId,
 ) : ContextWrapper(context) {
 
@@ -50,12 +50,12 @@ class Kontext(
         }
     }
 
-    override fun getResources(): Resources? {
-        return try {
-            val resFilePath = config.dependencies.find { it.endsWith("resources.arsc") }
-                ?: return null
+    val resources by lazy {
+        try {
+            val resFilePath = config.resources
+                ?: return@lazy null
             val resFile = SuFile(modId.modconfDependenciesDir, resFilePath)
-            if (!resFile.isFile) return null
+            if (!resFile.isFile || resFile.extension != "arsc") return@lazy null
 
             // Copy to a temporary file in app cache to ensure AssetManager can access it
             val tmpFile = ExtFile(cacheDir, "temp_resources.arsc").apply {
@@ -72,13 +72,17 @@ class Kontext(
                 }
 
             // Create Resources using current app resources for metrics/config
-            Resources(assetManager, resources?.displayMetrics, resources?.configuration).also {
-                Log.i(TAG, "Loaded resources.arsc from: ${resFile.absolutePath} (via temp file)")
+            Resources(
+                assetManager,
+                context.resources.displayMetrics,
+                context.resources.configuration
+            ).also {
+                Log.i(TAG, "Loaded resources.arsc from: ${tmpFile.absolutePath} (via temp file)")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load resources.arsc", e)
             null
-        }
+        } ?: return@lazy null
     }
 
     private fun createDexLoader(): ClassLoader? {

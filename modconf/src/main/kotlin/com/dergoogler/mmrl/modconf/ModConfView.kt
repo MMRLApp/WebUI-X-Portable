@@ -46,7 +46,7 @@ fun ModConfView(kontext: Kontext) {
         }
     }
     // Old
-    val context = LocalAppContext.current
+    val context = LocalContext.current
     CompositionLocalProvider(
         LocalContext provides kontext,
         LocalAppContext provides context,
