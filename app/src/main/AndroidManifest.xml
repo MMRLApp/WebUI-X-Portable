@@ -101,7 +101,7 @@
         </activity>
 
         <activity
-            android:name="${__packageName__}.ui.activity.webui.ModConfActivity"
+            android:name="${__packageName__}.ui.activity.modconf.ModConfActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="true"

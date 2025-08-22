@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
@@ -53,7 +54,7 @@ fun ModulesList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(
-            items = list.filter { it.hasWebUI },
+            items = list.filter { it.hasWebUI || it.hasModConf },
             key = { it.id }
         ) { module ->
             ModuleItem(

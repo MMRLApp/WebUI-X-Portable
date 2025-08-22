@@ -1,3 +1,5 @@
+@file:Suppress("UnusedReceiverParameter")
+
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
@@ -17,6 +19,7 @@ import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
+import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import com.dergoogler.mmrl.platform.stub.IServiceManager
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUI
@@ -24,6 +27,7 @@ import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.KsuWebUIActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import kotlinx.coroutines.CoroutineScope
@@ -140,6 +144,19 @@ suspend fun initPlatform(
     platform: Platform,
 ) = PlatformManager.init(scope) {
     init(platform, context, this)
+}
+
+
+fun UserPreferences.launchModConf(context: Context, modId: ModId) {
+    val baseDir = context.getBaseDir().path
+
+    val intent = Intent(context, ModConfActivity::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+        putModId(modId)
+        putBaseDir(baseDir)
+    }
+
+    context.startActivity(intent)
 }
 
 fun UserPreferences.launchWebUI(context: Context, modId: ModId) {

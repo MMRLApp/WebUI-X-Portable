@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -27,25 +28,29 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.fadingEdge
-import com.dergoogler.mmrl.ui.component.LabelItem
-import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
+import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.LocalCover
+import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.card.component.Absolute
+import com.dergoogler.mmrl.ui.component.text.TextWithIcon
+import com.dergoogler.mmrl.ui.component.text.TextWithIconDefaults
+import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.util.launchModConf
 import com.dergoogler.mmrl.wx.util.launchWebUI
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
@@ -64,10 +69,20 @@ fun ModuleItem(
     val context = LocalContext.current
 
     val canWenUIAccessed =
-        PlatformManager.isAlive && module.hasWebUI && module.state != State.REMOVE
+        PlatformManager.isAlive && (module.hasWebUI || module.hasModConf) && module.state != State.REMOVE
 
     val clicker: (() -> Unit)? = canWenUIAccessed nullable jump@{
-        userPreferences.launchWebUI(context, module.id)
+        if (module.hasModConf) {
+            userPreferences.launchModConf(context, module.id)
+            return@jump
+        }
+
+        if (module.hasWebUI) {
+            userPreferences.launchWebUI(context, module.id)
+            return@jump
+        }
+
+        Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
     }
 
     val config = remember(module) {
@@ -118,11 +133,14 @@ fun ModuleItem(
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Text(
+                    TextWithIcon(
                         text = config.name ?: module.name,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleSmall
+                        icon = module.hasModConf nullable R.drawable.brand_kotlin,
+                        style = TextWithIconDefaults.style.copy(
+                            overflow = TextOverflow.Ellipsis,
+                            textStyle = MaterialTheme.typography.titleSmall,
+                            maxLines = 2
+                        )
                     )
 
                     Text(
