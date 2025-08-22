@@ -56,10 +56,6 @@
     <string name="settings_webui_engine_ksu">KSU WebUI</string>
     <string name="settings_webui_engine_prefer_module">由模块配置决定</string>
     <string name="menu_sort_option_size">按大小</string>
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">允许其他应用程序在 WebUI X 中使用 WebUI X: Portable</string>
-    <string name="permission_wl_label">WebUI</string>
-    <string name="permission_wl_desc">允许其他应用程序在 WebUI 中使用 WebUI X: Portable</string>
     <string name="notification_platform_service">工作方式服务</string>
     <string name="settings_date_pattern">日期模式</string>
     <string name="settings_date_pattern_desc">使用自定义日期格式</string>

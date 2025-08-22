@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="permission_webuix_desc">Allows the app to use WebUI X in WebUI X: Portable</string>
+    <string name="permission_webuix_label">the use of WebUI X in WebUI X: Portable</string>
+    <string name="permission_ksu_webui_desc">Allows the app to use WebUI Legacy in WebUI X: Portable</string>
+    <string name="permission_ksu_webui_label">this use of WebUI Legacy in WebUI X: Portable</string>
+    <string name="permission_modconf_desc">Allows the app to use ModConf in WebUI X: Portable</string>
+    <string name="permission_modconf_label">the use of ModConf in WebUI X: Portable</string>
+</resources>

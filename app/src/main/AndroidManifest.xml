@@ -19,16 +19,23 @@
 
     <permission
         android:name="${webuiPermissionId}.permission.WEBUI_X"
-        android:description="@string/permission_wx_desc"
-        android:label="@string/permission_wx_label"
+        android:description="@string/permission_webuix_desc"
         android:icon="@drawable/sandbox"
+        android:label="@string/permission_webuix_label"
         android:protectionLevel="dangerous" />
 
     <permission
         android:name="${webuiPermissionId}.permission.WEBUI_LEGACY"
-        android:description="@string/permission_wl_desc"
-        android:label="@string/permission_wl_label"
+        android:description="@string/permission_ksu_webui_desc"
         android:icon="@drawable/kernelsu_logo"
+        android:label="@string/permission_ksu_webui_label"
+        android:protectionLevel="dangerous" />
+
+    <permission
+        android:name="${webuiPermissionId}.permission.MODCONF"
+        android:description="@string/permission_modconf_desc"
+        android:icon="@drawable/brand_kotlin"
+        android:label="@string/permission_modconf_label"
         android:protectionLevel="dangerous" />
 
     <permission
@@ -46,9 +53,9 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="false"
         android:fullBackupContent="@xml/backup_rules"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="33">
@@ -87,6 +94,21 @@
             android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
             android:process="${webuiPermissionId}.process.webui"
             android:taskAffinity="${applicationId}.KSU_WEBUI">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="${__packageName__}.ui.activity.webui.KsuWebUIActivity"
+            android:autoRemoveFromRecents="true"
+            android:documentLaunchMode="intoExisting"
+            android:exported="true"
+            android:label="WebUI Legacy"
+            android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
+            android:process="${webuiPermissionId}.process.modconf"
+            android:taskAffinity="${applicationId}.MODCONF">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

@@ -33,10 +33,6 @@
     <string name="delete">Usuń</string>
     <string name="export_module_config_json">Eksportuj konfigurację JSON modułu</string>
     <string name="export_webui_config_json">Eksportuj konfigurację JSON WebUI</string>
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">użyj WebUI X w WebUI X: Portable</string>
-    <string name="permission_wl_label">WebUI Legacy</string>
-    <string name="permission_wl_desc">użyj WebUI Legacy w WebUI X: Portable</string>
     <string name="non_root_note">W celu uzyskania dostępu do wszystkich funkcji WebUI X wymagane jest zrootowane urządzenie z systemem Android. WebUI X nie zapewnia instrukcji dotyczących rootowania i nie ponosi odpowiedzialności za jakiekolwiek szkody, które mogą wystąpić podczas procesu rootowania lub korzystania z samego WebUI X.</string>
     <string name="select">Wybierz</string>
     <string name="select_your_platform">Wybierz platformę</string>

@@ -56,10 +56,6 @@
     <string name="settings_webui_engine_ksu">KSU WebUI</string>
     <string name="settings_webui_engine_prefer_module">モジュールの構成によって定義</string>
     <string name="menu_sort_option_size">サイズ</string>
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">WebUI X で WebUI X: Portable を使用します。</string>
-    <string name="permission_wl_label">WebUI Legacy</string>
-    <string name="permission_wl_desc">WebUI Legacy で WebUI X: Portable を使用します。</string>
     <string name="notification_platform_service">プラットフォームサービス</string>
     <string name="settings_date_pattern">日付のパターン</string>
     <string name="settings_date_pattern_desc">日付形式を変更します。</string>

@@ -91,10 +91,6 @@
     <string name="webui_config_refresh_interceptor_desc">Muda o interceptador de atualizações para o WebUI</string>
     <string name="export_config">Exportar configurações</string>
     <string name="export_webui_config_json">Exportar as configurações do WebUI em JSON</string>
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">Usar WebUI X no WebUI X: Portátil</string>
-    <string name="permission_wl_label">WebUI antigo</string>
-    <string name="permission_wl_desc">Usa o WebUI antigo no WebUI X: Portátil</string>
     <string name="general">Geral</string>
     <string name="developer">Desenvolvedor</string>
     <string name="webui_config_kill_shell_when_background">Encerrar terminal</string>

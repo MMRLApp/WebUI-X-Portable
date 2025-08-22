@@ -92,10 +92,6 @@
     <string name="export_config">Exportar configuración</string>
     <string name="export_module_config_json">Exportar JSON de configuración del módulo</string>
     <string name="export_webui_config_json">Exportar JSON de configuración de WebUI</string>
-    <string name="permission_wx_label">Permisos</string>
-    <string name="permission_wx_desc">Uso de WebUI X en WebUI X: Portable</string>
-    <string name="permission_wl_label">WebUI antiguo</string>
-    <string name="permission_wl_desc">uso de WebUI antiguo en WebUI X: Portable</string>
     <string name="general">General</string>
     <string name="developer">Desarrollador</string>
     <string name="webui_config_kill_shell_when_background">Matar Shell</string>

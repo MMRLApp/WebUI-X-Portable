@@ -93,10 +93,6 @@
     <string name="export_config">Экспорт конфигурации</string>
     <string name="export_module_config_json">Экспорт конфигурации модуля в формате JSON</string>
     <string name="export_webui_config_json">Экспорт конфигурации WebUI в формате JSON</string>
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">используйте WebUI X в WebUI X: Portable</string>
-    <string name="permission_wl_label">Наследие WebUI</string>
-    <string name="permission_wl_desc">использовать WebUI Legacy в WebUI X: Portable</string>
     <string name="general">Общие</string>
     <string name="developer">Разработчик</string>
     <string name="webui_config_kill_shell_when_background">Убийственная оболочка</string>

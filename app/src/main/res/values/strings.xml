@@ -92,11 +92,6 @@
     <string name="export_config">Export Config</string>
     <string name="export_module_config_json">Export Module Config JSON</string>
     <string name="export_webui_config_json">Export WebUI Config JSON</string>
-    <!-- Permissions -->
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">use WebUI X in WebUI X: Portable</string>
-    <string name="permission_wl_label">WebUI Legacy</string>
-    <string name="permission_wl_desc">use WebUI Legacy in WebUI X: Portable</string>
     <string name="general">General</string>
     <string name="developer">Developer</string>
     <string name="webui_config_kill_shell_when_background">Kill Shell</string>
