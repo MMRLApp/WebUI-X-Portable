@@ -5,5 +5,5 @@
     <string name="permission_ksu_webui_desc">Allows the app to use WebUI Legacy in WebUI X: Portable</string>
     <string name="permission_ksu_webui_label">this use of WebUI Legacy in WebUI X: Portable</string>
     <string name="permission_modconf_desc">Allows the app to use ModConf in WebUI X: Portable</string>
-    <string name="permission_modconf_label">the use of ModConf in WebUI X: Portable</string>
+    <string name="permission_modconf_label">the use of ModConf X in WebUI X: Portable</string>
 </resources>
