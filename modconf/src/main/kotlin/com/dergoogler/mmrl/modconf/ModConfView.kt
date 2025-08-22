@@ -5,6 +5,7 @@ package com.dergoogler.mmrl.modconf
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.pm.PackageInfoCompat
 import com.dergoogler.mmrl.modconf.component.ErrorScreen
 import com.dergoogler.mmrl.platform.PlatformManager
@@ -44,8 +45,13 @@ fun ModConfView(kontext: Kontext) {
             return
         }
     }
-
-    CompositionLocalProvider(LocalKontext provides kontext) {
+    // Old
+    val context = LocalAppContext.current
+    CompositionLocalProvider(
+        LocalContext provides kontext,
+        LocalAppContext provides context,
+        LocalKontext provides kontext,
+    ) {
         instance.Content()
     }
 }

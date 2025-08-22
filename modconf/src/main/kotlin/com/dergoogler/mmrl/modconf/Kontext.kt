@@ -2,8 +2,11 @@ package com.dergoogler.mmrl.modconf
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.res.AssetManager
+import android.content.res.Resources
 import android.util.Log
 import com.dergoogler.mmrl.modconf.config.ModConfConfig.Companion.asModconfConfig
+import com.dergoogler.mmrl.platform.file.ExtFile
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.modconfDependenciesDir
@@ -17,11 +20,6 @@ class Kontext(
 ) : ContextWrapper(context) {
 
     private var dexLoader: ClassLoader? = null
-
-    /**
-     * Indicates whether the dex file was loaded successfully.
-     * This is set to true if [dexLoader] is not null after initialization.
-     */
     var dexLoadedSuccessfully: Boolean = false
         private set
 
@@ -30,27 +28,8 @@ class Kontext(
         dexLoadedSuccessfully = dexLoader != null
     }
 
-    /**
-     * Retrieves the ModConfConfig associated with this Kontext's modId.
-     * This config contains metadata about the ModConf module, such as its entry point and dependencies.
-     */
     val config get() = modId.asModconfConfig
 
-    /**
-     * Lazily initializes and returns an instance of the `ModConfModule` defined in the module's configuration.
-     *
-     * This property attempts to:
-     * 1. Access the `dexLoader`. If it's null (meaning DEX loading failed or wasn't attempted), it returns `null`.
-     * 2. Load the class specified by `config.className` using the `dexLoader`.
-     * 3. Check if the loaded class is a subclass of `ModConfModule`. If not, an error is logged, and `null` is returned.
-     * 4. If the class is valid, it creates a new instance of it using `ModConfClass(clazz).createNew(this)`.
-     * 5. Logs a success message with the loaded class name.
-     *
-     * If any exception occurs during this process (e.g., `ClassNotFoundException`, issues during instantiation),
-     * an error is logged, and `null` is returned.
-     *
-     * @return An instance of the loaded `ModConfModule` if successful, or `null` otherwise.
-     */
     val modconf: ModConfClass.Instance? by lazy {
         val loader = dexLoader ?: return@lazy null
         try {
@@ -71,10 +50,40 @@ class Kontext(
         }
     }
 
+    override fun getResources(): Resources? {
+        return try {
+            val resFilePath = config.dependencies.find { it.endsWith("resources.arsc") }
+                ?: return null
+            val resFile = SuFile(modId.modconfDependenciesDir, resFilePath)
+            if (!resFile.isFile) return null
+
+            // Copy to a temporary file in app cache to ensure AssetManager can access it
+            val tmpFile = ExtFile(cacheDir, "temp_resources.arsc").apply {
+                outputStream().use { out ->
+                    resFile.newInputStream().use { input -> input.copyTo(out) }
+                }
+            }
+
+            // Create AssetManager and add temp file path
+            val assetManager =
+                AssetManager::class.java.getDeclaredConstructor().newInstance().apply {
+                    AssetManager::class.java.getMethod("addAssetPath", String::class.java)
+                        .invoke(this, tmpFile.absolutePath)
+                }
+
+            // Create Resources using current app resources for metrics/config
+            Resources(assetManager, resources?.displayMetrics, resources?.configuration).also {
+                Log.i(TAG, "Loaded resources.arsc from: ${resFile.absolutePath} (via temp file)")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to load resources.arsc", e)
+            null
+        }
+    }
+
     private fun createDexLoader(): ClassLoader? {
         val entryPointPath: String? = config.entryPoint
         val className: String? = config.className
-
         if (entryPointPath == null || className == null) {
             Log.e(TAG, "Missing entryPoint or className in config")
             return null
@@ -82,7 +91,6 @@ class Kontext(
 
         val entryPointFile = SuFile(modId.modconfDir, entryPointPath)
         val dependenciesDir = modId.modconfDependenciesDir
-
         var parentClassLoader: ClassLoader = classLoader
 
         if (config.dependencies.isNotEmpty() && dependenciesDir.exists() && dependenciesDir.isDirectory()) {
