@@ -9,6 +9,8 @@ import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.exit
 import com.dergoogler.mmrl.webui.model.App
+import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfig.Companion.toValueMap
+import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,6 +81,20 @@ class ApplicationInterface(
             versionCode = versionCode
         )
     }
+
+    @get:JavascriptInterface
+    val additionalConfig: String
+        get() {
+            try {
+                val adapter = moshi.adapter(Map::class.java)
+                val valueMap = config.additionalConfig.toValueMap()
+                val json: String? = adapter.toJson(valueMap)
+                return json ?: "{}"
+            } catch (e: Exception) {
+                console.error(e)
+                return "{}"
+            }
+        }
 
     @JavascriptInterface
     fun openFile(i: IntentData?) {

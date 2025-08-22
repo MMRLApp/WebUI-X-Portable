@@ -32,6 +32,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 fun Context.extractZipFromAssets(
     assetName: String,
@@ -247,4 +249,21 @@ fun <T : Any> NavController.navigatePopUpTo(
     }
     this.launchSingleTop = launchSingleTop
     this.restoreState = restoreState
+}
+
+inline fun <reified T : Any> T.asMutableMap(): MutableMap<String, Any?> = asMap<T>().toMutableMap()
+inline fun <reified T : Any> T.asMap(): Map<String, Any?> {
+    val props = T::class.memberProperties.associateBy { it.name }
+    return props.keys.associateWith { props[it]?.get(this) }
+}
+
+inline fun <reified T : Any> Map<String, Any?>.toDataClass(): T {
+    val ctor = T::class.primaryConstructor
+        ?: throw IllegalArgumentException("No primary constructor found for ${T::class}")
+
+    val args = ctor.parameters.associateWith { param ->
+        this[param.name]
+    }
+
+    return ctor.callBy(args)
 }

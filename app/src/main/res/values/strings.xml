@@ -129,4 +129,6 @@
     <string name="compile_sdk">Compile SDK</string>
     <string name="settings_force_kill_webui_process">Force Kill WebUI Process</string>
     <string name="settings_force_kill_webui_process_desc">Immediately terminates the currently running WebUI X process. [bold]This does not affect KSU WebUI.[/bold]</string>
+    <string name="webui_additional_config">Additional Config</string>
+    <string name="webui_additional_config_desc">Optional configurations defined by the module developer.</string>
 </resources>

@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -58,7 +56,6 @@ import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.ui.component.BottomSheet
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.card.Card
-import com.dergoogler.mmrl.ui.component.listItem.ListHeader
 import com.dergoogler.mmrl.ui.component.listItem.dsl.List
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
@@ -72,6 +69,8 @@ import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.util.asMutableMap
+import com.dergoogler.mmrl.wx.util.toDataClass
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import kotlinx.coroutines.launch
@@ -180,23 +179,6 @@ fun PluginsScreen(module: LocalModule) {
                 )
             }
         }
-
-        Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-        ) {
-            config.dexFiles.let { dexFiles ->
-                if (dexFiles.isEmpty()) return@let
-
-                ListHeader(title = stringResource(R.string.dex_files))
-
-                dexFiles.forEachIndexed { index, it ->
-
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
-        }
     }
 }
 
@@ -210,14 +192,11 @@ private fun PluginCard(
 
     val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
     val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
-
-    val dexFiles = remember(config) { config.dexFiles }
-
     val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
 
-    fun slave(builderAction: MutableConfig<Any?>.() -> Unit) {
+    fun slave(builderAction: MutableConfig<Any?>.(WebUIConfig) -> Unit) {
         scope.launch {
             config.save(builderAction)
         }
@@ -237,13 +216,14 @@ private fun PluginCard(
                 selection = plugin.type,
                 options = dexTypeList,
                 onConfirm = { t ->
-                    val updatedDexFiles = dexFiles.toMutableList().apply {
-                        val old = this[index]
-                        this[index] = old.copy(type = t.value)
-                    }
-
                     slave {
-                        "dexFiles" change updatedDexFiles.toList()
+                        val updated = it.dexFiles.toMutableList().apply {
+                            val old = this[index].asMutableMap()
+                            old["type"] = t.value
+                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        }
+
+                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -256,13 +236,14 @@ private fun PluginCard(
             TextEditDialogItem(
                 value = path,
                 onConfirm = { p ->
-                    val updatedDexFiles = dexFiles.toMutableList().apply {
-                        val old = this[index]
-                        this[index] = old.copy(path = p)
-                    }
-
                     slave {
-                        "dexFiles" change updatedDexFiles.toList()
+                        val updated = it.dexFiles.toMutableList().apply {
+                            val old = this[index].asMutableMap()
+                            old["path"] = p
+                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        }
+
+                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -273,13 +254,14 @@ private fun PluginCard(
             TextEditDialogItem(
                 value = className,
                 onConfirm = { c ->
-                    val updatedDexFiles = dexFiles.toMutableList().apply {
-                        val old = this[index]
-                        this[index] = old.copy(className = c)
-                    }
-
                     slave {
-                        "dexFiles" change updatedDexFiles.toList()
+                        val updated = it.dexFiles.toMutableList().apply {
+                            val old = this[index].asMutableMap()
+                            old["className"] = c
+                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        }
+
+                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -287,17 +269,17 @@ private fun PluginCard(
                 Description(className)
             }
 
-
             SwitchItem(
                 checked = plugin.cache,
                 onChange = { c ->
-                    val updatedDexFiles = dexFiles.toMutableList().apply {
-                        val old = this[index]
-                        this[index] = old.copy(cache = c)
-                    }
-
                     slave {
-                        "dexFiles" change updatedDexFiles.toList()
+                        val updated = it.dexFiles.toMutableList().apply {
+                            val old = this[index].asMutableMap()
+                            old["cache"] = c
+                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        }
+
+                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -318,10 +300,9 @@ private fun PluginCard(
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 DexRemove {
-                    val files = dexFiles.toMutableList()
-
-                    if (files.remove(plugin)) {
-                        slave {
+                    slave {
+                        val files = it.dexFiles.toMutableList()
+                        if (files.remove(plugin)) {
                             "dexFiles" change files.toList()
                         }
                     }

@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dergoogler.mmrl.ext.isNotNullOrEmpty
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.shareText
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -47,6 +48,7 @@ import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AdditionalConfigEditorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.PluginsScreenDestination
 import kotlinx.coroutines.launch
 
@@ -108,7 +110,7 @@ fun ConfigEditorScreen(module: LocalModule) {
 //        }
 //    }
 
-    fun slave(builderAction: MutableConfig<Any?>.() -> Unit) {
+    fun slave(builderAction: MutableConfig<Any?>.(WebUIConfig) -> Unit) {
         coroutineScope.launch {
             config.save(builderAction)
         }
@@ -206,6 +208,16 @@ fun ConfigEditorScreen(module: LocalModule) {
                 }
             )
 
+            if (config.additionalConfig.isNotNullOrEmpty()) {
+                ListButtonItem(
+                    title = stringResource(R.string.webui_additional_config),
+                    desc = stringResource(R.string.webui_additional_config_desc),
+                    onClick = {
+                        navigator.navigate(AdditionalConfigEditorScreenDestination(module))
+                    }
+                )
+            }
+
             val hasNoJsBackInterceptor = config.backInterceptor != "javascript"
 
             ListSwitchItem(
@@ -246,7 +258,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                         return@ListRadioCheckItem
                     }
 
-                    slave {
+                    slave { _ ->
                         "backInterceptor" change it.value
                     }
                 }
@@ -278,7 +290,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                         return@ListRadioCheckItem
                     }
 
-                    slave {
+                    slave { _ ->
                         "refreshInterceptor" change it.value
                     }
                 }
@@ -365,7 +377,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                     !Regex("^[0-9]+$").matches(it)
                 },
                 onConfirm = {
-                    slave {
+                    slave { _ ->
                         "cachingMaxAge" change it.toInt()
                     }
                 }

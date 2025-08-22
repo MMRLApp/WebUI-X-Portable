@@ -71,7 +71,7 @@
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"
             android:process="${webuiPermissionId}.process.webuix"
-            android:taskAffinity="${__packageName__}.WEBUI_X">
+            android:taskAffinity="${applicationId}.WEBUI_X">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -86,7 +86,7 @@
             android:label="WebUI Legacy"
             android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
             android:process="${webuiPermissionId}.process.webui"
-            android:taskAffinity="${__packageName__}.KSU_WEBUI">
+            android:taskAffinity="${applicationId}.KSU_WEBUI">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -110,7 +110,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${__packageName__}.provider"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

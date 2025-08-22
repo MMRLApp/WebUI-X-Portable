@@ -54,6 +54,24 @@ android {
         signingConfigs.getByName("debug")
     }
 
+    flavorDimensions += "distribution"
+
+    productFlavors {
+        create("official") {
+            dimension = "distribution"
+            applicationId = basePackageName
+            resValue("string", "app_name", baseAppName)
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("spoofed") {
+            dimension = "distribution"
+            applicationId = generateRandomPackageName()
+            resValue("string", "app_name", generateRandomName())
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "true")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -80,15 +98,6 @@ android {
             versionNameSuffix = "-playstore"
         }
 
-        create("spoofed") {
-            initWith(buildTypes.getByName("release"))
-            resValue("string", "app_name", generateRandomName())
-            matchingFallbacks += listOf("debug", "release")
-            versionNameSuffix = "-spoofed"
-
-            defaultConfig.applicationId = generateRandomPackageName()
-        }
-
         debug {
             resValue("string", "app_name", "$baseAppName Debug")
             buildConfigField("Boolean", "IS_DEV_VERSION", "true")
@@ -102,18 +111,6 @@ android {
             multiDexEnabled = true
 
             manifestPlaceholders["webuiPermissionId"] = "$mmrlBaseApplicationId.debug"
-        }
-
-        create("debugMin") {
-            initWith(buildTypes.getByName("debug"))
-            versionNameSuffix = "-debugMin"
-            isMinifyEnabled = true
-            isShrinkResources = true
-            matchingFallbacks += listOf("debug", "release")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
 
         all {

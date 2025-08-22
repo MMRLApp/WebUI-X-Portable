@@ -10,6 +10,9 @@ import android.graphics.drawable.Icon
 import android.util.Log
 import android.widget.Toast
 import com.dergoogler.mmrl.ext.readText
+import com.dergoogler.mmrl.ext.toBooleanOrNull
+import com.dergoogler.mmrl.ext.toIntOrNull
+import com.dergoogler.mmrl.ext.toStringOrNull
 import com.dergoogler.mmrl.ext.writeText
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -20,16 +23,12 @@ import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
-import com.dergoogler.mmrl.webui.JSONArray
-import com.dergoogler.mmrl.webui.JSONCollection
-import com.dergoogler.mmrl.webui.JSONString
 import com.dergoogler.mmrl.webui.R
+import com.dergoogler.mmrl.webui.__webui__adapters__
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
-import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import com.squareup.moshi.Types
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
@@ -81,7 +80,7 @@ data class WebUIConfigRequireVersionPackages(
     val packageNames: List<String>?
         get() = when (packageName) {
             is JSONString -> listOf(packageName.string)
-            is JSONArray -> packageName.array
+            is JSONArray -> packageName.toTypedList<String>()
             else -> null
         }
 }
@@ -229,6 +228,57 @@ open class WebUIConfigBaseLoader() {
 }
 
 @JsonClass(generateAdapter = true)
+data class WebUIConfigAdditionalConfig(
+    val key: String,
+    val type: WebUIConfigAdditionalConfigType,
+    val value: JSONCollection,
+    val label: String? = null,
+    val desc: String? = null,
+    val values: List<String>? = null,
+) {
+    fun Map<String, Any?>.toJson(intents: Int = 2): String =
+        __webui__adapters__.MapAdapter.indent(" ".repeat(intents)).toJson(this)
+
+    fun toJson(intents: Int = 2): String =
+        __webui__adapters__.AdditionalConfigAdapter.indent(" ".repeat(intents)).toJson(this)
+
+    companion object {
+        fun fromJson(json: String): WebUIConfigAdditionalConfig? =
+            __webui__adapters__.AdditionalConfigAdapter.fromJson(json)
+
+        /**
+         * Converts a list of [WebUIConfigAdditionalConfig] to a map of key-value pairs.
+         *
+         * Each item in the list is transformed into an entry in the map, where the key is
+         * `opt.key` and the value is `opt.value` (or `opt.defaultValue` if `opt.value` is null).
+         * The value is then converted to the appropriate type based on `opt.type`.
+         *
+         * @return A map where keys are strings and values are of type `Any?`.
+         *         Returns an empty map if the input list is null.
+         */
+        fun List<WebUIConfigAdditionalConfig>?.toValueMap(): Map<String, Any?> {
+            if (this == null) return emptyMap()
+            return this.associate { opt ->
+                val gg: Any? = when (opt.type) {
+                    WebUIConfigAdditionalConfigType.NUMBER -> opt.value.toIntOrNull()
+                    WebUIConfigAdditionalConfigType.SWITCH -> opt.value.toBooleanOrNull()
+                    WebUIConfigAdditionalConfigType.EDITTEXT -> opt.value.toStringOrNull()
+                }
+
+                opt.key to gg
+            }
+        }
+    }
+}
+
+@JsonClass(generateAdapter = false)
+enum class WebUIConfigAdditionalConfigType {
+    EDITTEXT,
+    NUMBER,
+    SWITCH,
+}
+
+@JsonClass(generateAdapter = true)
 data class WebUIConfig(
     val modId: ModId = ModId.EMPTY,
     val require: WebUIConfigRequire = WebUIConfigRequire(),
@@ -252,6 +302,7 @@ data class WebUIConfig(
     val caching: Boolean = true,
     val cachingMaxAge: Int = 86400,
     val extra: Map<String, Any?> = emptyMap(),
+    val additionalConfig: List<WebUIConfigAdditionalConfig> = emptyList(),
 ) {
     val hasRootPathPermission get() = WebUIPermissions.WX_ROOT_PATH in permissions
 
@@ -315,12 +366,13 @@ data class WebUIConfig(
         }
     }
 
-    fun toJson(intents: Int = 2): String = jsonAdapter.indent(" ".repeat(intents)).toJson(this)
+    fun toJson(intents: Int = 2): String =
+        __webui__adapters__.ConfigAdapter.indent(" ".repeat(intents)).toJson(this)
 
     fun Map<String, Any?>.toJson(intents: Int = 2): String =
-        mapAdapter.indent(" ".repeat(intents)).toJson(this)
+        __webui__adapters__.MapAdapter.indent(" ".repeat(intents)).toJson(this)
 
-    suspend fun <V : Any?> save(builderAction: MutableConfig<V>.() -> Unit) {
+    suspend fun <V : Any?> save(builderAction: MutableConfig<V>.(WebUIConfig) -> Unit) {
         val updates = buildMutableConfig(builderAction)
         if (updates.isEmpty()) return
 
@@ -330,10 +382,12 @@ data class WebUIConfig(
             withContext(Dispatchers.IO) {
                 val (_, overrideFile) = modId.configFiles
                 val overrideText = overrideFile.readText(Charsets.UTF_8)
-                val overrideMap = overrideText.toConfigMap()?.toMutableMap()
+                val overrideMap = overrideText.toJsonMap()?.toMutableMap()
                     ?: mutableMapOf()
                 overrideMap.putAll(updates)
-                overrideFile.writeText(mapAdapter.indent("  ").toJson(overrideMap), Charsets.UTF_8)
+                overrideFile.writeText(
+                    __webui__adapters__.MapAdapter.indent("  ").toJson(overrideMap), Charsets.UTF_8
+                )
 
                 val newConfig = modId.loadConfig()
                 _configState.update { it + (modId to newConfig) }
@@ -349,12 +403,9 @@ data class WebUIConfig(
     companion object {
         const val TAG = "WebUIConfig"
 
-        private val mapType =
-            Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
-        private val mapAdapter = moshi.adapter<Map<String, Any?>>(mapType)
-        private val jsonAdapter = moshi.adapter(WebUIConfig::class.java)
 
-        fun fromJson(json: String): WebUIConfig? = jsonAdapter.fromJson(json)
+        fun fromJson(json: String): WebUIConfig? =
+            __webui__adapters__.ConfigAdapter.fromJson(json)
 
         private val _configState = MutableStateFlow<Map<ModId, WebUIConfig>>(emptyMap())
 
@@ -398,15 +449,21 @@ data class WebUIConfig(
             val (baseFile, overrideFile) = configFiles
             val baseJson = baseFile?.readText(Charsets.UTF_8) ?: "{}"
             val overrideJson = overrideFile.readText(Charsets.UTF_8)
-            val override = overrideJson.toConfigMap() ?: mutableMapOf()
-            val mergedMap = baseJson.toConfigMap()?.deepMerge(override)
-            return mergedMap?.let { jsonAdapter.fromJson(mapAdapter.toJson(it)) }
+            val override = overrideJson.toJsonMap() ?: mutableMapOf()
+            val mergedMap = baseJson.toJsonMap()?.deepMerge(override)
+            return mergedMap?.let {
+                __webui__adapters__.ConfigAdapter.fromJson(
+                    __webui__adapters__.MapAdapter.toJson(
+                        it
+                    )
+                )
+            }
                 ?.copy(modId = this) ?: WebUIConfig(modId = this)
         }
 
-        private fun String?.toConfigMap(): Map<String, Any?>? {
+        fun String?.toJsonMap(): Map<String, Any?>? {
             return this?.let { json ->
-                runCatching { mapAdapter.fromJson(json) }.getOrNull()
+                runCatching { __webui__adapters__.MapAdapter.fromJson(json) }.getOrNull()
             }
         }
 
@@ -455,11 +512,12 @@ data class WebUIConfig(
 
         private class MutableConfigMap<V : Any?>() : LinkedHashMap<String, V>(), MutableConfig<V> {
             override infix fun String.change(that: V): V? = put(this, that)
+            override infix fun String.to(that: V): V? = change(that)
         }
 
-        private inline fun <V : Any?> buildMutableConfig(builder: MutableConfig<V>.() -> Unit): Map<String, V> {
+        private inline fun <V : Any?> WebUIConfig.buildMutableConfig(builder: MutableConfig<V>.(WebUIConfig) -> Unit): Map<String, V> {
             val map = MutableConfigMap<V>()
-            map.builder()
+            map.builder(this)
             return map
         }
     }
@@ -467,4 +525,5 @@ data class WebUIConfig(
 
 interface MutableConfig<V> : MutableMap<String, V> {
     infix fun String.change(that: V): V?
+    infix fun String.to(that: V): V?
 }
