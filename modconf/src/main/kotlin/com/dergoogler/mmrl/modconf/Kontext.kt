@@ -50,7 +50,7 @@ class Kontext(
         }
     }
 
-    val resources by lazy {
+    val sources by lazy {
         try {
             val resFilePath = config.resources
                 ?: return@lazy null
