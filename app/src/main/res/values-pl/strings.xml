@@ -124,4 +124,6 @@
     <string name="compile_sdk">Kompilacja SDK</string>
     <string name="settings_force_kill_webui_process">Wymuś zamknięcie procesu WebUI</string>
     <string name="settings_force_kill_webui_process_desc">Natychmiastowo zatrzymuje aktualnie działający proces WebUI X. [bold]Nie ma to wpływu na KSU WebUI.[/bold]</string>
+    <string name="webui_additional_config">Dodatkowa konfiguracja</string>
+    <string name="webui_additional_config_desc">Opcjonalne konfiguracje zdefiniowane przez twórcę modułu.</string>
 </resources>
