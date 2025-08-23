@@ -25,7 +25,7 @@
     <string name="non_root_note">要使用 WebUI X 的所有功能，必须使用已 root 的 Android 设备。WebUI X 不提供有关 root 的操作说明，也不对 root 过程中或使用 WebUI X 本身可能造成的任何破坏负责。</string>
     <string name="select">选择</string>
     <string name="continue_with">继续使用 %1$s</string>
-    <string name="select_your_platform">选择工作方式</string>
+    <string name="select_your_platform">选择你的工作方式</string>
     <string name="welcome">欢迎使用！</string>
     <string name="magisk">Magisk</string>
     <string name="kernelsu">KernelSU</string>
@@ -118,5 +118,10 @@
     <string name="setting_licenses">开放源代码许可</string>
     <string name="setting_licenses_desc">查看开放源代码许可</string>
     <string name="license_title">开放源代码许可</string>
-    <string name="webui_config_caching_max_age_title">缓存最大刷新时间</string>
+    <string name="webui_config_caching_max_age_title">缓存有效期</string>
+    <string name="latest_commit_id">最新一次提交的ID</string>
+    <string name="build_tools_version">构建工具版本</string>
+    <string name="compile_sdk">编译SDK</string>
+    <string name="settings_force_kill_webui_process">强制停止WebUI进程</string>
+    <string name="settings_force_kill_webui_process_desc">立即终止当前正在运行的 WebUI X 进程。[bold]该操作不会影响 KSU WebUI。[/bold]</string>
 </resources>
