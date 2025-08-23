@@ -63,13 +63,11 @@ jobs:
         id: apk
         run: |
           apk_path=$(find app/build/outputs/apk/${{ env.FLAVOR_LOWERCASE }}/${{ env.BUILD_TYPE_LOWERCASE }} -name "*.apk" -print -quit)
-          mapping_path=$(find app/build/outputs/mapping/${{ env.FLAVOR_LOWERCASE }}${{ env.BUILD_TYPE_CAPITALIZED }} -name "mapping.txt" -print -quit)
           name=$(basename "$apk_path" .apk)
 
           echo "name=$name" >> $GITHUB_OUTPUT
           echo "path=$apk_path" >> $GITHUB_OUTPUT
-          echo "mapping=$mapping_path" >> $GITHUB_OUTPUT
-
+          
           echo "${{ env.FLAVOR_CAPITALIZED_ALL }}_NAME=\"$name\"" >> ${{ inputs.flavor }}.${{ inputs.buildType }}.txt
 
 # WebUI X Portable doesn't have mappings.
