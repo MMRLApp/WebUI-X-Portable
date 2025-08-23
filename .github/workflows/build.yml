@@ -72,12 +72,13 @@ jobs:
 
           echo "${{ env.FLAVOR_CAPITALIZED_ALL }}_NAME=\"$name\"" >> ${{ inputs.flavor }}.${{ inputs.buildType }}.txt
 
-      - name: Upload mapping as artifact
-        if: steps.apk.outputs.mapping != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ inputs.flavor }}-${{ inputs.buildType }}-mapping
-          path: ${{ steps.apk.outputs.mapping }}
+# WebUI X Portable doesn't have mappings.
+#      - name: Upload mapping as artifact
+#        if: steps.apk.outputs.mapping != ''
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ${{ inputs.flavor }}-${{ inputs.buildType }}-mapping
+#          path: ${{ steps.apk.outputs.mapping }}
 
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
