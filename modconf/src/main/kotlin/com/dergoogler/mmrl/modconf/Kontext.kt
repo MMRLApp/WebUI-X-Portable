@@ -2,14 +2,11 @@ package com.dergoogler.mmrl.modconf
 
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.res.AssetManager
-import android.content.res.Resources
+import android.os.Build
 import android.util.Log
 import com.dergoogler.mmrl.modconf.config.ModConfConfig.Companion.asModconfConfig
-import com.dergoogler.mmrl.platform.file.ExtFile
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.platform.model.ModId.Companion.modconfDependenciesDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.modconfDir
 import dalvik.system.InMemoryDexClassLoader
 import java.nio.ByteBuffer
@@ -50,78 +47,31 @@ class Kontext(
         }
     }
 
-    val sources by lazy {
-        try {
-            val resFilePath = config.resources
-                ?: return@lazy null
-            val resFile = SuFile(modId.modconfDependenciesDir, resFilePath)
-            if (!resFile.isFile || resFile.extension != "arsc") return@lazy null
-
-            // Copy to a temporary file in app cache to ensure AssetManager can access it
-            val tmpFile = ExtFile(cacheDir, "temp_resources.arsc").apply {
-                outputStream().use { out ->
-                    resFile.newInputStream().use { input -> input.copyTo(out) }
-                }
-            }
-
-            // Create AssetManager and add temp file path
-            val assetManager =
-                AssetManager::class.java.getDeclaredConstructor().newInstance().apply {
-                    AssetManager::class.java.getMethod("addAssetPath", String::class.java)
-                        .invoke(this, tmpFile.absolutePath)
-                }
-
-            // Create Resources using current app resources for metrics/config
-            Resources(
-                assetManager,
-                context.resources.displayMetrics,
-                context.resources.configuration
-            ).also {
-                Log.i(TAG, "Loaded resources.arsc from: ${tmpFile.absolutePath} (via temp file)")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to load resources.arsc", e)
-            null
-        } ?: return@lazy null
-    }
-
     private fun createDexLoader(): ClassLoader? {
-        val entryPointPath: String? = config.entryPoint
+        val entryPointPaths: List<String>? = config.entryPoints
         val className: String? = config.className
-        if (entryPointPath == null || className == null) {
-            Log.e(TAG, "Missing entryPoint or className in config")
+        if (entryPointPaths == null || className == null) {
+            Log.e(TAG, "Missing entryPoints or className in config")
             return null
         }
 
-        val entryPointFile = SuFile(modId.modconfDir, entryPointPath)
-        val dependenciesDir = modId.modconfDependenciesDir
-        var parentClassLoader: ClassLoader = classLoader
+        val entryPointFiles = entryPointPaths.map { SuFile(modId.modconfDir, it) }
 
-        if (config.dependencies.isNotEmpty() && dependenciesDir.exists() && dependenciesDir.isDirectory()) {
-            dependenciesDir.listFiles()?.sorted()?.forEach { depFile ->
-                if (depFile.isFile && depFile.extension == "dex") {
-                    try {
-                        val depBytes = SuFile(dependenciesDir, depFile).readBytes()
-                        parentClassLoader =
-                            InMemoryDexClassLoader(ByteBuffer.wrap(depBytes), parentClassLoader)
-                        Log.i(TAG, "Loaded dependency: ${depFile.name}")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to load dependency: ${depFile.name}", e)
-                    }
-                }
-            }
-        }
-
-        if (!entryPointFile.isFile || entryPointFile.extension != "dex") {
-            Log.e(TAG, "Provided entryPoint is not a valid .dex file: ${entryPointFile.path}")
+        if (entryPointFiles.any { !it.isFile || it.extension != "dex" }) {
+            Log.e(TAG, "Invalid entryPoint file(s)")
             return null
         }
 
         return try {
-            val dexFileBytes = entryPointFile.readBytes()
-            InMemoryDexClassLoader(ByteBuffer.wrap(dexFileBytes), parentClassLoader)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                val dexFilesBytes = entryPointFiles.map { ByteBuffer.wrap(it.readBytes()) }
+                InMemoryDexClassLoader(dexFilesBytes.toTypedArray(), classLoader)
+            } else {
+                val dexFileBytes = entryPointFiles.first().readBytes()
+                InMemoryDexClassLoader(ByteBuffer.wrap(dexFileBytes), classLoader)
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to load entryPoint dex: ${entryPointFile.path}", e)
+            Log.e(TAG, "Failed to load entryPoints", e)
             null
         }
     }

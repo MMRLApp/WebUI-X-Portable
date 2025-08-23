@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules.screens
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
@@ -64,10 +65,10 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.DexSourceType
-import com.dergoogler.mmrl.webui.model.MutableConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig
-import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
+import com.dergoogler.mmrl.webui.model.rememberConfigFile
+import com.dergoogler.mmrl.webui.model.toWebUIConfigState
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.util.asMutableMap
 import com.dergoogler.mmrl.wx.util.toDataClass
@@ -97,7 +98,7 @@ fun PluginsScreen(module: LocalModule) {
 
     val scope = rememberCoroutineScope()
 
-    val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
+    val stableFlow = remember(modId) { modId.toWebUIConfigState() }
     val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
 
     val listState = rememberLazyListState()
@@ -190,17 +191,10 @@ private fun PluginCard(
 ) {
     if (plugin.path == null || plugin.className == null) return
 
-    val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
-    val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
-    val scope = rememberCoroutineScope()
+    val (config, save) = rememberConfigFile(modId.WebUIConfig)
 
     val context = LocalContext.current
 
-    fun slave(builderAction: MutableConfig<Any?>.(WebUIConfig) -> Unit) {
-        scope.launch {
-            config.save(builderAction)
-        }
-    }
 
     Card {
         val path = plugin.path!!
@@ -216,7 +210,7 @@ private fun PluginCard(
                 selection = plugin.type,
                 options = dexTypeList,
                 onConfirm = { t ->
-                    slave {
+                    save {
                         val updated = it.dexFiles.toMutableList().apply {
                             val old = this[index].asMutableMap()
                             old["type"] = t.value
@@ -236,7 +230,7 @@ private fun PluginCard(
             TextEditDialogItem(
                 value = path,
                 onConfirm = { p ->
-                    slave {
+                    save {
                         val updated = it.dexFiles.toMutableList().apply {
                             val old = this[index].asMutableMap()
                             old["path"] = p
@@ -254,7 +248,7 @@ private fun PluginCard(
             TextEditDialogItem(
                 value = className,
                 onConfirm = { c ->
-                    slave {
+                    save {
                         val updated = it.dexFiles.toMutableList().apply {
                             val old = this[index].asMutableMap()
                             old["className"] = c
@@ -272,7 +266,8 @@ private fun PluginCard(
             SwitchItem(
                 checked = plugin.cache,
                 onChange = { c ->
-                    slave {
+                    save {
+                        Log.d("PluginCard", "cache: $it")
                         val updated = it.dexFiles.toMutableList().apply {
                             val old = this[index].asMutableMap()
                             old["cache"] = c
@@ -300,7 +295,7 @@ private fun PluginCard(
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 DexRemove {
-                    slave {
+                    save {
                         val files = it.dexFiles.toMutableList()
                         if (files.remove(plugin)) {
                             "dexFiles" change files.toList()

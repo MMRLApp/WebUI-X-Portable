@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 @JsonClass(generateAdapter = true)
 data class ModConfConfig(
-    val entryPoint: String? = null,
+    val entryPoints: List<String>? = null,
     val className: String? = null,
     val resources: String? = null,
     val dependencies: List<String> = emptyList(),

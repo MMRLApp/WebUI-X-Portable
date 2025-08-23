@@ -91,6 +91,7 @@ class WebUIActivity : WXActivity() {
             debugDomain = userPrefs.webUiDevUrl,
             userAgentString = userAgent,
             pluginsEnabled = true,
+            disableConfigCaching = true,
             isDarkMode = userPrefs.isDarkMode(),
             colorScheme = colorScheme,
             cls = WebUIActivity::class.java

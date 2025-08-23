@@ -18,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ext.isNotNullOrEmpty
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.shareText
@@ -41,16 +39,14 @@ import com.dergoogler.mmrl.ui.component.listItem.ListHeader
 import com.dergoogler.mmrl.ui.component.listItem.ListItemDefaults
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
-import com.dergoogler.mmrl.webui.model.MutableConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig
-import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
+import com.dergoogler.mmrl.webui.model.rememberConfigFile
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AdditionalConfigEditorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.PluginsScreenDestination
-import kotlinx.coroutines.launch
 
 
 private val Context.interceptorList: List<RadioOptionItem<String?>>
@@ -70,21 +66,9 @@ private val Context.interceptorList: List<RadioOptionItem<String?>>
 fun ConfigEditorScreen(module: LocalModule) {
     val navigator = LocalDestinationsNavigator.current
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val modId = module.id
 
-    val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
-    val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
-
-//
-//    val moduleConfigFile: SuFile = remember {
-//        var mfile = modId.moduleDir.fromPaths("config.module.json")
-//        if (mfile == null) {
-//            mfile = SuFile(modId.moduleDir, "config.module.json")
-//            mfile.writeText("{}")
-//        }
-//        mfile
-//    }
+    val (config, save) = rememberConfigFile(modId.WebUIConfig)
 
     var exportBottomSheet by remember { mutableStateOf(false) }
     if (exportBottomSheet) ExportBottomSheet(
@@ -96,40 +80,6 @@ fun ConfigEditorScreen(module: LocalModule) {
             context.shareText(config.toJson())
         }
     )
-
-//    var moduleConfigMap by remember { mutableStateOf<Map<String, Any>?>(null) }
-
-
-//    LaunchedEffect(moduleConfigFile) {
-//        coroutineScope.launch {
-//            moduleConfigMap = try {
-//                mapAdapter.fromJson(moduleConfigFile.readText()) ?: emptyMap()
-//            } catch (e: Exception) {
-//                emptyMap()
-//            }
-//        }
-//    }
-
-    fun slave(builderAction: MutableConfig<Any?>.(WebUIConfig) -> Unit) {
-        coroutineScope.launch {
-            config.save(builderAction)
-        }
-    }
-
-//    fun module(key: String, value: Any) {
-//        val currentConfig = moduleConfigMap ?: return
-//
-//        val updatedConfig = currentConfig.toMutableMap().apply {
-//            this[key] = value
-//        }
-//
-//        moduleConfigMap = updatedConfig
-//
-//        coroutineScope.launch {
-//            val json = mapAdapter.toJson(updatedConfig)
-//            moduleConfigFile.writeText(json)
-//        }
-//    }
 
     Scaffold(
         topBar = {
@@ -174,7 +124,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 },
                 value = config.title ?: "",
                 onConfirm = {
-                    slave {
+                    save { _ ->
                         "title" change it
                     }
                 }
@@ -194,7 +144,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 },
                 value = config.icon ?: "",
                 onConfirm = {
-                    slave {
+                    save { _ ->
                         "icon" change it
                     }
                 }
@@ -226,7 +176,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_exit_confirm_desc),
                 checked = hasNoJsBackInterceptor && config.exitConfirm,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "exitConfirm" change isChecked
                     }
                 }
@@ -239,7 +189,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_back_handler_desc),
                 checked = backHandler,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "backHandler" change isChecked
                     }
                 },
@@ -258,7 +208,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                         return@ListRadioCheckItem
                     }
 
-                    slave { _ ->
+                    save { _ ->
                         "backInterceptor" change it.value
                     }
                 }
@@ -271,7 +221,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_pull_to_refresh_desc),
                 checked = pullToRefresh,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "pullToRefresh" change isChecked
                     }
                 }
@@ -283,15 +233,15 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_refresh_interceptor_desc),
                 value = config.refreshInterceptor,
                 options = context.interceptorList,
-                onConfirm = {
-                    if (it.value == null) {
+                onConfirm = { item ->
+                    if (item.value == null) {
                         Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
                             .show()
                         return@ListRadioCheckItem
                     }
 
-                    slave { _ ->
-                        "refreshInterceptor" change it.value
+                    save { _ ->
+                        "refreshInterceptor" change item.value
                     }
                 }
             )
@@ -301,7 +251,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_window_resize_desc),
                 checked = config.windowResize,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "windowResize" change isChecked
                     }
                 }
@@ -312,7 +262,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_auto_style_statusbars_desc),
                 checked = config.autoStatusBarsStyle,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "autoStatusBarsStyle" change isChecked
                     }
                 }
@@ -323,7 +273,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
                 checked = config.killShellWhenBackground,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "killShellWhenBackground" change isChecked
                     }
                 }
@@ -335,12 +285,12 @@ fun ConfigEditorScreen(module: LocalModule) {
                 value = config.historyFallbackFile,
                 checked = config.historyFallback,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "historyFallback" change isChecked
                     }
                 },
                 onConfirm = {
-                    slave {
+                    save { _ ->
                         "historyFallbackFile" change it
                     }
                 }
@@ -351,7 +301,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_content_security_policy_desc),
                 value = config.contentSecurityPolicy,
                 onConfirm = {
-                    slave {
+                    save { _ ->
                         "contentSecurityPolicy" change it
                     }
                 }
@@ -362,7 +312,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.webui_config_caching_desc),
                 checked = config.caching,
                 onChange = { isChecked ->
-                    slave {
+                    save {
                         "caching" change isChecked
                     }
                 }
@@ -377,34 +327,11 @@ fun ConfigEditorScreen(module: LocalModule) {
                     !Regex("^[0-9]+$").matches(it)
                 },
                 onConfirm = {
-                    slave { _ ->
+                    save { _ ->
                         "cachingMaxAge" change it.toInt()
                     }
                 }
             )
-
-//            ListHeader(title = stringResource(R.string.module_config))
-
-//            moduleConfigMap.nullable { config ->
-//                ListRadioCheckItem(
-//                    title = stringResource(R.string.settings_webui_engine),
-//                    desc = stringResource(R.string.settings_webui_engine_desc),
-//                    value = config.getProp("webui-engine", "wx"),
-//                    options = listOf(
-//                        RadioOptionItem(
-//                            value = "wx",
-//                            title = stringResource(R.string.settings_webui_engine_wx)
-//                        ),
-//                        RadioOptionItem(
-//                            value = "ksu",
-//                            title = stringResource(R.string.settings_webui_engine_ksu)
-//                        ),
-//                    ),
-//                    onConfirm = {
-//                        module("webui-engine", it.value)
-//                    }
-//                )
-//            }
         }
     }
 }

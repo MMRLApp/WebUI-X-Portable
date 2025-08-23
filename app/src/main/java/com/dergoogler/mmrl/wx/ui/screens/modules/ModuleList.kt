@@ -32,7 +32,7 @@ import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import com.dergoogler.mmrl.webui.model.WebUIConfig
-import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.webUiConfig
+import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
@@ -98,7 +98,7 @@ fun ModuleItem(
             )
         },
         trailingButton = {
-            val config = module.webUiConfig
+            val config = module.id.toWebUIConfig()
 
             ShortcutAdd(
                 config = config,

@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package com.dergoogler.mmrl.webui.model
 
 import android.content.Context
@@ -9,13 +11,10 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
 import android.util.Log
 import android.widget.Toast
-import com.dergoogler.mmrl.ext.readText
 import com.dergoogler.mmrl.ext.toBooleanOrNull
 import com.dergoogler.mmrl.ext.toIntOrNull
 import com.dergoogler.mmrl.ext.toStringOrNull
-import com.dergoogler.mmrl.ext.writeText
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenUserManager
@@ -32,12 +31,7 @@ import com.squareup.moshi.JsonClass
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.StateFlow
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
@@ -279,7 +273,7 @@ enum class WebUIConfigAdditionalConfigType {
 
 @JsonClass(generateAdapter = true)
 data class WebUIConfig(
-    val modId: ModId = ModId.EMPTY,
+    val __module__identifier__: ModId,
     val require: WebUIConfigRequire = WebUIConfigRequire(),
     val permissions: List<String> = emptyList(),
     val historyFallback: Boolean = false,
@@ -302,14 +296,25 @@ data class WebUIConfig(
     val cachingMaxAge: Int = 86400,
     val extra: Map<String, Any?> = emptyMap(),
     val additionalConfig: List<WebUIConfigAdditionalConfig> = emptyList(),
+) : ConfigFile<WebUIConfig>(
+    configFile = SuFile(__module__identifier__.webrootDir, "config.json"),
+    overrideConfigFile = SuFile(__module__identifier__.moduleConfigDir, "config.webroot.json"),
+    configType = WebUIConfig::class.java,
+    defaultConfigFactory = {
+        WebUIConfig(__module__identifier__)
+    },
 ) {
+    override val moduleId = __module__identifier__
+
     val hasRootPathPermission get() = WebUIPermissions.WX_ROOT_PATH in permissions
 
     val useJavaScriptRefreshInterceptor get() = refreshInterceptor == "javascript"
     val useNativeRefreshInterceptor get() = refreshInterceptor == "native"
 
-    private fun getIconFile() = if (icon != null) SuFile(modId.webrootDir, icon) else null
-    private fun getShortcutId() = "shortcut_$modId"
+    private fun getIconFile() =
+        if (icon != null) SuFile(__module__identifier__.webrootDir, icon) else null
+
+    private fun getShortcutId() = "shortcut_$__module__identifier__"
 
     fun canAddWebUIShortcut(): Boolean {
         val iconFile = getIconFile()
@@ -349,7 +354,7 @@ data class WebUIConfig(
             }
 
             val shortcutIntent = Intent(context, cls).apply {
-                putModId(modId.toString())
+                putModId(__module__identifier__.toString())
             }
 
             shortcutIntent.action = Intent.ACTION_VIEW
@@ -364,165 +369,17 @@ data class WebUIConfig(
             shortcutManager.requestPinShortcut(shortcut, null)
         }
     }
-
-    fun toJson(intents: Int = 2): String =
-        __webui__adapters__.ConfigAdapter.indent(" ".repeat(intents)).toJson(this)
-
-    fun Map<String, Any?>.toJson(intents: Int = 2): String =
-        __webui__adapters__.MapAdapter.indent(" ".repeat(intents)).toJson(this)
-
-    suspend fun <V : Any?> save(builderAction: MutableConfig<V>.(WebUIConfig) -> Unit) {
-        val updates = buildMutableConfig(builderAction)
-        if (updates.isEmpty()) return
-
-        val mutex = modConfigLocks.getOrPut(modId) { Mutex() }
-
-        mutex.withLock {
-            withContext(Dispatchers.IO) {
-                val (_, overrideFile) = modId.configFiles
-                val overrideText = overrideFile.readText(Charsets.UTF_8)
-                val overrideMap = overrideText.toJsonMap()?.toMutableMap()
-                    ?: mutableMapOf()
-                overrideMap.putAll(updates)
-                overrideFile.writeText(
-                    __webui__adapters__.MapAdapter.indent("  ").toJson(overrideMap), Charsets.UTF_8
-                )
-
-                val newConfig = modId.loadConfig()
-                _configState.update { it + (modId to newConfig) }
-
-                synchronized(configFlows) {
-                    val flow = configFlows[modId]
-                    if (flow != null) flow.value = newConfig
-                }
-            }
-        }
-    }
-
-    companion object {
-        const val TAG = "WebUIConfig"
-
-
-        fun fromJson(json: String): WebUIConfig? =
-            __webui__adapters__.ConfigAdapter.fromJson(json)
-
-        private val _configState = MutableStateFlow<Map<ModId, WebUIConfig>>(emptyMap())
-
-        private val modConfigLocks = ConcurrentHashMap<ModId, Mutex>()
-        private val configFlows = mutableMapOf<ModId, MutableStateFlow<WebUIConfig>>()
-
-        private val ModId.configFiles: Pair<SuFile?, SuFile>
-            get() {
-                // Do not write to this file
-                val webrootConfig = webrootDir.fromPaths("config.json", "config.mmrl.json")
-                val moduleConfigConfig = SuFile(moduleConfigDir, "config.webroot.json")
-
-                if (!moduleConfigConfig.exists()) {
-                    moduleConfigDir.mkdirs()
-                    moduleConfigConfig.writeText("{}", Charsets.UTF_8)
-                }
-
-                return Pair(
-                    webrootConfig, moduleConfigConfig
-                )
-            }
-
-        val ModId.asWebUIConfigFlow: MutableStateFlow<WebUIConfig>
-            get() = synchronized(configFlows) {
-                configFlows.getOrPut(this) {
-                    val initialConfig = loadConfig()
-                    _configState.update { it + (this to initialConfig) }
-                    MutableStateFlow(initialConfig)
-                }
-            }
-
-        val ModId.asWebUIConfig: WebUIConfig
-            get() = _configState.value[this] ?: loadConfig().also { config ->
-                _configState.update { current -> current + (this to config) }
-            }
-
-        val LocalModule.webUiConfig: WebUIConfig
-            get() = id.asWebUIConfig
-
-        private fun ModId.loadConfig(): WebUIConfig {
-            val (baseFile, overrideFile) = configFiles
-            val baseJson = baseFile?.readText(Charsets.UTF_8) ?: "{}"
-            val overrideJson = overrideFile.readText(Charsets.UTF_8)
-            val override = overrideJson.toJsonMap() ?: mutableMapOf()
-            val mergedMap = baseJson.toJsonMap()?.deepMerge(override)
-            return mergedMap?.let {
-                __webui__adapters__.ConfigAdapter.fromJson(
-                    __webui__adapters__.MapAdapter.toJson(
-                        it
-                    )
-                )
-            }
-                ?.copy(modId = this) ?: WebUIConfig(modId = this)
-        }
-
-        fun String?.toJsonMap(): Map<String, Any?>? {
-            return this?.let { json ->
-                runCatching { __webui__adapters__.MapAdapter.fromJson(json) }.getOrNull()
-            }
-        }
-
-        private fun Map<String, Any?>.deepMerge(
-            other: Map<String, Any?>,
-            listMergeStrategy: ListMergeStrategy = ListMergeStrategy.REPLACE,
-        ): Map<String, Any?> {
-            val result = this.toMutableMap()
-            for ((key, overrideValue) in other) {
-                val baseValue = result[key]
-                result[key] = when {
-                    baseValue is Map<*, *> && overrideValue is Map<*, *> -> {
-                        baseValue.asStringMap()
-                            ?.deepMerge(
-                                overrideValue.asStringMap() ?: emptyMap(),
-                                listMergeStrategy
-                            )
-                    }
-
-                    baseValue is List<*> && overrideValue is List<*> -> {
-                        when (listMergeStrategy) {
-                            ListMergeStrategy.REPLACE -> overrideValue
-                            ListMergeStrategy.APPEND -> baseValue + overrideValue
-                            ListMergeStrategy.DEDUPLICATE -> (baseValue + overrideValue).distinct()
-                        }
-                    }
-
-                    overrideValue != null -> overrideValue
-                    else -> baseValue
-                }
-            }
-            return result
-        }
-
-        private fun Any?.asStringMap(): Map<String, Any?>? {
-            return (this as? Map<*, *>)?.mapNotNull { (key, value) ->
-                (key as? String)?.let { it to value }
-            }?.toMap()
-        }
-
-        enum class ListMergeStrategy {
-            REPLACE,
-            APPEND,
-            DEDUPLICATE
-        }
-
-        private class MutableConfigMap<V : Any?>() : LinkedHashMap<String, V>(), MutableConfig<V> {
-            override infix fun String.change(that: V): V? = put(this, that)
-            override infix fun String.to(that: V): V? = change(that)
-        }
-
-        private inline fun <V : Any?> WebUIConfig.buildMutableConfig(builder: MutableConfig<V>.(WebUIConfig) -> Unit): Map<String, V> {
-            val map = MutableConfigMap<V>()
-            map.builder(this)
-            return map
-        }
-    }
 }
 
-interface MutableConfig<V> : MutableMap<String, V> {
-    infix fun String.change(that: V): V?
-    infix fun String.to(that: V): V?
+private val webUIConfigCache = ConcurrentHashMap<ModId, WebUIConfig>()
+
+val ModId.WebUIConfig: ConfigFile<WebUIConfig>
+    get() = webUIConfigCache.getOrPut(this) { WebUIConfig(this) }
+
+fun ModId.toWebUIConfigState(): StateFlow<WebUIConfig> {
+    return WebUIConfig.getConfigStateFlow()
+}
+
+fun ModId.toWebUIConfig(disableCache: Boolean = false): WebUIConfig {
+    return WebUIConfig.getConfig(disableCache)
 }

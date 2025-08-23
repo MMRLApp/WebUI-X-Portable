@@ -5,11 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.toBooleanOrNull
@@ -22,18 +18,16 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.webui.model.JSONBoolean.Companion.toJsonBoolean
-import com.dergoogler.mmrl.webui.model.MutableConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig
-import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfigType
+import com.dergoogler.mmrl.webui.model.rememberConfigFile
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.asMutableMap
 import com.dergoogler.mmrl.wx.util.toDataClass
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import kotlinx.coroutines.launch
 
 @Destination<RootGraph>()
 @Composable
@@ -41,8 +35,7 @@ fun AdditionalConfigEditorScreen(module: LocalModule) {
     val navigator = LocalDestinationsNavigator.current
     val modId = module.id
 
-    val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
-    val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
+    val (config) = rememberConfigFile(modId.WebUIConfig)
 
     Scaffold(
         topBar = {
@@ -81,22 +74,14 @@ private fun ListScope.Item(
     item: WebUIConfigAdditionalConfig,
     modId: ModId,
 ) {
-    val coroutineScope = rememberCoroutineScope()
-    val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
-    val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
-
-    fun slave(builderAction: MutableConfig<Any?>.(WebUIConfig) -> Unit) {
-        coroutineScope.launch {
-            config.save(builderAction)
-        }
-    }
+    val (_, save) = rememberConfigFile(modId.WebUIConfig)
 
     when (item.type) {
         WebUIConfigAdditionalConfigType.SWITCH -> {
             SwitchItem(
                 checked = item.value.toBooleanOrNull() ?: false,
                 onChange = { state ->
-                    slave {
+                    save {
                         val updated = it.additionalConfig.toMutableList().apply {
                             val old = this[index].asMutableMap()
                             old["value"] = state.toJsonBoolean()

@@ -36,7 +36,7 @@ import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXEventHandler
 import com.dergoogler.mmrl.webui.model.WXKeyboardEventData
 import com.dergoogler.mmrl.webui.model.WebUIConfig
-import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfig
+import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.webui.view.WebUIXView
@@ -101,12 +101,16 @@ open class WXActivity : ComponentActivity() {
      * This function provides a convenient way to access and configure web UI settings
      * specific to the current module identified by [modId].
      *
+     * If the `view` is available and its `options.disableConfigCaching` is true,
+     * the [WebUIConfig] will be created without caching. Otherwise, it will use caching.
+     *
      * @param R The return type of the [block].
-     * @param block A lambda function that receives a [WebUIConfig] and returns a value of type [R].
+     * @param block A lambda function that receives a [WebUIConfig] as its receiver and returns a value of type [R].
      * @return The result of executing the [block], or `null` if [modId] is `null`.
      */
     fun <R> config(block: WebUIConfig.() -> R): R? = modId {
-        return@modId block(asWebUIConfig)
+        val disableConfigCaching = view?.options?.disableConfigCaching ?: false
+        return@modId block(toWebUIConfig(disableConfigCaching))
     }
 
     /**

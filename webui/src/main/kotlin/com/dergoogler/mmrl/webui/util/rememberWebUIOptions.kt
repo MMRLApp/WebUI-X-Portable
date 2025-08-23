@@ -27,7 +27,7 @@ import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.client.WXClient
 import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.RequireNewVersion
-import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfig
+import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import java.net.URI
 
 
@@ -78,6 +78,7 @@ data class WebUIOptions(
     val userAgentString: String = "DON'T TRACK ME DOWN MOTHERFUCKER!",
     val colorScheme: ColorScheme = context.getColorScheme(id = 0, darkMode = isDarkMode),
     val client: ((WebUIOptions, Insets, assetHandlers: List<Pair<String, PathHandler>>) -> WXClient)? = null,
+    val disableConfigCaching: Boolean = false,
     val cls: Class<out WXActivity>? = null,
 ) : ContextWrapper(context) {
     private val packageManager
@@ -125,7 +126,7 @@ data class WebUIOptions(
         return domainSafeRegex.matches(domain)
     }
 
-    val config = modId.asWebUIConfig
+    val config = modId.toWebUIConfig(disableConfigCaching)
 
     val indexFile: String
         get() {
