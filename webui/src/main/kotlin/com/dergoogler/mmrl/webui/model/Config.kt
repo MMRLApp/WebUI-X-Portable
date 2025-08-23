@@ -275,7 +275,7 @@ enum class WebUIConfigAdditionalConfigType {
 data class WebUIConfig(
     val __module__identifier__: ModId,
     val require: WebUIConfigRequire = WebUIConfigRequire(),
-    val permissions: List<String> = emptyList(),
+    val permissions: MutableList<String> = mutableListOf(),
     val historyFallback: Boolean = false,
     val title: String? = null,
     val icon: String? = null,
@@ -287,15 +287,15 @@ data class WebUIConfig(
     val pullToRefresh: Boolean = false,
     val historyFallbackFile: String = "index.html",
     val autoStatusBarsStyle: Boolean = true,
-    val dexFiles: List<WebUIConfigDexFile> = emptyList(),
+    val dexFiles: MutableList<WebUIConfigDexFile> = mutableListOf(),
     val killShellWhenBackground: Boolean = true,
     val contentSecurityPolicy: String = "default-src 'self' data: blob: {domain}; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
             "style-src 'self' 'unsafe-inline' {domain}; connect-src *",
     val caching: Boolean = true,
     val cachingMaxAge: Int = 86400,
-    val extra: Map<String, Any?> = emptyMap(),
-    val additionalConfig: List<WebUIConfigAdditionalConfig> = emptyList(),
+    val extra: MutableMap<String, Any?> = mutableMapOf(),
+    val additionalConfig: MutableList<WebUIConfigAdditionalConfig> = mutableListOf(),
 ) : ConfigFile<WebUIConfig>(
     configFile = SuFile(__module__identifier__.webrootDir, "config.json"),
     overrideConfigFile = SuFile(__module__identifier__.moduleConfigDir, "config.webroot.json"),

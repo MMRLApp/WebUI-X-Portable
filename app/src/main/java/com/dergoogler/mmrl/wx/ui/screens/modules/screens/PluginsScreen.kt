@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules.screens
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
@@ -70,8 +69,6 @@ import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import com.dergoogler.mmrl.webui.model.rememberConfigFile
 import com.dergoogler.mmrl.webui.model.toWebUIConfigState
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.util.asMutableMap
-import com.dergoogler.mmrl.wx.util.toDataClass
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import kotlinx.coroutines.launch
@@ -123,12 +120,12 @@ fun PluginsScreen(module: LocalModule) {
                     className = className
                 )
 
-                val dexFiles = config.dexFiles.toMutableList().apply {
+                val dexFiles = config.dexFiles.apply {
                     add(struct)
                 }
 
                 config.save {
-                    "dexFiles" change dexFiles.toList()
+                    "dexFiles" to dexFiles
                 }
             }
         }
@@ -191,10 +188,8 @@ private fun PluginCard(
 ) {
     if (plugin.path == null || plugin.className == null) return
 
-    val (config, save) = rememberConfigFile(modId.WebUIConfig)
-
+    val (_, save) = rememberConfigFile(modId.WebUIConfig)
     val context = LocalContext.current
-
 
     Card {
         val path = plugin.path!!
@@ -211,13 +206,9 @@ private fun PluginCard(
                 options = dexTypeList,
                 onConfirm = { t ->
                     save {
-                        val updated = it.dexFiles.toMutableList().apply {
-                            val old = this[index].asMutableMap()
-                            old["type"] = t.value
-                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        "dexFiles" to it.dexFiles.modify(index) {
+                            "type" to t.value
                         }
-
-                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -231,13 +222,9 @@ private fun PluginCard(
                 value = path,
                 onConfirm = { p ->
                     save {
-                        val updated = it.dexFiles.toMutableList().apply {
-                            val old = this[index].asMutableMap()
-                            old["path"] = p
-                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        "dexFiles" to it.dexFiles.modify(index) {
+                            "path" to p
                         }
-
-                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -249,13 +236,9 @@ private fun PluginCard(
                 value = className,
                 onConfirm = { c ->
                     save {
-                        val updated = it.dexFiles.toMutableList().apply {
-                            val old = this[index].asMutableMap()
-                            old["className"] = c
-                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        "dexFiles" to it.dexFiles.modify(index) {
+                            "className" to c
                         }
-
-                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -267,14 +250,9 @@ private fun PluginCard(
                 checked = plugin.cache,
                 onChange = { c ->
                     save {
-                        Log.d("PluginCard", "cache: $it")
-                        val updated = it.dexFiles.toMutableList().apply {
-                            val old = this[index].asMutableMap()
-                            old["cache"] = c
-                            this[index] = old.toDataClass<WebUIConfigDexFile>()
+                        "dexFiles" to it.dexFiles.modify(index) {
+                            "cache" to c
                         }
-
-                        "dexFiles" change updated
                     }
                 }
             ) {
@@ -296,9 +274,8 @@ private fun PluginCard(
                 Spacer(modifier = Modifier.weight(1f))
                 DexRemove {
                     save {
-                        val files = it.dexFiles.toMutableList()
-                        if (files.remove(plugin)) {
-                            "dexFiles" change files.toList()
+                        "dexFiles" to it.dexFiles.modify { list ->
+                            list.remove(plugin)
                         }
                     }
                 }

@@ -10,6 +10,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
+import com.dergoogler.mmrl.webui.model.ConfigFile.MutableConfigMap
 import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
@@ -27,6 +28,8 @@ import java.io.IOException
 import java.lang.reflect.ParameterizedType
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 enum class ConfigFileMergeStrategy {
     REPLACE,
@@ -34,7 +37,7 @@ enum class ConfigFileMergeStrategy {
     DEDUPLICATE
 }
 
-typealias ConfigFileSave<T> = (MutableConfig<Any?>.(T) -> Unit) -> Unit
+typealias ConfigFileSave<T> = (MutableConfigMap<Any?>.(T) -> Unit) -> Unit
 
 interface IConfig {
     val moduleId: ModId
@@ -98,12 +101,37 @@ abstract class ConfigFile<T>(
         }
     }
 
-    private class MutableConfigMap<V : Any?> : LinkedHashMap<String, V>(), MutableConfig<V> {
+    class MutableConfigMap<V : Any?> : LinkedHashMap<String, V>(), MutableConfig<V> {
         override infix fun String.change(that: V): V? = put(this, that)
         override infix fun String.to(that: V): V? = change(that)
+
+        inline fun <reified T : Any> List<T>.modify(
+            index: Int,
+            builder: MutableConfigMap<Any?>.(List<T>) -> Unit,
+        ): List<T> {
+            require(index in 0 until size) { "Index $index is out of bounds for list of size $size" }
+
+            val currentElement = this[index]
+            val configMap = currentElement.toMutableConfig()
+            configMap.builder(this)
+            val modifiedElement = configMap.toDataClass<T>()
+
+            // Return a new list instead of modifying in-place
+            return this.toMutableList().apply {
+                this[index] = modifiedElement
+            }
+        }
+
+        inline fun <reified T : Any> T.modify(
+            builder: MutableConfigMap<Any?>.(T) -> Unit,
+        ): T {
+            val gg = T::class.toMutableConfig()
+            gg.builder(this)
+            return gg.toDataClass()
+        }
     }
 
-    private fun <V : Any?> buildMutableConfig(builder: MutableConfig<V>.(T) -> Unit): Map<String, V> {
+    private fun <V : Any?> buildMutableConfig(builder: MutableConfigMap<V>.(T) -> Unit): Map<String, V> {
         val map = MutableConfigMap<V>()
         map.builder(getConfig())
         return map
@@ -154,7 +182,7 @@ abstract class ConfigFile<T>(
     }
 
     suspend fun <V : Any?> save(
-        builderAction: MutableConfig<V>.(T) -> Unit,
+        builderAction: MutableConfigMap<V>.(T) -> Unit,
     ) {
         val updates = buildMutableConfig(builderAction)
         if (updates.isEmpty()) return
@@ -322,4 +350,26 @@ inline fun <reified T> rememberConfigFile(config: ConfigFile<T>): Pair<T, Config
 interface MutableConfig<V> : MutableMap<String, V> {
     infix fun String.change(that: V): V?
     infix fun String.to(that: V): V?
+}
+
+inline fun <reified T : Any> T.toMutableConfig(): MutableConfigMap<Any?> {
+    val map = MutableConfigMap<Any?>()
+    map.putAll(toMap())
+    return map
+}
+
+inline fun <reified T : Any> T.toMap(): Map<String, Any?> {
+    val props = T::class.memberProperties.associateBy { it.name }
+    return props.keys.associateWith { props[it]?.get(this) }
+}
+
+inline fun <reified T : Any> Map<String, Any?>.toDataClass(): T {
+    val ctor = T::class.primaryConstructor
+        ?: throw IllegalArgumentException("No primary constructor found for ${T::class}")
+
+    val args = ctor.parameters.associateWith { param ->
+        this[param.name]
+    }
+
+    return ctor.callBy(args)
 }
