@@ -148,7 +148,7 @@ android {
     applicationVariants.configureEach {
         outputs.configureEach {
             (this as? ApkVariantOutputImpl)?.outputFileName =
-                "WebUI-X-$versionName.apk"
+                "WebUI-X-$versionName-$flavorName.apk"
         }
     }
 }
