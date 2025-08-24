@@ -1,0 +1,94 @@
+name: Release to Telegram
+
+on:
+  workflow_call:
+    inputs:
+      officialAssetName:
+        type: string
+        required: true
+      spoofedAssetName:
+        type: string
+        required: true
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  release-tg:
+    name: Release TG
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Official Release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.officialAssetName }}
+          path: official-apk
+
+      - name: Download Spoofed Release APK
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.spoofedAssetName }}
+          path: spoofed-apk
+      
+      - name: Find APKs by name
+        id: find_apks
+        run: |
+          # Look for official APK matching the artifact name
+          OFFICIAL_APK_PATH=$(find official-apk -maxdepth 1 -type f -name "${{ inputs.officialAssetName }}*.apk" -print -quit)
+          SPOOFED_APK_PATH=$(find spoofed-apk -maxdepth 1 -type f -name "${{ inputs.spoofedAssetName }}*.apk" -print -quit)
+
+          if [ -z "$OFFICIAL_APK_PATH" ]; then
+            echo "❌ No official APK found matching ${{ inputs.officialAssetName }}"
+            exit 1
+          fi
+
+          if [ -z "$SPOOFED_APK_PATH" ]; then
+            echo "❌ No spoofed APK found matching ${{ inputs.spoofedAssetName }}"
+            exit 1
+          fi
+
+          echo "OFFICIAL_APK_PATH=$OFFICIAL_APK_PATH" >> $GITHUB_OUTPUT
+          echo "SPOOFED_APK_PATH=$SPOOFED_APK_PATH" >> $GITHUB_OUTPUT
+
+      - name: Get commit info and build metadata
+        id: meta
+        run: |
+          BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S")
+          VERSION=$(git rev-list --count HEAD || echo 0)
+
+          if [ -f commits.sh ]; then
+            MESSAGE=$(bash commits.sh 950)
+          else
+            MESSAGE="Latest commits not available."
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+          echo "MESSAGE<<EOF" >> $GITHUB_ENV
+          echo "$MESSAGE" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Upload files to Telegram
+        uses: xz-dev/TelegramFileUploader@v1.1.1
+        with:
+          to-who: '@MMRLCI'
+          message: |
+            **WebUI X v${{ env.VERSION }}**
+
+            **What's new?**
+            ${{ env.MESSAGE }}
+
+            Branch: ${{ env.BRANCH_NAME }}
+            [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          files: |
+            ${{ steps.find_apks.outputs.OFFICIAL_APK_PATH }}
+            ${{ steps.find_apks.outputs.SPOOFED_APK_PATH }}
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}

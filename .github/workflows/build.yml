@@ -1,0 +1,91 @@
+name: Build APK
+
+on:
+  workflow_call:
+    inputs:
+      flavor:
+        description: "Flavor"
+        type: string
+        required: true
+      buildType:
+        description: "Build Type"
+        type: string
+        required: true
+
+jobs:
+  build:
+    name: Build ${{ inputs.flavor }}-${{ inputs.buildType }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment variables
+        run: |
+          FLAVOR="${{ inputs.flavor }}"
+          BUILD_TYPE="${{ inputs.buildType }}"
+
+          echo "FLAVOR_CAPITALIZED=${FLAVOR^}" >> $GITHUB_ENV
+          echo "FLAVOR_CAPITALIZED_ALL=${FLAVOR^^}" >> $GITHUB_ENV
+          echo "FLAVOR_LOWERCASE=${FLAVOR,,}" >> $GITHUB_ENV
+          echo "BUILD_TYPE_CAPITALIZED=${BUILD_TYPE^}" >> $GITHUB_ENV
+          echo "BUILD_TYPE_LOWERCASE=${BUILD_TYPE,,}" >> $GITHUB_ENV
+          echo "BUILD_COMMAND=${FLAVOR^}${BUILD_TYPE^}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up signing key
+        run: |
+          if [ -n "${{ secrets.KEY_STORE }}" ]; then
+              echo keyStorePassword='${{ secrets.KEY_STORE_PASSWORD }}' >> signing.properties
+              echo keyAlias='${{ secrets.KEY_ALIAS }}' >> signing.properties
+              echo keyPassword='${{ secrets.KEY_PASSWORD }}' >> signing.properties
+              echo keyStore='${{ github.workspace }}/key.jks' >> signing.properties
+              echo ${{ secrets.KEY_STORE }} | base64 --decode > ${{ github.workspace }}/key.jks
+          fi
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          validate-wrappers: true
+
+      - name: Build APK
+        run: chmod +x ./gradlew && ./gradlew assemble${{ env.BUILD_COMMAND }}
+
+      - name: Get APK output
+        id: apk
+        run: |
+          apk_path=$(find app/build/outputs/apk/${{ env.FLAVOR_LOWERCASE }}/${{ env.BUILD_TYPE_LOWERCASE }} -name "*.apk" -print -quit)
+          name=$(basename "$apk_path" .apk)
+
+          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "path=$apk_path" >> $GITHUB_OUTPUT
+          
+          echo "${{ env.FLAVOR_CAPITALIZED_ALL }}_NAME=\"$name\"" >> ${{ inputs.flavor }}.${{ inputs.buildType }}.txt
+
+# WebUI X Portable doesn't have mappings.
+#      - name: Upload mapping as artifact
+#        if: steps.apk.outputs.mapping != ''
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: ${{ inputs.flavor }}-${{ inputs.buildType }}-mapping
+#          path: ${{ steps.apk.outputs.mapping }}
+
+      - name: Upload APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.name }}
+          path: ${{ steps.apk.outputs.path }}
+
+      - name: Upload env info
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.flavor }}.${{ inputs.buildType }}
+          path: ${{ inputs.flavor }}.${{ inputs.buildType }}.txt

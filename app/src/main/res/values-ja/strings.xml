@@ -122,4 +122,8 @@
     <string name="latest_commit_id">最新のコミット ID</string>
     <string name="build_tools_version">ビルドツールのバージョン</string>
     <string name="compile_sdk">コンパイル SDK</string>
+    <string name="settings_force_kill_webui_process">WebUI プロセスを強制停止</string>
+    <string name="settings_force_kill_webui_process_desc">現在実行中の WebUI X プロセスを直ちに終了します。[bold]KSU WebUI には影響しません。[/bold]</string>
+    <string name="webui_additional_config">追加の構成</string>
+    <string name="webui_additional_config_desc">モジュールの開発者によって定義されたオプションの構成です。</string>
 </resources>
