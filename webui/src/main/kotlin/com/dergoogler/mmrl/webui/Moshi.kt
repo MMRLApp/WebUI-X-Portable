@@ -1,7 +1,7 @@
 package com.dergoogler.mmrl.webui
 
-import com.dergoogler.mmrl.webui.model.JSONCollectionAdapter
-import com.dergoogler.mmrl.webui.model.JSONNullAdapter
+import com.dergoogler.mmrl.platform.file.config.JSONCollectionAdapter
+import com.dergoogler.mmrl.platform.file.config.JSONNullAdapter
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfig
 import com.squareup.moshi.JsonAdapter

@@ -9,7 +9,9 @@ import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.toBooleanOrNull
+import com.dergoogler.mmrl.platform.compose.rememberConfigFile
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.file.config.JSONBoolean.Companion.toJsonBoolean
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.listItem.dsl.List
@@ -17,15 +19,11 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.ListScope
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
-import com.dergoogler.mmrl.webui.model.JSONBoolean.Companion.toJsonBoolean
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfigType
-import com.dergoogler.mmrl.webui.model.rememberConfigFile
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import com.dergoogler.mmrl.wx.util.asMutableMap
-import com.dergoogler.mmrl.wx.util.toDataClass
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 
@@ -82,13 +80,11 @@ private fun ListScope.Item(
                 checked = item.value.toBooleanOrNull() ?: false,
                 onChange = { state ->
                     save {
-                        val updated = it.additionalConfig.toMutableList().apply {
-                            val old = this[index].asMutableMap()
-                            old["value"] = state.toJsonBoolean()
-                            this[index] = old.toDataClass<WebUIConfigAdditionalConfig>()
+                        val updated = it.additionalConfig.modify(index) {
+                            "value" to state.toJsonBoolean()
                         }
 
-                        "additionalConfig" change updated
+                        "additionalConfig" to updated
                     }
                 }
             ) {

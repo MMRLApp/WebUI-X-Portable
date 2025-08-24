@@ -53,6 +53,7 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.systemBarsPaddingEnd
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.model.ModId
+import com.dergoogler.mmrl.platform.compose.rememberConfigFile
 import com.dergoogler.mmrl.ui.component.BottomSheet
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.card.Card
@@ -66,7 +67,6 @@ import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.DexSourceType
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
-import com.dergoogler.mmrl.webui.model.rememberConfigFile
 import com.dergoogler.mmrl.webui.model.toWebUIConfigState
 import com.dergoogler.mmrl.wx.R
 import com.ramcosta.composedestinations.annotation.Destination

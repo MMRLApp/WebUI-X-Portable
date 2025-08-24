@@ -16,6 +16,11 @@ import com.dergoogler.mmrl.ext.toIntOrNull
 import com.dergoogler.mmrl.ext.toStringOrNull
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.config.ConfigFile
+import com.dergoogler.mmrl.platform.file.config.JSONArray
+import com.dergoogler.mmrl.platform.file.config.JSONCollection
+import com.dergoogler.mmrl.platform.file.config.JSONString
+import com.dergoogler.mmrl.platform.file.config.toTypedList
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenUserManager
 import com.dergoogler.mmrl.platform.model.ModId
@@ -296,15 +301,14 @@ data class WebUIConfig(
     val cachingMaxAge: Int = 86400,
     val extra: MutableMap<String, Any?> = mutableMapOf(),
     val additionalConfig: MutableList<WebUIConfigAdditionalConfig> = mutableListOf(),
-) : ConfigFile<WebUIConfig>(
-    configFile = SuFile(__module__identifier__.webrootDir, "config.json"),
-    overrideConfigFile = SuFile(__module__identifier__.moduleConfigDir, "config.webroot.json"),
-    configType = WebUIConfig::class.java,
-    defaultConfigFactory = {
-        WebUIConfig(__module__identifier__)
-    },
-) {
-    override val moduleId = __module__identifier__
+) : ConfigFile<WebUIConfig>() {
+    override fun getModuleId(): ModId = __module__identifier__
+    override fun getConfigFile(id: ModId): SuFile = SuFile(id.webrootDir, "config.json")
+    override fun getOverrideConfigFile(id: ModId): SuFile? =
+        SuFile(id.moduleConfigDir, "config.webroot.json")
+
+    override fun getConfigType(): Class<WebUIConfig> = WebUIConfig::class.java
+    override fun getDefaultConfigFactory(id: ModId): WebUIConfig = WebUIConfig(id)
 
     val hasRootPathPermission get() = WebUIPermissions.WX_ROOT_PATH in permissions
 

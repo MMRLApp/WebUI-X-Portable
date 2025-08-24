@@ -20,7 +20,7 @@ import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
-import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
+import com.dergoogler.mmrl.platform.model.toModuleConfig
 import com.dergoogler.mmrl.platform.stub.IServiceManager
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUI
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
@@ -160,7 +160,7 @@ fun UserPreferences.launchModConf(context: Context, modId: ModId) {
 }
 
 fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
-    val config = modId.asModuleConfig
+    val config = modId.toModuleConfig()
 
     val baseDir = context.getBaseDir().path
 

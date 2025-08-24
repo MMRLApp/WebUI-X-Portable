@@ -2,13 +2,13 @@
 
 package com.dergoogler.mmrl.ext
 
-import com.dergoogler.mmrl.webui.model.JSONArray
-import com.dergoogler.mmrl.webui.model.JSONBoolean
-import com.dergoogler.mmrl.webui.model.JSONCollection
-import com.dergoogler.mmrl.webui.model.JSONNull
-import com.dergoogler.mmrl.webui.model.JSONNumber
-import com.dergoogler.mmrl.webui.model.JSONObject
-import com.dergoogler.mmrl.webui.model.JSONString
+import com.dergoogler.mmrl.platform.file.config.JSONArray
+import com.dergoogler.mmrl.platform.file.config.JSONBoolean
+import com.dergoogler.mmrl.platform.file.config.JSONCollection
+import com.dergoogler.mmrl.platform.file.config.JSONNull
+import com.dergoogler.mmrl.platform.file.config.JSONNumber
+import com.dergoogler.mmrl.platform.file.config.JSONObject
+import com.dergoogler.mmrl.platform.file.config.JSONString
 
 // ==================== JSONBoolean Helpers ====================
 
