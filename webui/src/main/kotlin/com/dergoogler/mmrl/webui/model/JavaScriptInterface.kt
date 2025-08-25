@@ -72,8 +72,10 @@ data class JavaScriptInterface<T : WXInterface>(
                         .replace(Regex("^lib"), "")
                 }
 
-                for (library in libraries) {
-                    Native.register(newInstance.javaClass, library)
+                if (dexConfig.registerSharedObjects) {
+                    for (library in libraries) {
+                        Native.register(newInstance.javaClass, library)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error copying shared objects", e)

@@ -115,6 +115,7 @@ data class WebUIConfigDexFile(
     val className: String? = null,
     val cache: Boolean = true,
     val copySharedObjects: Boolean = true,
+    val registerSharedObjects: Boolean = true,
     val sharedObjects: List<String> = emptyList(),
 ) : WebUIConfigBaseLoader() {
     private companion object {
