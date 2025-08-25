@@ -24,7 +24,7 @@ data class JavaScriptInterface<T : WXInterface>(
     val clazz: Class<T>,
     val initargs: Array<Any>? = null,
     val parameterTypes: Array<Class<*>>? = null,
-    val sharedObjects: List<String> = emptyList(),
+    val dexConfig: WebUIConfigDexFile? = null,
 ) {
     data class Instance(
         private val inst: WXInterface,
@@ -53,15 +53,14 @@ data class JavaScriptInterface<T : WXInterface>(
         val modId = wxOptions.options.modId
         val context = wxOptions.options.context
 
-        if (wxOptions.options.pluginsEnabled) {
+        if (wxOptions.options.pluginsEnabled && dexConfig?.copySharedObjects == true) {
             try {
-                for (sharedObject in sharedObjects) {
-                    val sharedObjectFile = SuFile(modId.webrootDir, sharedObject)
-                    val name = "${sharedObjectFile.nameWithoutExtension}_$modId.so"
+                val libraries = dexConfig.sharedObjects.mapNotNull {
+                    val sharedObjectFile = SuFile(modId.webrootDir, it)
                     val sharedObjectDestinationFile =
-                        SuFile(context.applicationInfo.nativeLibraryDir, name)
+                        SuFile(context.applicationInfo.nativeLibraryDir, sharedObjectFile.name)
 
-                    if (!sharedObjectFile.exists()) continue
+                    if (!sharedObjectFile.exists()) return@mapNotNull null
 
                     val uid = Process.myUid()
 
@@ -69,8 +68,12 @@ data class JavaScriptInterface<T : WXInterface>(
                     sharedObjectFile.setPermissions(SuFilePermissions.PERMISSION_755)
                     sharedObjectFile.copyTo(sharedObjectDestinationFile, overwrite = true)
 
-                    val libName = name.substringBeforeLast(".").replace(Regex("^lib"), "")
-                    Native.register(newInstance.javaClass, libName)
+                    sharedObjectDestinationFile.name.substringBeforeLast(".")
+                        .replace(Regex("^lib"), "")
+                }
+
+                for (library in libraries) {
+                    Native.register(newInstance.javaClass, library)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error copying shared objects", e)

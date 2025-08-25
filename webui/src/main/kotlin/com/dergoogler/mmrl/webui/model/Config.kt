@@ -114,6 +114,7 @@ data class WebUIConfigDexFile(
     val path: String? = null,
     val className: String? = null,
     val cache: Boolean = true,
+    val copySharedObjects: Boolean = true,
     val sharedObjects: List<String> = emptyList(),
 ) : WebUIConfigBaseLoader() {
     private companion object {
@@ -158,7 +159,7 @@ data class WebUIConfigDexFile(
 
             @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
 
-            val instance = JavaScriptInterface(clazz, sharedObjects = sharedObjects)
+            val instance = JavaScriptInterface(clazz, dexConfig = this)
 
             // 4. Cache the new instance and return it.
             interfaceCache.putIfAbsent(currentClassName, instance)

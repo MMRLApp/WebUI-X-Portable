@@ -390,7 +390,7 @@ open class WebUIView(
             val interfaceObject: JavaScriptInterface<out WXInterface> = JavaScriptInterface(
                 T::class.java,
                 initargs,
-                parameterTypes
+                parameterTypes,
             )
 
             addJavascriptInterface(interfaceObject)
