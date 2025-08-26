@@ -1,10 +1,12 @@
+@file:Suppress("CanBeParameter")
+
 package com.dergoogler.mmrl.modconf
 
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
 import android.util.Log
-import com.dergoogler.mmrl.modconf.config.ModConfConfig.Companion.asModconfConfig
+import com.dergoogler.mmrl.modconf.config.toModConfConfig
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.modconfDir
@@ -25,7 +27,7 @@ class Kontext(
         dexLoadedSuccessfully = dexLoader != null
     }
 
-    val config get() = modId.asModconfConfig
+    val config get() = modId.toModConfConfig()
 
     val modconf: ModConfClass.Instance? by lazy {
         val loader = dexLoader ?: return@lazy null
