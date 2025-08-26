@@ -124,4 +124,6 @@
     <string name="compile_sdk">编译SDK</string>
     <string name="settings_force_kill_webui_process">强制停止WebUI进程</string>
     <string name="settings_force_kill_webui_process_desc">立即终止当前正在运行的 WebUI X 进程。[bold]该操作不会影响 KSU WebUI。[/bold]</string>
+    <string name="webui_additional_config">额外配置</string>
+    <string name="webui_additional_config_desc">由模块作者定义的可选额外配置。</string>
 </resources>
