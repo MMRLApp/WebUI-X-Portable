@@ -2,13 +2,10 @@ name: Release to GitHub
 
 on:
   workflow_call:
-    inputs:
-      officialAssetName:
-        type: string
-        required: true
-      spoofedAssetName:
-        type: string
-        required: true
+
+env:
+  OFFICIAL_NAME: "official-release-apk"
+  SPOOFED_NAME: "spoofed-release-apk"
 
 jobs:
   release-gh:
@@ -23,33 +20,30 @@ jobs:
       - name: Download Official Release APK
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.officialAssetName }}
+          name: ${{ env.OFFICIAL_NAME }}
           path: official-apk
 
       - name: Download Spoofed Release APK
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.spoofedAssetName }}
+          name: ${{ env.SPOOFED_NAME }}
           path: spoofed-apk
 
       - name: Find APKs by name
         id: find_apks
         run: |
-          OFFICIAL_APK_PATH=$(find official-apk -maxdepth 1 -type f -name "${{ inputs.officialAssetName }}*.apk" -print -quit)
-          SPOOFED_APK_PATH=$(find spoofed-apk -maxdepth 1 -type f -name "${{ inputs.spoofedAssetName }}*.apk" -print -quit)
-
-          if [ -z "$OFFICIAL_APK_PATH" ]; then
-            echo "❌ No official APK found matching ${{ inputs.officialAssetName }}"
-            exit 1
-          fi
-
-          if [ -z "$SPOOFED_APK_PATH" ]; then
-            echo "❌ No spoofed APK found matching ${{ inputs.spoofedAssetName }}"
-            exit 1
-          fi
+          # Look for official APK matching the artifact name
+          OFFICIAL_APK_PATH=$(find official-apk -maxdepth 1 -type f -name "*.apk" -print -quit)
+          SPOOFED_APK_PATH=$(find spoofed-apk -maxdepth 1 -type f -name "*.apk" -print -quit)
 
           echo "OFFICIAL_APK_PATH=$OFFICIAL_APK_PATH" >> $GITHUB_OUTPUT
           echo "SPOOFED_APK_PATH=$SPOOFED_APK_PATH" >> $GITHUB_OUTPUT
+
+          OFFICIAL_NAME=$(basename "$OFFICIAL_APK_PATH")
+          echo "OFFICIAL_NAME=$OFFICIAL_NAME" >> $GITHUB_OUTPUT
+
+          SPOOFED_NAME=$(basename "$SPOOFED_APK_PATH")
+          echo "SPOOFED_NAME=$SPOOFED_NAME" >> $GITHUB_OUTPUT
 
       - name: Get commit info and build timestamp
         id: meta
@@ -58,7 +52,7 @@ jobs:
           VERSION=$(git rev-list --count HEAD || echo 0)
           
           if [ -f commits.sh ]; then
-            MESSAGE=$(bash commits.sh 10000)
+            MESSAGE=$(bash commits.sh 10000 "${{ env.BRANCH_NAME }}")
           else
             MESSAGE="Latest commits not available."
           fi
@@ -102,7 +96,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.find_apks.outputs.OFFICIAL_APK_PATH }}
-          asset_name: ${{ inputs.officialAssetName }}.apk
+          asset_name: ${{ steps.find_apks.outputs.OFFICIAL_NAME }}
           asset_content_type: application/vnd.android.package-archive
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -113,7 +107,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.find_apks.outputs.SPOOFED_APK_PATH }}
-          asset_name: ${{ inputs.spoofedAssetName }}.apk
+          asset_name: ${{ steps.find_apks.outputs.SPOOFED_NAME }}
           asset_content_type: application/vnd.android.package-archive
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

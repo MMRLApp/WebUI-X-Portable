@@ -22,69 +22,43 @@ on:
 jobs:
   # Build step for both official & spoofed flavors
   build-release:
+    runs-on: ubuntu-latest
     name: Build Matrix
     strategy:
       fail-fast: false
       matrix:
         flavor: [official, spoofed]
-    uses: ./.github/workflows/build.yml
-    with:
-      flavor: ${{ matrix.flavor }}
-      buildType: "release"
-    secrets: inherit
-
-  # Collect environment from artifacts
-  load-apk-env:
-    name: Load APK Env
-    runs-on: ubuntu-latest
-    needs: build-release
-    outputs:
-      official_name: ${{ steps.export.outputs.OFFICIAL_NAME }}
-      spoofed_name: ${{ steps.export.outputs.SPOOFED_NAME }}
     steps:
-      - name: Download Official APK Env
-        uses: actions/download-artifact@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          name: official.release
-          path: .
+          fetch-depth: 0
 
-      - name: Download Spoofed APK Env
-        uses: actions/download-artifact@v4
+      - name: Build APK
+        id: build-apk
+        uses: ./.github/actions/build-apk
         with:
-          name: spoofed.release
-          path: .
-
-      - name: Export to env
-        id: export
-        run: |
-          cat official.release.txt >> $GITHUB_ENV
-          cat spoofed.release.txt >> $GITHUB_ENV
-          # also export to outputs
-          source official.release.txt
-          source spoofed.release.txt
-          echo "OFFICIAL_NAME=\"$OFFICIAL_NAME\"" >> $GITHUB_OUTPUT
-          echo "SPOOFED_NAME=\"$SPOOFED_NAME\"" >> $GITHUB_OUTPUT
-
-  # Release to GitHub
-  release-github:
-    if: github.event.inputs.send_github == 'true'
-    name: Release to GitHub
-    needs: load-apk-env
-    uses: ./.github/workflows/github.yml
-    with:
-      officialAssetName: ${{ needs.load-apk-env.outputs.OFFICIAL_NAME }}
-      spoofedAssetName: ${{ needs.load-apk-env.outputs.SPOOFED_NAME }}
-    secrets: inherit
+          flavor: ${{ matrix.flavor }}
+          buildType: "release"
+          keyStore: ${{ secrets.KEY_STORE }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyAlias: ${{ secrets.KEY_ALIAS }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
 
   # Release to Telegram
   release-telegram:
     if: github.event.inputs.send_telegram == 'true'
     name: Release to Telegram
-    needs: load-apk-env
+    needs: build-release
     uses: ./.github/workflows/telegram.yml
-    with:
-      officialAssetName: ${{ needs.load-apk-env.outputs.OFFICIAL_NAME }}
-      spoofedAssetName: ${{ needs.load-apk-env.outputs.SPOOFED_NAME }}
+    secrets: inherit
+
+  # Release to GitHub
+  release-github:
+    if: github.event.inputs.send_github == 'true'
+    name: Release to GitHub
+    needs: build-release
+    uses: ./.github/workflows/github.yml
     secrets: inherit
 
   # Release to Play Store
@@ -134,7 +108,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.dergoogler.mmrl
+          packageName: com.dergoogler.mmrl.wx
           releaseFiles: ${{ steps.find_aab.outputs.AAB_PATH }}
           track: production
           status: completed
