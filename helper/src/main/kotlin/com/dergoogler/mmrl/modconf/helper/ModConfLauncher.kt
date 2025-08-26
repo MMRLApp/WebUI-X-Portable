@@ -20,7 +20,7 @@ data class ModConfPermissions(
     val MODCONF = "com.dergoogler.mmrl$debugPostFix.permission.MODCONF"
 }
 
-class WebUILauncher(
+class ModConfLauncher(
     private val debug: Boolean = false,
     private val debugPostFix: String = if (debug) ".debug" else "",
     private val packageName: String = "com.dergoogler.mmrl.wx$debugPostFix",
