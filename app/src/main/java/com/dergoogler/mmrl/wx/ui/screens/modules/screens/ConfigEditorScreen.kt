@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +29,9 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.isNotNullOrEmpty
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.shareText
+import com.dergoogler.mmrl.platform.compose.rememberConfigFile
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.model.ModuleConfig
 import com.dergoogler.mmrl.ui.component.BottomSheet
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
@@ -40,7 +43,6 @@ import com.dergoogler.mmrl.ui.component.listItem.ListItemDefaults
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
 import com.dergoogler.mmrl.webui.model.WebUIConfig
-import com.dergoogler.mmrl.platform.compose.rememberConfigFile
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
@@ -68,16 +70,18 @@ fun ConfigEditorScreen(module: LocalModule) {
     val context = LocalContext.current
     val modId = module.id
 
-    val (config, save) = rememberConfigFile(modId.WebUIConfig)
+
+    val (webUIConfig, saveWebUIConfig) = rememberConfigFile(modId.WebUIConfig)
+    val (moduleConfig, saveModuleConfig) = rememberConfigFile(modId.ModuleConfig)
 
     var exportBottomSheet by remember { mutableStateOf(false) }
     if (exportBottomSheet) ExportBottomSheet(
         onClose = { exportBottomSheet = false },
         onModuleExport = {
-//            context.shareText(moduleConfigFile.readText())
+            context.shareText(moduleConfig.getOverrideConfigFile(modId)?.readText() ?: "{}")
         },
         onConfigExport = {
-            context.shareText(config.toJson())
+            context.shareText(webUIConfig.getOverrideConfigFile(modId)?.readText() ?: "{}")
         }
     )
 
@@ -112,9 +116,9 @@ fun ConfigEditorScreen(module: LocalModule) {
 
             ListEditTextItem(
                 title = stringResource(R.string.webui_config_title_title),
-                desc = config.title ?: stringResource(R.string.webui_config_title_desc),
+                desc = webUIConfig.title ?: stringResource(R.string.webui_config_title_desc),
                 itemTextStyle = ListItemDefaults.itemStyle.apply {
-                    if (config.title == null) {
+                    if (webUIConfig.title == null) {
                         copy(
                             descTextStyle = MaterialTheme.typography.bodyMedium.copy(
                                 fontStyle = FontStyle.Italic
@@ -122,9 +126,9 @@ fun ConfigEditorScreen(module: LocalModule) {
                         )
                     }
                 },
-                value = config.title ?: "",
+                value = webUIConfig.title ?: "",
                 onConfirm = {
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "title" change it
                     }
                 }
@@ -132,9 +136,9 @@ fun ConfigEditorScreen(module: LocalModule) {
 
             ListEditTextItem(
                 title = stringResource(R.string.webui_config_icon_title),
-                desc = config.icon ?: stringResource(R.string.webui_config_icon_desc),
+                desc = webUIConfig.icon ?: stringResource(R.string.webui_config_icon_desc),
                 itemTextStyle = ListItemDefaults.itemStyle.apply {
-                    if (config.icon == null) {
+                    if (webUIConfig.icon == null) {
                         copy(
                             descTextStyle = MaterialTheme.typography.bodyMedium.copy(
                                 fontStyle = FontStyle.Italic
@@ -142,9 +146,9 @@ fun ConfigEditorScreen(module: LocalModule) {
                         )
                     }
                 },
-                value = config.icon ?: "",
+                value = webUIConfig.icon ?: "",
                 onConfirm = {
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "icon" change it
                     }
                 }
@@ -158,7 +162,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 }
             )
 
-            if (config.additionalConfig.isNotNullOrEmpty()) {
+            if (webUIConfig.additionalConfig.isNotNullOrEmpty()) {
                 ListButtonItem(
                     title = stringResource(R.string.webui_additional_config),
                     desc = stringResource(R.string.webui_additional_config_desc),
@@ -168,28 +172,28 @@ fun ConfigEditorScreen(module: LocalModule) {
                 )
             }
 
-            val hasNoJsBackInterceptor = config.backInterceptor != "javascript"
+            val hasNoJsBackInterceptor = webUIConfig.backInterceptor != "javascript"
 
             ListSwitchItem(
                 enabled = hasNoJsBackInterceptor,
                 title = stringResource(R.string.webui_config_exit_confirm_title),
                 desc = stringResource(R.string.webui_config_exit_confirm_desc),
-                checked = hasNoJsBackInterceptor && config.exitConfirm,
+                checked = hasNoJsBackInterceptor && webUIConfig.exitConfirm,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "exitConfirm" change isChecked
                     }
                 }
             )
 
-            val backHandler = config.backHandler ?: true
+            val backHandler = webUIConfig.backHandler ?: true
 
             ListSwitchItem(
                 title = stringResource(R.string.webui_config_back_handler_title),
                 desc = stringResource(R.string.webui_config_back_handler_desc),
                 checked = backHandler,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "backHandler" change isChecked
                     }
                 },
@@ -199,7 +203,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 enabled = backHandler,
                 title = stringResource(R.string.webui_config_back_interceptor_title),
                 desc = stringResource(R.string.webui_config_back_interceptor_desc),
-                value = config.backInterceptor as String?,
+                value = webUIConfig.backInterceptor as String?,
                 options = context.interceptorList,
                 onConfirm = {
                     if (it.value == null) {
@@ -208,20 +212,20 @@ fun ConfigEditorScreen(module: LocalModule) {
                         return@ListRadioCheckItem
                     }
 
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "backInterceptor" change it.value
                     }
                 }
             )
 
-            val pullToRefresh = config.pullToRefresh
+            val pullToRefresh = webUIConfig.pullToRefresh
 
             ListSwitchItem(
                 title = stringResource(R.string.webui_config_pull_to_refresh_title),
                 desc = stringResource(R.string.webui_config_pull_to_refresh_desc),
                 checked = pullToRefresh,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "pullToRefresh" change isChecked
                     }
                 }
@@ -231,7 +235,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 enabled = pullToRefresh,
                 title = stringResource(R.string.webui_config_refresh_interceptor_title),
                 desc = stringResource(R.string.webui_config_refresh_interceptor_desc),
-                value = config.refreshInterceptor,
+                value = webUIConfig.refreshInterceptor,
                 options = context.interceptorList,
                 onConfirm = { item ->
                     if (item.value == null) {
@@ -240,7 +244,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                         return@ListRadioCheckItem
                     }
 
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "refreshInterceptor" change item.value
                     }
                 }
@@ -249,9 +253,9 @@ fun ConfigEditorScreen(module: LocalModule) {
             ListSwitchItem(
                 title = stringResource(R.string.webui_config_window_resize_title),
                 desc = stringResource(R.string.webui_config_window_resize_desc),
-                checked = config.windowResize,
+                checked = webUIConfig.windowResize,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "windowResize" change isChecked
                     }
                 }
@@ -260,9 +264,9 @@ fun ConfigEditorScreen(module: LocalModule) {
             ListSwitchItem(
                 title = stringResource(R.string.webui_config_auto_style_statusbars_title),
                 desc = stringResource(R.string.webui_config_auto_style_statusbars_desc),
-                checked = config.autoStatusBarsStyle,
+                checked = webUIConfig.autoStatusBarsStyle,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "autoStatusBarsStyle" change isChecked
                     }
                 }
@@ -271,9 +275,9 @@ fun ConfigEditorScreen(module: LocalModule) {
             ListSwitchItem(
                 title = stringResource(R.string.webui_config_kill_shell_when_background),
                 desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
-                checked = config.killShellWhenBackground,
+                checked = webUIConfig.killShellWhenBackground,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "killShellWhenBackground" change isChecked
                     }
                 }
@@ -282,15 +286,15 @@ fun ConfigEditorScreen(module: LocalModule) {
             ListEditTextSwitchItem(
                 title = stringResource(R.string.webui_config_history_fallback_title),
                 desc = stringResource(R.string.webui_config_history_fallback_desc),
-                value = config.historyFallbackFile,
-                checked = config.historyFallback,
+                value = webUIConfig.historyFallbackFile,
+                checked = webUIConfig.historyFallback,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "historyFallback" change isChecked
                     }
                 },
                 onConfirm = {
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "historyFallbackFile" change it
                     }
                 }
@@ -299,9 +303,9 @@ fun ConfigEditorScreen(module: LocalModule) {
             ListEditTextItem(
                 title = stringResource(R.string.webui_config_content_security_policy_title),
                 desc = stringResource(R.string.webui_config_content_security_policy_desc),
-                value = config.contentSecurityPolicy,
+                value = webUIConfig.contentSecurityPolicy,
                 onConfirm = {
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "contentSecurityPolicy" change it
                     }
                 }
@@ -310,25 +314,58 @@ fun ConfigEditorScreen(module: LocalModule) {
             ListSwitchItem(
                 title = stringResource(R.string.webui_config_caching_title),
                 desc = stringResource(R.string.webui_config_caching_desc),
-                checked = config.caching,
+                checked = webUIConfig.caching,
                 onChange = { isChecked ->
-                    save {
+                    saveWebUIConfig {
                         "caching" change isChecked
                     }
                 }
             )
 
             ListEditTextItem(
-                enabled = config.caching,
+                enabled = webUIConfig.caching,
                 title = stringResource(R.string.webui_config_caching_max_age_title),
                 desc = stringResource(R.string.webui_config_caching_max_age_desc),
-                value = config.cachingMaxAge.toString(),
+                value = webUIConfig.cachingMaxAge.toString(),
                 onValid = {
                     !Regex("^[0-9]+$").matches(it)
                 },
                 onConfirm = {
-                    save { _ ->
+                    saveWebUIConfig { _ ->
                         "cachingMaxAge" change it.toInt()
+                    }
+                }
+            )
+
+
+            ListHeader(title = stringResource(R.string.module_config))
+
+            val engine by remember(moduleConfig) {
+                derivedStateOf {
+                    moduleConfig.getWebuiEngine(context)
+                }
+            }
+
+            ListRadioCheckItem(
+                title = stringResource(R.string.settings_webui_engine),
+                value = engine,
+                options = listOf(
+                    RadioOptionItem(
+                        value = "wx",
+                        title = stringResource(R.string.settings_webui_engine_wx)
+                    ),
+                    RadioOptionItem(
+                        value = "ksu",
+                        title = stringResource(R.string.settings_webui_engine_ksu)
+                    ),
+                    RadioOptionItem(
+                        value = null,
+                        title = stringResource(R.string.settings_webui_engine_undefined)
+                    )
+                ),
+                onConfirm = {
+                    saveModuleConfig { _ ->
+                        "webuiEngine" change it.value
                     }
                 }
             )

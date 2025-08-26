@@ -56,6 +56,7 @@
     <string name="settings_webui_engine_wx">WebUI X</string>
     <string name="settings_webui_engine_ksu">KSU WebUI</string>
     <string name="settings_webui_engine_prefer_module">Defined by the Module Config</string>
+    <string name="settings_webui_engine_undefined">Undefined</string>
     <string name="menu_sort_option_size">Size</string>
     <string name="notification_platform_service">Platform Service</string>
     <string name="settings_date_pattern">Date pattern</string>
