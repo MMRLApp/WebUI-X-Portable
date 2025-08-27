@@ -365,7 +365,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 ),
                 onConfirm = {
                     saveModuleConfig { _ ->
-                        "webuiEngine" change it.value
+                        "webui-engine" change it.value
                     }
                 }
             )
