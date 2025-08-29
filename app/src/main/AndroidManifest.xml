@@ -77,7 +77,7 @@
             android:exported="true"
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"
-            android:process="${webuiPermissionId}.process.webuix"
+            android:process="${webuiPermissionId}.process.webui"
             android:taskAffinity="${applicationId}.WEBUI_X">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
