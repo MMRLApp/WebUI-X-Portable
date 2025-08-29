@@ -292,6 +292,7 @@ data class WebUIConfig(
     val refreshInterceptor: String? = null,
     val exitConfirm: Boolean = true,
     val pullToRefresh: Boolean = false,
+    val pullToRefreshHelper: Boolean = true,
     val historyFallbackFile: String = "index.html",
     val autoStatusBarsStyle: Boolean = true,
     val dexFiles: MutableList<WebUIConfigDexFile> = mutableListOf(),

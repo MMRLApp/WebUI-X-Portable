@@ -72,8 +72,10 @@
     <string name="webui_config_back_handler_desc">Enables the back button handler for the native WebView.</string>
     <string name="webui_config_back_interceptor_title">Back Interceptor</string>
     <string name="webui_config_back_interceptor_desc">Enables the change of the back button interceptor for the native WebView.</string>
-    <string name="webui_config_pull_to_refresh_title">Pull to Refresh</string>
+    <string name="webui_config_pull_to_refresh_title">Pull-to-Refresh</string>
     <string name="webui_config_pull_to_refresh_desc">Enabled pull to refresh for WebUI. This can break the scroll behavior of the WebUI when nested scroll elements are used</string>
+    <string name="webui_config_pull_to_refresh_helper_title">Pull-to-Refresh Helper</string>
+    <string name="webui_config_pull_to_refresh_helper_desc">Injects a JavaScript script to handle WebUI\'s pull-to-refresh behavior correctly. This setting does not apply when using the JavaScript interceptor or remote debugging.</string>
     <string name="webui_config_window_resize_title">Window Resize</string>
     <string name="webui_config_window_resize_desc">Resizes the window to fit the screen when the keyboard or other overlays are visible.</string>
     <string name="webui_config_auto_style_statusbars_title">Auto Style StatusBars</string>

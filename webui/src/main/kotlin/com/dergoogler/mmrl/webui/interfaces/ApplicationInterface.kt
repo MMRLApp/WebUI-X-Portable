@@ -29,6 +29,9 @@ class ApplicationInterface(
         }
     }
 
+    @get:JavascriptInterface
+    val isDebug = options.debug
+
     @JavascriptInterface
     fun setRefreshing(state: Boolean) {
         if (!config.pullToRefresh) {
@@ -57,6 +60,34 @@ class ApplicationInterface(
         }
     }
 
+    @JavascriptInterface
+    fun setRefreshingEnabled(state: Boolean) {
+        if (!config.pullToRefresh) {
+            console.error(
+                Exception("Pull-To-Refresh needs to be enable in order to use $name.setRefreshing(boolean)")
+            )
+            return
+        }
+
+        if (!config.useJavaScriptRefreshInterceptor) {
+            console.error(
+                Exception("$name.setRefreshing(boolean) is not supported with native refresh interceptor")
+            )
+            return
+        }
+
+        val swipeLayout = webView.mSwipeView
+
+        if (swipeLayout == null) {
+            console.error(Exception("WXSwipeRefresh not found"))
+            return
+        }
+
+        post {
+            swipeLayout.isEnabled = state
+        }
+    }
+
     @get:JavascriptInterface
     val currentRootManager: App
         get() = App(
@@ -74,6 +105,8 @@ class ApplicationInterface(
         val packageInfo = context.packageManager.getPackageInfo(packageName, 0)
         val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
         val versionName = packageInfo.versionName ?: "unknown"
+
+        webView.createWebMessageChannel()
 
         return App(
             packageName = packageInfo.packageName,

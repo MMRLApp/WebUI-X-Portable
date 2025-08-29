@@ -231,6 +231,18 @@ fun ConfigEditorScreen(module: LocalModule) {
                 }
             )
 
+            ListSwitchItem(
+                enabled = pullToRefresh && webUIConfig.useNativeRefreshInterceptor,
+                title = stringResource(R.string.webui_config_pull_to_refresh_helper_title),
+                desc = stringResource(R.string.webui_config_pull_to_refresh_helper_desc),
+                checked = webUIConfig.pullToRefreshHelper && webUIConfig.useNativeRefreshInterceptor,
+                onChange = { isChecked ->
+                    saveWebUIConfig {
+                        "pullToRefreshHelper" change isChecked
+                    }
+                }
+            )
+
             ListRadioCheckItem(
                 enabled = pullToRefresh,
                 title = stringResource(R.string.webui_config_refresh_interceptor_title),

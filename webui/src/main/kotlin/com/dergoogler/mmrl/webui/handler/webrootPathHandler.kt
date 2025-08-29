@@ -1,13 +1,10 @@
 package com.dergoogler.mmrl.webui.handler
 
 import android.util.Log
-import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
-import com.dergoogler.mmrl.ext.isNull
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
-import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
 import com.dergoogler.mmrl.webui.Injection
 import com.dergoogler.mmrl.webui.InjectionType
@@ -128,6 +125,10 @@ fun webrootPathHandler(
 
                 addInjection(InjectionType.BODY) {
                     appendLine("<script data-internal data-internal-dont-use data-mod-id=\"${options.modId}\" data-input-stream=\"${options.modId.sanitizedIdWithFileInputStream}\" src=\"https://mui.kernelsu.org/internal/assets/ext/require.js\"></script>")
+
+                    if (options.config.pullToRefresh && options.config.useNativeRefreshInterceptor && options.config.pullToRefreshHelper) {
+                        appendLine("<script data-internal data-internal-dont-use src=\"https://mui.kernelsu.org/internal/assets/ext/scroll.js\"></script>")
+                    }
                 }
 
                 addScriptInjections(
