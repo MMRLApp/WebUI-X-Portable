@@ -54,7 +54,7 @@
     <string name="settings_webui_engine">Motor WebUI</string>
     <string name="settings_webui_engine_desc">Seleccione su motor preferido</string>
     <string name="settings_webui_engine_wx">WebUI X</string>
-    <string name="settings_webui_engine_ksu">KSU WebUI</string>
+    <string name="settings_webui_engine_ksu">WebUI de KSU</string>
     <string name="settings_webui_engine_prefer_module">Definido por la configuración del módulo</string>
     <string name="menu_sort_option_size">Tamaño</string>
     <string name="notification_platform_service">Servicio de plataforma</string>
@@ -122,4 +122,9 @@
     <string name="build_tools_version">Versión de Build Tools</string>
     <string name="compile_sdk">Compilación de SDK</string>
     <string name="latest_commit_id">ID del último commit</string>
+    <string name="webui_additional_config_desc">Configuraciones opcionales definidas por el desarrollador del módulo.</string>
+    <string name="webui_additional_config">Configuración adicional</string>
+    <string name="settings_force_kill_webui_process_desc">Finaliza inmediatamente el proceso de WebUI X que se esté ejecutando. [bold]Esto no afecta a la WebUI de KSU. [/bold]</string>
+    <string name="settings_force_kill_webui_process">Forzar cierre del proceso de WebUI</string>
+    <string name="settings_webui_engine_undefined">Indefinido</string>
 </resources>
