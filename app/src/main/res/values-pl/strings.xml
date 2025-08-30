@@ -69,8 +69,8 @@
     <string name="webui_config_exit_confirm_desc">Włącza okno dialogowe potwierdzenia podczas wychodzenia z interfejsu WebUI.</string>
     <string name="webui_config_back_handler_title">Obsługa przycisku Wstecz</string>
     <string name="webui_config_back_interceptor_desc">Umożliwia zmianę przechwytywacza przycisku Wstecz dla natywnego WebView.</string>
-    <string name="webui_config_pull_to_refresh_title">Przeciągnij, aby odświeżyć</string>
-    <string name="webui_config_pull_to_refresh_desc">Włącza funkcję przeciągnij, aby odświeżyć dla WebUI. Może to zepsuć zachowanie przewijania WebUI, gdy używane są zagnieżdżone elementy przewijania.</string>
+    <string name="webui_config_pull_to_refresh_title">Pociągnij, aby odświeżyć</string>
+    <string name="webui_config_pull_to_refresh_desc">Może to zepsuć zachowanie przewijania WebUI, gdy używane są zagnieżdżone elementy przewijania.</string>
     <string name="webui_config_window_resize_title">Zmiana rozmiaru okna</string>
     <string name="webui_config_back_handler_desc">Włącza obsługę przycisku Wstecz dla natywnego WebView.</string>
     <string name="webui_config_back_interceptor_title">Przechwytywacz przycisku wstecz</string>
@@ -127,4 +127,6 @@
     <string name="webui_additional_config">Dodatkowa konfiguracja</string>
     <string name="webui_additional_config_desc">Opcjonalne konfiguracje zdefiniowane przez twórcę modułu.</string>
     <string name="settings_webui_engine_undefined">Niezdefiniowano</string>
+    <string name="webui_config_pull_to_refresh_helper_title">Pomocnik „Pociągnij, aby odświeżyć”</string>
+    <string name="webui_config_pull_to_refresh_helper_desc">Wstrzykuje skrypt JavaScript, aby poprawnie obsługiwać funkcję „pociągnij, aby odświeżyć” w interfejsie WebUI. To ustawienie nie ma zastosowania w przypadku korzystania z przechwytywacza JavaScript ani zdalnego debugowania.</string>
 </resources>
