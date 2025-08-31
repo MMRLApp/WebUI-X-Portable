@@ -100,7 +100,7 @@ jobs:
       - name: Find AAB
         id: find_aab
         run: |
-          AAB_PATH=$(find app/build/outputs/bundle/playstore -name "*.aab" -print -quit)
+          AAB_PATH=$(find app/build/outputs/bundle/officialPlaystore -name "*.aab" -print -quit)
           echo "AAB_PATH=$AAB_PATH" >> $GITHUB_OUTPUT
 
       - name: Upload to Google Play
@@ -112,4 +112,5 @@ jobs:
           track: production
           status: completed
           inAppUpdatePriority: 5
+
 
