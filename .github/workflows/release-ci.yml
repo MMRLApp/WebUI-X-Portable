@@ -93,7 +93,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           validate-wrappers: true
-          cache-cleanup: true
 
       - name: Bundle with Gradle
         run: chmod +x ./gradlew && ./gradlew bundleOfficialPlaystore
@@ -113,3 +112,4 @@ jobs:
           track: production
           status: completed
           inAppUpdatePriority: 5
+
