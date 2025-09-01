@@ -126,7 +126,7 @@ data class CodeEditorState(
         }
     }
 
-    init {
+    private fun init() {
         val scheme = FUCK_THIS_SHIT_EDITOR_COLOR_SCHEME(darkMode).apply {
             setColor(ANNOTATION, colorScheme.background.lighten(0.1f))
             setColor(FUNCTION_NAME, colorScheme.primary.darken(0.2f))
@@ -142,7 +142,10 @@ data class CodeEditorState(
             setColor(LINE_NUMBER, colorScheme.outlineVariant.lighten(0.0465f))
             setColor(LINE_DIVIDER, colorScheme.outlineVariant)
             setColor(SCROLL_BAR_THUMB, colorScheme.primary.copy(alpha = 0.4535f))
-            setColor(SCROLL_BAR_THUMB_PRESSED, colorScheme.primary.darken(0.1f).copy(alpha = 0.4535f))
+            setColor(
+                SCROLL_BAR_THUMB_PRESSED,
+                colorScheme.primary.darken(0.1f).copy(alpha = 0.4535f)
+            )
             setColor(SELECTED_TEXT_BACKGROUND, colorScheme.primaryContainer.lighten(0.15f))
             setColor(MATCHED_TEXT_BACKGROUND, colorScheme.secondaryContainer.lighten(0.2f))
             setColor(LINE_NUMBER_CURRENT, colorScheme.primary.darken(0.1f))
@@ -164,6 +167,10 @@ data class CodeEditorState(
         }
 
         content.addContentListener(contentListener)
+    }
+
+    init {
+        init()
     }
 
     private val contentListener
@@ -223,7 +230,7 @@ fun rememberCodeEditorState(
             initialFile = file,
             threadSafe = threadSafe,
             textStyle = textStyle,
-            darkMode = prefs.isDarkMode()
+            darkMode = prefs.isDarkMode(),
         )
     }
 }
@@ -246,7 +253,7 @@ fun FileEditorScreen(module: LocalModule, path: String) {
     val navigator = LocalDestinationsNavigator.current
     val file = remember(path) { path.toSuFile() }
     val state = rememberCodeEditorState(
-        file = file
+        file = file,
     )
 
     val confirmExit = rememberVisibleState {

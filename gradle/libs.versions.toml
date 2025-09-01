@@ -146,8 +146,7 @@ square-moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin-codeg
 dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:parcelablelist", version.ref = "parcelablelist" }
 
 sora-editor = { group = "io.github.Rosemoe.sora-editor", name = "editor", version.ref = "soraEditor" }
-sora-editor-language-css3 = { group = "io.github.Rosemoe.sora-editor", name = "language-css3", version.ref = "soraEditor" }
-sora-editor-language-html = { group = "io.github.Rosemoe.sora-editor", name = "language-html", version.ref = "soraEditor" }
+sora-editor-language-textmate = { group = "io.github.Rosemoe.sora-editor", name = "language-textmate", version.ref = "soraEditor" }
 
 markwon-core = "io.noties.markwon:core:4.6.2"
 hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:4.3"
