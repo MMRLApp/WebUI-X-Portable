@@ -50,10 +50,12 @@ import com.dergoogler.mmrl.ui.component.text.TextWithIcon
 import com.dergoogler.mmrl.ui.component.text.TextWithIconDefaults
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.launchModConf
 import com.dergoogler.mmrl.wx.util.launchWebUI
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
+import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 
 @Composable
 fun ModuleItem(
@@ -64,6 +66,7 @@ fun ModuleItem(
     leadingButton: @Composable() (RowScope.() -> Unit)? = null,
     trailingButton: @Composable() (RowScope.() -> Unit)? = null,
 ) {
+    val navigator = LocalDestinationsNavigator.current
     val userPreferences = LocalUserPreferences.current
     val menu = userPreferences.modulesMenu
     val context = LocalContext.current
@@ -90,7 +93,10 @@ fun ModuleItem(
     }
 
     Card(
-        onClick = clicker
+        onClick = clicker,
+        onLongClick = {
+            navigator.navigate(FileExplorerScreenDestination(module))
+        }
     ) {
         Absolute(
             alignment = Alignment.Center,

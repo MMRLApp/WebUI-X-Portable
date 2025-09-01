@@ -48,7 +48,6 @@ import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AdditionalConfigEditorScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.PluginsScreenDestination
 
 
@@ -160,13 +159,6 @@ fun ConfigEditorScreen(module: LocalModule) {
                 desc = stringResource(R.string.plugins_desc),
                 onClick = {
                     navigator.navigate(PluginsScreenDestination(module))
-                }
-            )
-
-            ListButtonItem(
-                title = "Edit WebUI Files",
-                onClick = {
-                    navigator.navigate(FileExplorerScreenDestination(module))
                 }
             )
 
