@@ -13,7 +13,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -33,6 +33,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SmallFloatingActionButton
@@ -54,12 +56,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dergoogler.mmrl.ext.iconSize
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
@@ -156,6 +160,7 @@ fun FileExplorerScreen(
                     isSelectionMode = false
                     selectedFiles = emptySet()
                 }
+
                 state.canGoBack -> viewModel.navigateBack()
                 else -> navigator.popBackStack()
             }
@@ -170,7 +175,24 @@ fun FileExplorerScreen(
             Toolbar(
                 title = {
                     ToolbarTitle(
-                        title = if (isSelectionMode) "${selectedFiles.size} selected" else module.name,
+                        titleContent = {
+                            Text(
+                                text = if (isSelectionMode) "${selectedFiles.size} selected" else module.name,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = LocalContentColor.current
+                            )
+                        },
+                        subtitleContent = {
+                            state.currentPath?.let { currentPath ->
+                                PathBreadcrumb(
+                                    currentPath = currentPath,
+                                    onPathClick = { path ->
+                                        viewModel.navigateToPath(path)
+                                    }
+                                )
+                            }
+                        }
                     )
                 },
                 scrollBehavior = scrollBehavior,
@@ -264,16 +286,6 @@ fun FileExplorerScreen(
             List(
                 modifier = Modifier.padding(innerPadding),
             ) {
-                // Path breadcrumb
-                state.currentPath?.let { currentPath ->
-                    PathBreadcrumb(
-                        currentPath = currentPath,
-                        onPathClick = { path ->
-                            viewModel.navigateToPath(path)
-                        }
-                    )
-                }
-
                 // Error message
                 state.errorMessage?.let { error ->
                     Card(
@@ -397,7 +409,7 @@ private fun ExpandableFab(
     onCreateFile: () -> Unit,
     onImportFile: () -> Unit,
     onImportMultipleFiles: () -> Unit,
-    isLoading: Boolean
+    isLoading: Boolean,
 ) {
     val rotation by animateFloatAsState(
         targetValue = if (isExpanded) 45f else 0f,
@@ -484,7 +496,7 @@ enum class CreateType {
 private fun CreateDialog(
     type: CreateType,
     onDismiss: () -> Unit,
-    onConfirm: (String, String?) -> Unit
+    onConfirm: (String, String?) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
@@ -550,29 +562,35 @@ private fun PathBreadcrumb(
 
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(
-            vertical = 8.dp,
-            horizontal = 16.dp
-        ),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         itemsIndexed(
             items = pathParts,
             key = { index, item -> item.path + index }
 
         ) { index, path ->
+            val density = LocalDensity.current
+            val textStyle = LocalTextStyle.current
+            val iconSize = Modifier.iconSize(
+                density = density,
+                textStyle = textStyle,
+                scaling = 1.0f
+            )
+
             if (index > 0) {
                 Icon(
                     painter = painterResource(R.drawable.chevron_right),
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                    modifier = iconSize,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                Spacer(Modifier.width(4.dp))
             }
 
             Text(
                 text = if (index == 0 && path.name.isEmpty()) "Root" else path.name,
-                style = MaterialTheme.typography.bodySmall,
                 color = if (index == pathParts.lastIndex) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -594,7 +612,7 @@ private fun ListScope.FileItemRow(
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
     onClick: () -> Unit,
-    onLongClick: () -> Unit = {}
+    onLongClick: () -> Unit = {},
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
