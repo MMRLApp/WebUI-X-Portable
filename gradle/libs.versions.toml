@@ -58,6 +58,7 @@ material3Android = "1.3.2"
 runtimeAndroidVersion = "1.7.8"
 swiperefreshlayout = "1.1.0"
 composedestinations = "2.2.0"
+soraEditor = "0.23.6"
 
 [libraries]
 composedestinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composedestinations" }
@@ -143,6 +144,10 @@ square-moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "sq
 square-moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "squareMoshi" }
 
 dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:parcelablelist", version.ref = "parcelablelist" }
+
+sora-editor = { group = "io.github.Rosemoe.sora-editor", name = "editor", version.ref = "soraEditor" }
+sora-editor-language-css3 = { group = "io.github.Rosemoe.sora-editor", name = "language-css3", version.ref = "soraEditor" }
+sora-editor-language-html = { group = "io.github.Rosemoe.sora-editor", name = "language-html", version.ref = "soraEditor" }
 
 markwon-core = "io.noties.markwon:core:4.6.2"
 hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:4.3"

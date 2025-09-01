@@ -238,6 +238,10 @@ dependencies {
     implementation(libs.square.moshi)
     ksp(libs.square.moshi.kotlin)
 
+    implementation(libs.sora.editor)
+    //implementation(libs.sora.editor.language.html)
+    //implementation(libs.sora.editor.language.css3)
+
     implementation(libs.composedestinations.core)
     ksp(libs.composedestinations.ksp)
 }
