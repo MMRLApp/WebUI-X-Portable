@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.screens.modules.screens
+package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable

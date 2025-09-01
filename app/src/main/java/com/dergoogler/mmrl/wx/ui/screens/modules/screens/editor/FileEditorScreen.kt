@@ -1,6 +1,6 @@
 @file:Suppress("CanBeParameter", "ClassName")
 
-package com.dergoogler.mmrl.wx.ui.screens.modules.screens
+package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
 
 import android.content.Context
 import android.widget.Toast
