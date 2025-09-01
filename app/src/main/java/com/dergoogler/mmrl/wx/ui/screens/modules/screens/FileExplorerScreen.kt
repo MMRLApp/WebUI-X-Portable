@@ -58,6 +58,7 @@ import com.dergoogler.mmrl.wx.viewmodel.FileItem
 import com.dergoogler.mmrl.wx.viewmodel.parentSuFile
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
@@ -173,6 +174,13 @@ fun FileExplorerScreen(
                                     viewModel.navigateToDirectory(fileItem.file)
                                     return@FileItemRow
                                 }
+
+                                navigator.navigate(
+                                    FileEditorScreenDestination(
+                                        module,
+                                        fileItem.file.path
+                                    )
+                                )
                             }
                         )
                     }
