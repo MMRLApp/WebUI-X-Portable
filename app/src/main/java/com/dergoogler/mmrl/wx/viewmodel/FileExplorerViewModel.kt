@@ -10,11 +10,11 @@ import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
+import com.dergoogler.mmrl.platform.file.SuFileInputStream
+import com.dergoogler.mmrl.platform.file.SuFileOutputStream
+import com.dergoogler.mmrl.platform.file.suContentResolver
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
-import com.dergoogler.mmrl.wx.ui.screens.modules.screens.SuFileInputStream
-import com.dergoogler.mmrl.wx.ui.screens.modules.screens.SuFileOutputStream
-import com.dergoogler.mmrl.wx.ui.screens.modules.screens.suContentResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
