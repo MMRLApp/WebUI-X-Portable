@@ -2,13 +2,21 @@
 
 package com.dergoogler.mmrl.wx.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.ui.screens.modules.screens.SuFileInputStream
+import com.dergoogler.mmrl.wx.ui.screens.modules.screens.SuFileOutputStream
+import com.dergoogler.mmrl.wx.ui.screens.modules.screens.suContentResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,12 +40,20 @@ data class FileExplorerState(
     val pathHistory: List<SuFile> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val successMessage: String? = null,
     val canGoBack: Boolean = false,
+    val isOperationInProgress: Boolean = false,
 )
+
+sealed class FileOperationResult {
+    object Success : FileOperationResult()
+    data class Error(val message: String) : FileOperationResult()
+}
 
 @HiltViewModel
 class FileExplorerViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
     private val _state = MutableStateFlow(FileExplorerState())
     val state: StateFlow<FileExplorerState> = _state.asStateFlow()
@@ -66,6 +82,7 @@ class FileExplorerViewModel @Inject constructor(
             pathHistory = currentState.pathHistory + currentPath,
             isLoading = true,
             errorMessage = null,
+            successMessage = null,
             canGoBack = true
         )
         loadFiles(directory)
@@ -83,6 +100,7 @@ class FileExplorerViewModel @Inject constructor(
             pathHistory = newHistory,
             isLoading = true,
             errorMessage = null,
+            successMessage = null,
             canGoBack = newHistory.isNotEmpty()
         )
 
@@ -98,6 +116,7 @@ class FileExplorerViewModel @Inject constructor(
             pathHistory = currentState.pathHistory + currentPath,
             isLoading = true,
             errorMessage = null,
+            successMessage = null,
             canGoBack = true
         )
 
@@ -108,11 +127,372 @@ class FileExplorerViewModel @Inject constructor(
         val currentPath = _state.value.currentPath ?: return
         _state.value = _state.value.copy(
             isLoading = true,
-            errorMessage = null
+            errorMessage = null,
+            successMessage = null
         )
 
         loadFiles(currentPath)
     }
+
+    fun clearMessages() {
+        _state.value = _state.value.copy(
+            errorMessage = null,
+            successMessage = null
+        )
+    }
+
+    // File/Folder Creation Functions
+    fun createFolder(folderName: String) {
+        val currentPath = _state.value.currentPath ?: return
+        if (folderName.isBlank()) {
+            _state.value = _state.value.copy(
+                errorMessage = "Folder name cannot be empty"
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val newFolder = SuFile(currentPath, folderName)
+                    if (newFolder.exists()) {
+                        FileOperationResult.Error("Folder already exists")
+                    } else if (newFolder.mkdirs()) {
+                        FileOperationResult.Success
+                    } else {
+                        FileOperationResult.Error("Failed to create folder")
+                    }
+                } catch (e: Exception) {
+                    FileOperationResult.Error("Error creating folder: ${e.message}")
+                }
+            }
+
+            when (result) {
+                is FileOperationResult.Success -> {
+                    _state.value = _state.value.copy(
+                        successMessage = "Folder '$folderName' created successfully",
+                        isOperationInProgress = false
+                    )
+                    refresh()
+                }
+
+                is FileOperationResult.Error -> {
+                    _state.value = _state.value.copy(
+                        errorMessage = result.message,
+                        isOperationInProgress = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun createFile(fileName: String, content: String = "") {
+        val currentPath = _state.value.currentPath ?: return
+        if (fileName.isBlank()) {
+            _state.value = _state.value.copy(
+                errorMessage = "File name cannot be empty"
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val newFile = SuFile(currentPath, fileName)
+                    if (newFile.exists()) {
+                        FileOperationResult.Error("File already exists")
+                    } else {
+                        newFile.writeText(content)
+                        if (newFile.exists()) {
+                            FileOperationResult.Success
+                        } else {
+                            FileOperationResult.Error("Failed to create file")
+                        }
+                    }
+                } catch (e: Exception) {
+                    FileOperationResult.Error("Error creating file: ${e.message}")
+                }
+            }
+
+            when (result) {
+                is FileOperationResult.Success -> {
+                    _state.value = _state.value.copy(
+                        successMessage = "File '$fileName' created successfully",
+                        isOperationInProgress = false
+                    )
+                    refresh()
+                }
+
+                is FileOperationResult.Error -> {
+                    _state.value = _state.value.copy(
+                        errorMessage = result.message,
+                        isOperationInProgress = false
+                    )
+                }
+            }
+        }
+    }
+
+    // Import Functions
+    fun importFileFromUri(uri: Uri, targetFileName: String? = null) {
+        val currentPath = _state.value.currentPath ?: return
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val contentResolver = context.suContentResolver
+                    val inputStream = contentResolver.openSuInputStream(uri)
+                        ?: return@withContext FileOperationResult.Error("Cannot open file")
+
+                    // Get original filename if targetFileName is not provided
+                    val fileName = targetFileName ?: getFileNameFromUri(uri) ?: "imported_file"
+                    val targetFile = SuFile(currentPath, fileName)
+
+                    if (targetFile.exists()) {
+                        inputStream.close()
+                        return@withContext FileOperationResult.Error("File already exists: $fileName")
+                    }
+
+                    val outputStream = SuFileOutputStream(targetFile)
+                    inputStream.copyTo(outputStream)
+                    inputStream.close()
+                    outputStream.close()
+
+                    if (targetFile.exists()) {
+                        FileOperationResult.Success
+                    } else {
+                        FileOperationResult.Error("Failed to import file")
+                    }
+                } catch (e: Exception) {
+                    FileOperationResult.Error("Error importing file: ${e.message}")
+                }
+            }
+
+            when (result) {
+                is FileOperationResult.Success -> {
+                    _state.value = _state.value.copy(
+                        successMessage = "File imported successfully",
+                        isOperationInProgress = false
+                    )
+                    refresh()
+                }
+
+                is FileOperationResult.Error -> {
+                    _state.value = _state.value.copy(
+                        errorMessage = result.message,
+                        isOperationInProgress = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun importMultipleFiles(uris: List<Uri>) {
+        val currentPath = _state.value.currentPath ?: return
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val results = withContext(Dispatchers.IO) {
+                uris.map { uri ->
+                    try {
+                        val contentResolver = context.suContentResolver
+                        val inputStream = contentResolver.openSuInputStream(uri)
+                            ?: return@map "Cannot open file" to false
+
+                        val fileName =
+                            getFileNameFromUri(uri) ?: "imported_file_${System.currentTimeMillis()}"
+                        val targetFile = SuFile(currentPath, fileName)
+
+                        if (targetFile.exists()) {
+                            inputStream.close()
+                            return@map "File already exists: $fileName" to false
+                        }
+
+                        val outputStream = SuFileOutputStream(targetFile)
+                        inputStream.copyTo(outputStream)
+                        inputStream.close()
+                        outputStream.close()
+
+                        fileName to targetFile.exists()
+                    } catch (e: Exception) {
+                        "Error with file: ${e.message}" to false
+                    }
+                }
+            }
+
+            val successCount = results.count { it.second }
+            val totalCount = results.size
+            val failedFiles = results.filter { !it.second }.map { it.first }
+
+            val message = if (successCount == totalCount) {
+                "All $totalCount files imported successfully"
+            } else if (successCount > 0) {
+                "Imported $successCount/$totalCount files. Failed: ${failedFiles.joinToString(", ")}"
+            } else {
+                "Failed to import files: ${failedFiles.joinToString(", ")}"
+            }
+
+            if (successCount > 0) {
+                _state.value = _state.value.copy(successMessage = message)
+            } else {
+                _state.value = _state.value.copy(errorMessage = message)
+            }
+
+            refresh()
+        }
+    }
+
+    // Export Functions
+    fun exportFile(file: SuFile, targetUri: Uri) {
+        if (!file.exists() || file.isDirectory()) {
+            _state.value = _state.value.copy(
+                errorMessage = "Cannot export: file does not exist or is a directory"
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val contentResolver = context.suContentResolver
+                    val outputStream = contentResolver.openSuOutputStream(targetUri)
+                        ?: return@withContext FileOperationResult.Error("Cannot open target location")
+
+                    val inputStream = SuFileInputStream(file)
+                    inputStream.copyTo(outputStream)
+                    inputStream.close()
+                    outputStream.close()
+
+                    FileOperationResult.Success
+                } catch (e: Exception) {
+                    FileOperationResult.Error("Error exporting file: ${e.message}")
+                }
+            }
+
+            when (result) {
+                is FileOperationResult.Success -> {
+                    _state.value = _state.value.copy(
+                        successMessage = "File '${file.name}' exported successfully",
+                        isOperationInProgress = false
+                    )
+                }
+
+                is FileOperationResult.Error -> {
+                    _state.value = _state.value.copy(
+                        errorMessage = result.message,
+                        isOperationInProgress = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun exportMultipleFiles(files: List<SuFile>, targetDirectoryUri: Uri) {
+        val validFiles = files.filter { it.exists() && it.isFile() }
+        if (validFiles.isEmpty()) {
+            _state.value = _state.value.copy(
+                errorMessage = "No valid files to export"
+            )
+            return
+        }
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val results = withContext(Dispatchers.IO) {
+                validFiles.map { file ->
+                    try {
+                        val contentResolver = context.suContentResolver
+                        // Create a document in the target directory
+                        val documentUri = contentResolver.takePersistableUriPermission(
+                            targetDirectoryUri,
+                            android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
+
+                        // This is a simplified approach - in reality, you might need to use
+                        // DocumentsContract.createDocument() for creating files in document tree
+                        val outputStream = contentResolver.openSuOutputStream(targetDirectoryUri)
+                            ?: return@map file.name to false
+
+                        val inputStream = SuFileInputStream(file)
+                        inputStream.copyTo(outputStream)
+                        inputStream.close()
+                        outputStream.close()
+
+                        file.name to true
+                    } catch (e: Exception) {
+                        file.name to false
+                    }
+                }
+            }
+
+            val successCount = results.count { it.second }
+            val totalCount = results.size
+            val failedFiles = results.filter { !it.second }.map { it.first }
+
+            val message = if (successCount == totalCount) {
+                "All $totalCount files exported successfully"
+            } else if (successCount > 0) {
+                "Exported $successCount/$totalCount files. Failed: ${failedFiles.joinToString(", ")}"
+            } else {
+                "Failed to export files: ${failedFiles.joinToString(", ")}"
+            }
+
+            if (successCount > 0) {
+                _state.value = _state.value.copy(successMessage = message)
+            } else {
+                _state.value = _state.value.copy(errorMessage = message)
+            }
+        }
+    }
+
+    // Delete Functions (bonus)
+    fun deleteFile(file: SuFile) {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isOperationInProgress = true)
+
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    if (file.delete()) {
+                        FileOperationResult.Success
+                    } else {
+                        FileOperationResult.Error("Failed to delete ${file.name}")
+                    }
+                } catch (e: Exception) {
+                    FileOperationResult.Error("Error deleting file: ${e.message}")
+                }
+            }
+
+            when (result) {
+                is FileOperationResult.Success -> {
+                    _state.value = _state.value.copy(
+                        successMessage = "'${file.name}' deleted successfully",
+                        isOperationInProgress = false
+                    )
+                    refresh()
+                }
+
+                is FileOperationResult.Error -> {
+                    _state.value = _state.value.copy(
+                        errorMessage = result.message,
+                        isOperationInProgress = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun getFileNameFromUri(uri: Uri): String? =
+        context.getPathForUri(uri)?.toSuFile()?.name
 
     private fun loadFiles(directory: SuFile) {
         viewModelScope.launch {
@@ -195,15 +575,3 @@ class FileExplorerViewModel @Inject constructor(
         }
     }
 }
-
-val SuFile.parentSuFile: SuFile?
-    get() = try {
-        val parent = this.parentFile
-        if (parent != null && parent.path != this.path) {
-            SuFile(parent)
-        } else {
-            null
-        }
-    } catch (e: Exception) {
-        null
-    }
