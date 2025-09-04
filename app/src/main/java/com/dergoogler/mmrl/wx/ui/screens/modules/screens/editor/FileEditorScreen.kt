@@ -3,6 +3,7 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
 
 import android.content.Context
+import android.graphics.Typeface
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
@@ -14,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,8 +26,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontSynthesis
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dergoogler.mmrl.ext.none
@@ -81,6 +88,7 @@ data class CodeEditorState(
     private val initialFile: SuFile?,
     private val threadSafe: Boolean = true,
     private val textStyle: TextStyle,
+    private val typeface: Typeface,
 ) {
     val file: SuFile? by lazy {
         if (initialFile == null) return@lazy null
@@ -157,11 +165,13 @@ data class CodeEditorState(
             setColor(NON_PRINTABLE_CHAR, colorScheme.inverseOnSurface.darken(0.3f))
             setColor(TEXT_SELECTED, colorScheme.onPrimary.darken(0.1f))
         }
+        LocalFontFamilyResolver
 
         editor.apply {
             setText(content)
             setTextSize(textStyle.fontSize.value)
             setColorScheme(scheme)
+            setTypefaceText(typeface)
             setHighlightCurrentLine(true)
             setEditable(true)
         }
@@ -217,11 +227,17 @@ fun rememberCodeEditorState(
     file: SuFile? = null,
     threadSafe: Boolean = true,
     colorScheme: ColorScheme = MaterialTheme.colorScheme,
-    textStyle: TextStyle = LocalTextStyle.current.copy(fontSize = 14.sp),
+    textStyle: TextStyle = LocalTextStyle.current.copy(
+        fontFamily = FontFamily.Monospace,
+        fontSize = 14.sp
+    ),
 ): CodeEditorState {
     val context = LocalContext.current
     val prefs = LocalUserPreferences.current
+
+    val typeface by rememberTypefaceFrom(textStyle)
     val scope = rememberCoroutineScope()
+
     return remember(prefs) {
         CodeEditorState(
             scope = scope,
@@ -231,6 +247,7 @@ fun rememberCodeEditorState(
             threadSafe = threadSafe,
             textStyle = textStyle,
             darkMode = prefs.isDarkMode(),
+            typeface = typeface,
         )
     }
 }
@@ -348,4 +365,16 @@ fun rememberVisibleState(
     if (visible) content(obj)
 
     return obj
+}
+
+@Composable
+fun rememberTypefaceFrom(textStyle: TextStyle): State<Typeface> {
+    val resolver = LocalFontFamilyResolver.current
+    val family = textStyle.fontFamily
+    val weight = textStyle.fontWeight ?: FontWeight.Normal
+    val style = textStyle.fontStyle ?: FontStyle.Normal
+    val synth = textStyle.fontSynthesis ?: FontSynthesis.All
+    return remember(family, weight, style, synth) {
+        resolver.resolve(family, weight, style, synth)
+    } as State<Typeface>
 }
