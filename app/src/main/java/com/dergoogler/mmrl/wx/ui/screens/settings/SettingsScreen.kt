@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
+import android.webkit.WebResourceResponse
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -127,7 +128,7 @@ fun SettingsScreen() {
                     },
                     onValid = {
                         System.currentTimeMillis()
-                            .toFormattedDateSafely(it) == "Invalid date format pattern"
+                            .toFormattedDateSafely(it) != "Invalid date format pattern"
                     }
                 ) {
                     Icon(

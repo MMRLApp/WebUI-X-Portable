@@ -137,7 +137,7 @@ fun DeveloperScreen() {
                     onConfirm = {
                         viewModel.setWebUiDevUrl(it)
                     },
-                    onValid = { !it.isLocalWifiUrl() },
+                    onValid = { it.isLocalWifiUrl() },
                 ) {
                     Title(R.string.settings_webui_remote_url)
                     Description(R.string.settings_webui_remote_url_desc)

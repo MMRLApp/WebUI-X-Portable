@@ -259,7 +259,7 @@ fun FileEditorScreen(module: LocalModule, path: String) {
     val confirmExit = rememberVisibleState {
         ConfirmDialog(
             title = "Unsaved",
-            description = "There're unsaved changes in your file. Do you want exit?",
+            description = "There'll unsaved changes in your file. Do you want exit?",
             onConfirm = {
                 it.hide()
                 navigator.popBackStack()
