@@ -20,11 +20,13 @@ import com.dergoogler.mmrl.webui.PathHandler
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.WXAssetLoader
 import com.dergoogler.mmrl.webui.component.ErrorScreen
+import com.dergoogler.mmrl.webui.forbiddenResponse
 import com.dergoogler.mmrl.webui.handler.internalPathHandler
 import com.dergoogler.mmrl.webui.handler.suPathHandler
 import com.dergoogler.mmrl.webui.handler.webrootPathHandler
 import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WebResourceErrors
+import com.dergoogler.mmrl.webui.model.invoke
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.drawCompose
 import com.dergoogler.mmrl.webui.view.WXSwipeRefresh
@@ -191,6 +193,13 @@ open class WXClient : WebViewClient {
     ): WebResourceResponse? {
         val urlString = request.url.toString()
 
+        // Check if the request is from an allowed domain
+        if (!isAllowedUrl(urlString)) {
+            Log.d(TAG, "Blocking request from unauthorized domain: $urlString")
+            return forbiddenResponse
+        }
+
+        // Handle favicon requests
         if (urlString.endsWith("/favicon.ico")) {
             Log.d(TAG, "Blocking favicon.ico request for $urlString")
             return WebResourceResponse("image/png", null, null)
@@ -198,6 +207,14 @@ open class WXClient : WebViewClient {
 
         if (mOptions.debug) Log.d(TAG, "shouldInterceptRequest: ${request.url}")
         return mWxAssetsLoader(request.url)
+    }
+
+    private fun isAllowedUrl(requestHost: String?): Boolean = mOptions.config {
+        if (requestHost == null) return@config false
+        if (allowUrls.isEmpty()) return@config true
+        return@config allowUrlsPatterns.any { pattern ->
+            pattern.matcher(requestHost).matches()
+        }
     }
 
     private companion object {

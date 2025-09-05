@@ -39,6 +39,7 @@ import dalvik.system.InMemoryDexClassLoader
 import kotlinx.coroutines.flow.StateFlow
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 
 
 object WebUIPermissions {
@@ -278,6 +279,8 @@ enum class WebUIConfigAdditionalConfigType {
     SWITCH,
 }
 
+operator fun <T, R> ConfigFile<T>.invoke(block: T.() -> R): R = block(getConfig())
+
 @JsonClass(generateAdapter = true)
 data class WebUIConfig(
     val __module__identifier__: ModId,
@@ -292,6 +295,7 @@ data class WebUIConfig(
     val refreshInterceptor: String? = null,
     val exitConfirm: Boolean = true,
     val pullToRefresh: Boolean = false,
+    val allowUrls: MutableList<String> = mutableListOf(),
     val pullToRefreshHelper: Boolean = true,
     val historyFallbackFile: String = "index.html",
     val autoStatusBarsStyle: Boolean = true,
@@ -312,6 +316,9 @@ data class WebUIConfig(
 
     override fun getConfigType(): Class<WebUIConfig> = WebUIConfig::class.java
     override fun getDefaultConfigFactory(id: ModId): WebUIConfig = WebUIConfig(id)
+
+    internal val allowUrlsPatterns =
+        allowUrls.mapNotNull { Pattern.compile(it, Pattern.CASE_INSENSITIVE) }
 
     val hasRootPathPermission get() = WebUIPermissions.WX_ROOT_PATH in permissions
 
