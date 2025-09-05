@@ -80,5 +80,6 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.material3.android)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.dexlib2)
     ksp(libs.square.moshi.kotlin)
 }

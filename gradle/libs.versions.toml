@@ -1,4 +1,5 @@
 [versions]
+dexlib2 = "2.5.2"
 mmrl = "f45678111a"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "8.9.1"
@@ -63,6 +64,7 @@ soraEditor = "0.23.6"
 [libraries]
 composedestinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composedestinations" }
 composedestinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "composedestinations" }
+dexlib2 = { module = "org.smali:dexlib2", version.ref = "dexlib2" }
 mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
 mmrl-hiddenApi = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }
 mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }

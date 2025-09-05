@@ -16,6 +16,7 @@ import com.dergoogler.mmrl.ext.toIntOrNull
 import com.dergoogler.mmrl.ext.toStringOrNull
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.SuFileInputStream
 import com.dergoogler.mmrl.platform.file.config.ConfigFile
 import com.dergoogler.mmrl.platform.file.config.JSONArray
 import com.dergoogler.mmrl.platform.file.config.JSONCollection
@@ -31,12 +32,17 @@ import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.__webui__adapters__
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
+import com.dergoogler.mmrl.webui.view.WebUIView
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
 import kotlinx.coroutines.flow.StateFlow
+import org.jf.dexlib2.dexbacked.DexBackedDexFile
+import org.jf.dexlib2.iface.instruction.ReferenceInstruction
+import java.io.InputStream
+import java.lang.System.console
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
@@ -195,7 +201,40 @@ open class WebUIConfigBaseLoader() {
 
         // Using InMemoryDexClassLoader is efficient if DEX files are not excessively large.
         val dexFileBytes = file.readBytes()
+        val str = SuFileInputStream(file).use { it.buffered() }
+        if (isBlocked(str)) {
+            return null
+        }
+
         return InMemoryDexClassLoader(ByteBuffer.wrap(dexFileBytes), context.classLoader)
+    }
+
+    @Throws(Exception::class)
+    fun isBlocked(stream: InputStream): Boolean {
+        val blockedPackages = listOf(
+            "(Lcom/dergoogler/mmrl/platform/)?(.+)?/?KsuNative"
+        )
+
+        val dexFile = DexBackedDexFile.fromInputStream(null, stream)
+
+        for (classDef in dexFile.classes) {
+            for (method in classDef.methods) {
+                if (method.implementation?.instructions == null) return false
+                for (instr in method.implementation!!.instructions) {
+                    if (instr is ReferenceInstruction) {
+                        val ref = instr.reference.toString()
+                        for (pkg in blockedPackages) {
+                            if (Regex(pkg).containsMatchIn(ref)) {
+                                Log.wtf(TAG, "Blocked import detected: $ref")
+                                return true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return false
     }
 
     /**
