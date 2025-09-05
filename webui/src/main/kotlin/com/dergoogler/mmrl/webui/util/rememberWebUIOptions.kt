@@ -306,6 +306,8 @@ data class WebUIOptions(
         result = 31 * result + colorScheme.hashCode()
         return result
     }
+
+    operator fun <R> invoke(block: WebUIOptions.() -> R): R = block()
 }
 
 fun WebUIOptions.drawCompose(
