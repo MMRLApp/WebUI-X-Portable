@@ -28,6 +28,7 @@ data class WXInsetsEventData(
 
 @JsonClass(generateAdapter = true)
 data class WXKeyboardEventData(
+    val height: Int,
     val visible: Boolean,
 )
 

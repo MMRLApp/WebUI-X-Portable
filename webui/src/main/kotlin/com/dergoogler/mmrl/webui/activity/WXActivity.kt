@@ -139,30 +139,31 @@ open class WXActivity : ComponentActivity() {
             registerBackEvents()
 
             config {
-                if (windowResize) {
-                    rootView.viewTreeObserver.addOnGlobalLayoutListener {
-                        val r = Rect()
-                        rootView.getWindowVisibleDisplayFrame(r)
+                rootView.viewTreeObserver.addOnGlobalLayoutListener {
+                    val r = Rect()
+                    rootView.getWindowVisibleDisplayFrame(r)
 
-                        val screenHeight = rootView.rootView.height
-                        val keypadHeight = screenHeight - r.bottom
-                        val keyboardVisibleNow = keypadHeight > screenHeight * 0.15
+                    val screenHeight = rootView.rootView.height
+                    val keypadHeight = screenHeight - r.bottom
+                    val keyboardVisibleNow = keypadHeight > screenHeight * 0.15
 
-                        if (keyboardVisibleNow != isKeyboardShowing) {
-                            isKeyboardShowing = keyboardVisibleNow
+                    if (keyboardVisibleNow != isKeyboardShowing) {
+                        isKeyboardShowing = keyboardVisibleNow
 
-                            view?.wx?.postWXEvent(
-                                WXEventHandler(
-                                    WXEvent.WX_ON_KEYBOARD,
-                                    WXKeyboardEventData(visible = keyboardVisibleNow)
+                        view?.wx?.postWXEvent(
+                            WXEventHandler(
+                                WXEvent.WX_ON_KEYBOARD,
+                                WXKeyboardEventData(
+                                    height = keypadHeight.asPx,
+                                    visible = keyboardVisibleNow
                                 )
                             )
+                        )
 
-                            if (keyboardVisibleNow) {
-                                adjustWebViewHeight(keypadHeight)
-                            } else {
-                                resetWebViewHeight()
-                            }
+                        if (windowResize && keyboardVisibleNow) {
+                            adjustWebViewHeight(keypadHeight)
+                        } else {
+                            resetWebViewHeight()
                         }
                     }
                 }
@@ -312,6 +313,9 @@ open class WXActivity : ComponentActivity() {
             setTaskDescription(ActivityManager.TaskDescription(title))
         }
     }
+
+    private val Int.asPx: Int
+        get() = (this / baseContext.resources.displayMetrics.density).toInt()
 
     companion object {
         private const val TAG = "WXActivity"
