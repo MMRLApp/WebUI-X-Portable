@@ -32,7 +32,7 @@ import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.__webui__adapters__
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
-import com.dergoogler.mmrl.webui.view.WebUIView
+import com.dergoogler.mmrl.webui.util.WXUPublicKey
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import dalvik.system.BaseDexClassLoader
@@ -42,8 +42,10 @@ import kotlinx.coroutines.flow.StateFlow
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction
 import java.io.InputStream
-import java.lang.System.console
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.security.PublicKey
+import java.security.Signature
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
@@ -194,25 +196,33 @@ open class WebUIConfigBaseLoader() {
     ): BaseDexClassLoader? {
         val file = SuFile(modId.webrootDir, dexPath)
 
-        if (!file.isFile || file.extension != "dex") {
-            Log.e(TAG, "Provided path is not a valid .dex file: ${file.path}")
+        if (!file.isFile || !file.extension.equals("dex", ignoreCase = true)) {
+            Log.e(TAG, "Invalid .dex file: ${file.path}")
             return null
         }
 
-        // Using InMemoryDexClassLoader is efficient if DEX files are not excessively large.
-        val dexFileBytes = file.readBytes()
-        val str = SuFileInputStream(file).use { it.buffered() }
-        if (isBlocked(str)) {
-            return null
+        val dexFile = loadSignedDex(file, WXUPublicKey)
+
+        if (!dexFile.official) {
+            SuFileInputStream(file).use { stream ->
+                if (isBlocked(stream.buffered())) {
+                    Log.w(TAG, "Blocked dex loading: ${file.path}")
+                    return null
+                }
+            }
         }
 
-        return InMemoryDexClassLoader(ByteBuffer.wrap(dexFileBytes), context.classLoader)
+        return InMemoryDexClassLoader(
+            ByteBuffer.wrap(dexFile.dexBytes),
+            context.classLoader
+        )
     }
 
     @Throws(Exception::class)
-    fun isBlocked(stream: InputStream): Boolean {
+    private fun isBlocked(stream: InputStream): Boolean {
         val blockedPackages = listOf(
-            "(Lcom/dergoogler/mmrl/platform/)?(.+)?/?KsuNative"
+            "(Lcom/dergoogler/mmrl/platform/)?(.+)?/?KsuNative",
+            "Lcom/dergoogler/mmrl/webui/util/WXUPublicKeyKt"
         )
 
         val dexFile = DexBackedDexFile.fromInputStream(null, stream)
@@ -235,6 +245,71 @@ open class WebUIConfigBaseLoader() {
         }
 
         return false
+    }
+
+    private data class VerifiedDex(
+        val dexBytes: ByteArray,
+        val official: Boolean,
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as VerifiedDex
+
+            if (official != other.official) return false
+            if (!dexBytes.contentEquals(other.dexBytes)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = official.hashCode()
+            result = 31 * result + dexBytes.contentHashCode()
+            return result
+        }
+    }
+
+    private fun loadSignedDex(file: SuFile, publicKey: PublicKey): VerifiedDex {
+        val allBytes = file.readBytes()
+        val totalSize = allBytes.size
+
+        if (totalSize < 8) { // must fit signature size + some bytes
+            Log.e(TAG, "File too small to contain signature: ${file.path}")
+            return VerifiedDex(allBytes, false)
+        }
+
+        return try {
+            val sigSizeBytes = allBytes.copyOfRange(totalSize - 4, totalSize)
+            val sigSize = ByteBuffer.wrap(sigSizeBytes)
+                .order(ByteOrder.BIG_ENDIAN)
+                .int
+
+            if (sigSize <= 0 || sigSize > totalSize - 4) {
+                Log.e(TAG, "Invalid signature size=$sigSize for ${file.path}")
+                return VerifiedDex(allBytes, false)
+            }
+
+            val sigStart = totalSize - 4 - sigSize
+            val sigBytes = allBytes.copyOfRange(sigStart, totalSize - 4)
+            val dexBytes = allBytes.copyOfRange(0, sigStart)
+
+            val signature = Signature.getInstance("SHA256withRSA")
+            signature.initVerify(publicKey)
+            signature.update(dexBytes)
+
+            val isOfficial = try {
+                signature.verify(sigBytes)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error verifying signature", e)
+                false
+            }
+
+            VerifiedDex(dexBytes, isOfficial)
+        } catch (e: Exception) {
+            Log.e(TAG, "Unable to verify signature for ${file.path}", e)
+            VerifiedDex(allBytes, false)
+        }
     }
 
     /**
