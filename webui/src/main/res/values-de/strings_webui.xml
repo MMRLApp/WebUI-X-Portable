@@ -1,4 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="requireNewVersion_cannot_load_webui">WebUI kann nicht geladen werden</string>
+    <string name="requireNewVersion_cannot_load_webui">WebUI X kann nicht geladen werden</string>
+    <string name="requireNewVersion_try_the_following">Versuchen Sie Folgendes:</string>
+    <string name="requireNewVersion_try_the_following_two">Wenden Sie sich an den Modulentwickler, um eine mögliche Problemumgehung zu finden.</string>
+    <string name="requireNewVersion_refresh">Aktualisieren</string>
+    <string name="confirm">Bestätigen</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="loading">Lade…</string>
+    <string name="unknown_error">Unbekannter Fehler</string>
+    <string name="requireNewVersion_require_text">erfordert mindestens %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following_one">Aktualisieren Sie %1$s auf die neueste Version von Google Play oder GitHub Releases.</string>
+    <string name="says">%1$s sagt</string>
+    <string name="title_or_icon_not_found">Titel oder Symbol nicht gefunden</string>
+    <string name="icon_not_found">Symbol nicht gefunden</string>
+    <string name="exit_desc">Sind Sie sicher, dass Sie dieses WebUI verlassen möchten?</string>
+    <string name="missing_mod_id">Fehlende Modul-ID</string>
+    <string name="class_not_found">Kann keine definierten Aktivitätsklasse finden</string>
+    <string name="shortcut_already_exists">Verknüpfung existiert bereits.</string>
+    <string name="shortcut_creation_requirements_not_met">Verknüpfung kann nicht hinzugefügt werden: Titel- oder Symboldatei fehlt.</string>
+    <string name="shortcut_icon_not_found">Verknüpfung kann nicht hinzugefügt werden: Symboldatei nicht gefunden.</string>
+    <string name="shortcut_icon_loading_error">Fehler beim Laden des Verknüpfungssymbols.</string>
+    <string name="shortcut_icon_decode_error">Verknüpfungssymbol konnte nicht dekodiert werden.</string>
+    <string name="pin_shortcut_not_supported">Das Anheften von Verknüpfungen wird auf diesem Gerät/Launcher nicht unterstützt.</string>
+    <string name="shortcut_add_request_failed">Die Anforderung einer Verknüpfung konnte nicht an den Launcher gesendet werden.</string>
+    <string name="shortcut_removed_successfully">Verknüpfung erfolgreich entfernt/deaktiviert.</string>
+    <string name="shortcut_removed_message">Diese Verknüpfung ist nicht mehr verfügbar.</string>
+    <string name="failed_to_load">Laden fehlgeschlagen</string>
+    <string name="failed_to_open_ssl">Öffnen aufgrund von SSL nicht möglich</string>
+    <string name="check_your_internet_connection">Überprüfen Sie Ihre Internetverbindung</string>
+    <string name="refreshing_the_page">Aktualisiere Seite</string>
+    <string name="restarting_the_webui_x">Starte WebUI X neu</string>
+    <string name="renderer_crashed">Der WebView-Renderprozess reagiert nicht. Möchten Sie ihn beenden?</string>
+    <string name="refresh">Aktualisieren</string>
+    <string name="more_info">Mehr Infos</string>
+    <string name="failed_to_load_desc">[b]%1$s[/b] konnte nicht geladen werden.\nFehler: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">[b]%1$s[/b] konnte aufgrund eines SSL-Fehlers nicht geladen werden</string>
+    <string name="please_try_the_following">Bitte versuchen Sie Folgendes:</string>
+    <string name="proceed">Fortfahren</string>
 </resources>

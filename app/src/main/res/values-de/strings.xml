@@ -1,3 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="search_placeholder">Suche…</string>
+    <string name="kernelsu">KernelSU</string>
+    <string name="kernelsu_next">KernelSU Next</string>
+    <string name="apatch">APatch</string>
+    <string name="sukisu">SukiSU Ultra</string>
+    <string name="platform">Plattform</string>
+    <string name="mh_seems_like_root_isn_t_authorized">Mh… Scheint, als ob root nicht autorisiert ist</string>
+    <string name="modules_empty">Keine Module gefunden</string>
+    <string name="search_empty">Leere Liste</string>
+    <string name="menu_advanced_menu">Erweitertes Menü</string>
+    <string name="menu_sort_mode">Sortierreihenfolge</string>
+    <string name="menu_sort_option_name">Name</string>
+    <string name="menu_sort_option_updated">Zuletzt geupdated</string>
+    <string name="menu_descending">Absteigend</string>
+    <string name="menu_pin_enabled">Aktivierte anheften</string>
+    <string name="menu_pin_action">Aktion anheften</string>
+    <string name="menu_pin_webui">WebUI anheften</string>
+    <string name="menu_show_updated">Zuletzt aktualisiert anzeigen</string>
+    <string name="settings_security_inject_eruda_desc">Eruda kann bei Verwendung der WebUI-Remote-URL nicht injiziert werden</string>
+    <string name="add_shortcut">Verknüpfung hinzufügen</string>
+    <string name="remove_shortcut">Verknüpfung entfernen</string>
+    <string name="non_root">Nicht-Root</string>
+    <string name="settings_webui_engine">WebUI-Engine</string>
+    <string name="settings_webui_engine_desc">Wählen Sie Ihre bevorzugte Engine</string>
+    <string name="settings_webui_engine_wx">WebUI X</string>
+    <string name="settings_webui_engine_ksu">KSU WebUI</string>
+    <string name="settings_webui_engine_prefer_module">Definiert durch die Modulkonfiguration</string>
+    <string name="settings_webui_engine_undefined">Undefiniert</string>
+    <string name="menu_sort_option_size">Größe</string>
+    <string name="notification_platform_service">Plattformdienst</string>
+    <string name="settings_date_pattern">Datumsmuster</string>
+    <string name="settings_date_pattern_desc">Verwenden Sie Ihr eigenes Datumsformat</string>
+    <string name="settings_date_pattern_dialog_desc">Das Datumsmuster wird wie folgt analysiert:\n[color=primary]%1$s[/color]</string>
+    <string name="controlled_by_native">Gesteuert durch Native</string>
+    <string name="controlled_by_javascript">Gesteuert durch JavaScript</string>
+    <string name="delete">Löschen</string>
+    <string name="webui_config">WebUI-Konfiguration</string>
+    <string name="webui_config_exit_confirm_title">Beenden Bestätigen</string>
+    <string name="webui_config_exit_confirm_desc">Aktiviert einen Bestätigungsdialog beim Verlassen der WebUI.</string>
+    <string name="webui_config_back_handler_desc">Aktiviert den Zurück-Button-Handler für die native WebView.</string>
+    <string name="webui_config_back_interceptor_desc">Ermöglicht die Änderung des Zurück-Button-Interceptors für die native WebView.</string>
+    <string name="settings_app_theme">App-Design</string>
+    <string name="app_theme_dark_theme_light">Hell</string>
 </resources>
