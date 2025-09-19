@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">WebUI X</string>
+    <string name="missing_mod_id">缺少模組 ID</string>
+    <string name="empty">空</string>
 </resources>

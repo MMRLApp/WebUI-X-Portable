@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">無法加載 WebUI X</string>
+    <string name="confirm">確認</string>
+    <string name="requireNewVersion_require_text">需要至少 %1$s &gt;=</string>
+    <string name="cancel">取消</string>
+    <string name="requireNewVersion_try_the_following">請嘗試一下方式：</string>
+    <string name="requireNewVersion_try_the_following_one">從 Google Play 或者 Github Release 更新 %1$s 到最新版本。</string>
+</resources>

@@ -70,7 +70,7 @@
     <string name="webui_config_back_handler_desc">为原生 WebView 启用后退按钮处理程序。</string>
     <string name="webui_config_back_interceptor_title">返回拦截器</string>
     <string name="webui_config_back_interceptor_desc">启用原生 WebView 的返回按钮拦截器的修改。</string>
-    <string name="webui_config_pull_to_refresh_title">下拉刷新</string>
+    <string name="webui_config_pull_to_refresh_title">下拉以刷新</string>
     <string name="webui_config_pull_to_refresh_desc">启用 Web UI 的下拉刷新功能。当使用嵌套滚动元素时，这可能会破坏 WebUI 的滚动行为</string>
     <string name="webui_config_window_resize_title">调整窗口大小</string>
     <string name="webui_config_window_resize_desc">当键盘或其他控件可见时调整窗口大小以适应屏幕。</string>
@@ -127,4 +127,6 @@
     <string name="webui_additional_config">额外配置</string>
     <string name="webui_additional_config_desc">由模块作者定义的可选额外配置。</string>
     <string name="settings_webui_engine_undefined">未定义</string>
+    <string name="webui_config_pull_to_refresh_helper_title">下拉刷新助手</string>
+    <string name="webui_config_pull_to_refresh_helper_desc">注入一个 JavaScript 程序以令 WebUI 正确的处理下拉刷新的行为。这个设定不会在使用 JavaScript 拦截器或者远程排错时应用。</string>
 </resources>
