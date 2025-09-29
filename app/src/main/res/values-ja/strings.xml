@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">WebUI X</string>
     <string name="missing_mod_id">モジュール ID がありません</string>
-    <string name="empty">空</string>
+    <string name="empty">空欄</string>
     <string name="author">%1$s - %2$s</string>
     <string name="update_on">最終更新: %s</string>
     <string name="modules">モジュール</string>
