@@ -3,7 +3,7 @@
     <string name="settings_webui_remote_url_alert_desc">WebUI X będzie konsekwentnie używać podanego adresu dla wszystkich modułów i ominie wszystkie błędy SSL. Należy pamiętać, że do korzystania z tej funkcji wymagany jest lokalny serwer WWW z własnym podpisem, który jest przeznaczony wyłącznie do celów debugowania, nie jest przeznaczony do codziennego użytku i jest używany na własne ryzyko.</string>
     <string name="settings_security_inject_eruda">Wstrzyknij Erudę</string>
     <string name="missing_mod_id">Brakuje ID modułu</string>
-    <string name="empty">Puste</string>
+    <string name="empty">Pusto</string>
     <string name="author">%1$s autorstwa %2$s</string>
     <string name="app_theme_palette">Paleta motywów</string>
     <string name="app_theme_dark_theme">Ciemny motyw</string>
