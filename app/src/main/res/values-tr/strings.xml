@@ -26,4 +26,17 @@
     <string name="settings_security_inject_eruda">Eruda\'yı enjekte et</string>
     <string name="menu_sort_mode">Sıralama Modu</string>
     <string name="menu_pin_action">Eylemleri Sabitle</string>
+    <string name="welcome">Hoş Geldiniz!</string>
+    <string name="continue_with">%1$s ile devam et</string>
+    <string name="select">Seç</string>
+    <string name="platform">Platform</string>
+    <string name="settings_webui_engine_ksu">KSU WebUI</string>
+    <string name="settings_webui_engine_prefer_module">Modül Configi tarafından tanımlandı</string>
+    <string name="menu_sort_option_size">Boyut</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="latest_commit_id">Son Commit ID\\\'si</string>
+    <string name="build_tools_version">Derleme Araçları Sürümü</string>
+    <string name="compile_sdk">SDK\'yı Derle</string>
+    <string name="settings_date_pattern_dialog_desc">Tarih modeli olarak ayrıştırılıcaktır:\n[color=primary]%1$s[/color]</string>
 </resources>
