@@ -26,4 +26,16 @@
     <string name="shortcut_add_request_failed">Kısayol isteği başlatıcıya gönderilemedi.</string>
     <string name="shortcut_removed_successfully">Kısayol başarıyla kaldırıldı/devre dışı bırakıldı.</string>
     <string name="shortcut_removed_message">Bu kısayol artık kullanılamıyor.</string>
+    <string name="failed_to_load">Yüklenemedi</string>
+    <string name="failed_to_open_ssl">SSL nedeniyle açılamıyor</string>
+    <string name="check_your_internet_connection">İnternet bağlantınızı kontrol edin</string>
+    <string name="refreshing_the_page">Sayfa yenileniyor</string>
+    <string name="restarting_the_webui_x">WebUI X\'i yeniden başlatılıyor</string>
+    <string name="renderer_crashed">WebView Render İşlemi yanıt vermiyor. Sonlandırmak ister misiniz?</string>
+    <string name="refresh">Yenile</string>
+    <string name="more_info">Daha fazla bilgi</string>
+    <string name="failed_to_load_desc">[b]%1$s[/b] yüklenemedi\nHata: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">SSL hatası nedeniyle [b]%1$s[/b] yüklenemedi</string>
+    <string name="please_try_the_following">Lütfen aşağıdakileri deneyin:</string>
+    <string name="proceed">Devam et</string>
 </resources>
