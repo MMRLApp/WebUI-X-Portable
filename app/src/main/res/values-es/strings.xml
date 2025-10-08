@@ -127,4 +127,6 @@
     <string name="settings_force_kill_webui_process_desc">Finaliza inmediatamente el proceso de WebUI X que se esté ejecutando. [bold]Esto no afecta a la WebUI de KSU. [/bold]</string>
     <string name="settings_force_kill_webui_process">Forzar cierre del proceso de WebUI</string>
     <string name="settings_webui_engine_undefined">Indefinido</string>
+    <string name="webui_config_pull_to_refresh_helper_title">Ayudante de tirar par actualizar</string>
+    <string name="webui_config_pull_to_refresh_helper_desc">Inserta un script de JavaScript para controlar correctamente el comportamiento de tirar para actualizar de WebUI. Esta configuración no se aplica cuando se usa el interceptor de JavaScript o la depuración remota.</string>
 </resources>
