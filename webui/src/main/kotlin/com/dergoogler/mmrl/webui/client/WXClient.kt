@@ -98,7 +98,12 @@ open class WXClient : WebViewClient {
         handler: SslErrorHandler,
         error: SslError,
     ) {
-        handler.proceed()
+        if (mOptions.debug) {
+            handler.proceed()
+            return
+        }
+
+        handler.cancel()
     }
 
     override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail): Boolean {
