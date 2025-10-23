@@ -1,3 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_theme_dark_theme_light">روشن</string>
+    <string name="menu_sort_mode">حالت مرتب‌سازی</string>
+    <string name="menu_pin_action">سنجاق کنش</string>
+    <string name="invalid_ip">این یک دامنه محلی معتبر نیست!</string>
+    <string name="settings_webui_engine">موتور رابط وب</string>
+    <string name="settings_webui_engine_desc">موتور دلخواه خود را انتخاب کنید</string>
+    <string name="settings_webui_engine_wx">رابط وب ایکس</string>
+    <string name="settings_webui_engine_ksu">رابط وب KSU</string>
+    <string name="settings_webui_engine_prefer_module">تعیین‌شده توسط پیکربندی ماژول</string>
+    <string name="menu_sort_option_size">اندازه</string>
+    <string name="settings_date_pattern_dialog_desc">الگوی تاریخ به‌صورت زیر تجزیه می‌شود:\n[color=primary]%1$s[/color]</string>
+    <string name="yes">بله</string>
+    <string name="no">خیر</string>
+    <string name="latest_commit_id">آخرین شناسه پیاده‌سازی</string>
+    <string name="build_tools_version">نگارش ابزارهای ساخت</string>
+    <string name="compile_sdk">SDK کامپایل</string>
+    <string name="empty">خالی</string>
+    <string name="settings_security_inject_eruda">تزریق اِرودا</string>
+    <string name="settings_developer_mode">حالت توسعه‌دهنده</string>
+    <string name="welcome">خوش‌آمدید!</string>
+    <string name="search_placeholder">جستجو…</string>
 </resources>
