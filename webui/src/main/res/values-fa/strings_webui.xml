@@ -10,4 +10,15 @@
     <string name="cancel">رد کردن</string>
     <string name="loading">بارگذاری…</string>
     <string name="unknown_error">خطای ناشناخته</string>
+    <string name="says">%1$s:</string>
+    <string name="title_or_icon_not_found">عنوان یا آیکون مورد نظر موجود نمیباشد</string>
+    <string name="icon_not_found">آیکون موجود نیست</string>
+    <string name="exit">خروج</string>
+    <string name="exit_desc">آیا درمورد خروج از WebUI اطمینان دارید؟</string>
+    <string name="missing_mod_id">عدم وجود آیدی ماژول</string>
+    <string name="class_not_found">activity class مورد نظر در دسترس نمیباشد</string>
+    <string name="shortcut_already_exists">میانبر در حال حاضر وجود دارد.</string>
+    <string name="shortcut_creation_requirements_not_met">نمیتوان میانبر ایجاد کرد : عدم دسترسی به آیکون یا عنوان مورد نظر.</string>
+    <string name="shortcut_icon_not_found">نمیتوان میانبر ایجاد کرد : عدم دسترسی به آیکون.</string>
+    <string name="shortcut_icon_loading_error">ارور در حین بارگذاری آیکون میانبر.</string>
 </resources>
