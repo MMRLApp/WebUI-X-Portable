@@ -24,7 +24,7 @@
     <string name="search_placeholder">Поиск…</string>
     <string name="app_name">WebUI X</string>
     <string name="missing_mod_id">ID модуля отсутствует</string>
-    <string name="empty">Пустой</string>
+    <string name="empty">Пусто</string>
     <string name="author">%1$s от %2$s</string>
     <string name="update_on">Обновлено на %s</string>
     <string name="modules">Модули</string>
@@ -105,4 +105,18 @@
     <string name="dex_source_type_apk_desc">Загружает полные APK-файлы в виде модульных плагинов с ресурсами</string>
     <string name="plugins">Плагины</string>
     <string name="plugins_desc">Расширяйте WebUI в соответствии с вашими потребностями</string>
+    <string name="sukisu">SukiSU Ultra</string>
+    <string name="settings_webui_engine_undefined">Неопределенный</string>
+    <string name="webui_config_pull_to_refresh_helper_desc">Вводит JavaScript-скрипт для корректной обработки запроса WebUI на обновление. Этот параметр не применяется при использовании перехватчика JavaScript или удаленной отладки.</string>
+    <string name="settings_security_auto_open_eruda">Автоматическое открытие Eruda</string>
+    <string name="settings_security_auto_open_eruda_desc">Автоматически открывает консоль Eruda при запуске WebUI</string>
+    <string name="webui_config_content_security_policy_title">Политика безопасности контента</string>
+    <string name="webui_additional_config_desc">Дополнительные конфигурации, определены разработчиком модуля.</string>
+    <string name="setting_licenses_desc">Посмотреть лицензию с открытым исх. кодом</string>
+    <string name="license_title">Лицензии</string>
+    <string name="settings_documentation">API Документация</string>
+    <string name="build_tools_version">Версия инструментов сборки</string>
+    <string name="compile_sdk">Скомпилировать SDK</string>
+    <string name="settings_force_kill_webui_process">Принудительное завершение процесса WebUI</string>
+    <string name="webui_additional_config">Дополнительная конфигурация</string>
 </resources>

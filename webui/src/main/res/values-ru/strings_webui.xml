@@ -26,4 +26,15 @@
     <string name="shortcut_add_request_failed">Не удалось отправить запрос ярлыка в лаунчер.</string>
     <string name="shortcut_removed_successfully">Ярлык успешно удален/отключен.</string>
     <string name="shortcut_removed_message">Этот ярлык больше не доступен.</string>
+    <string name="failed_to_load">Ошибка загрузки</string>
+    <string name="check_your_internet_connection">Проверьте подключение к интернету</string>
+    <string name="refreshing_the_page">Обновление страницы</string>
+    <string name="restarting_the_webui_x">Перезапуск WebUI X</string>
+    <string name="renderer_crashed">Рендеринг WebView не отвечает. Завершить его?</string>
+    <string name="refresh">Обновить</string>
+    <string name="more_info">Доп. информация</string>
+    <string name="failed_to_load_desc">Неудалось загрузить [b]%1$s[/b]\nОшибка: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">Невозможно загрузить [b]%1$s[/b] из-за ошибки SSL</string>
+    <string name="please_try_the_following">Пожалуйста, попробуйте следующее:</string>
+    <string name="proceed">Продолжить</string>
 </resources>
