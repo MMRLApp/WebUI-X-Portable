@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.dergoogler.mmrl.modconf.config.toModConfConfig
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
@@ -31,9 +32,9 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
-import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
@@ -98,11 +99,9 @@ fun ModuleItem(
             )
         },
         trailingButton = {
-            val config = module.id.toWebUIConfig()
-
             ShortcutAdd(
-                config = config,
-                enabled = isProviderAlive && config.canAddWebUIShortcut()
+                module = module,
+                enabled = isProviderAlive
             )
 
             if (platform.isNonRoot) {
@@ -141,16 +140,33 @@ fun ModuleItem(
 
 @Composable
 private fun ShortcutAdd(
-    config: WebUIConfig,
+    module: LocalModule,
     enabled: Boolean,
 ) {
+    val webUiConfig = module.id.toWebUIConfig()
+    val modConfConfig = module.id.toModConfConfig()
+
     val context = LocalContext.current
 
     FilledTonalButton(
         onClick = {
-            config.createShortcut(context, WebUIActivity::class.java)
+            if (module.hasModConf) {
+                modConfConfig.createShortcut(context, ModConfActivity::class.java)
+                return@FilledTonalButton
+            }
+
+            if (module.hasWebUI) {
+                webUiConfig.createShortcut(context, WebUIActivity::class.java)
+                return@FilledTonalButton
+            }
+
+            Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
         },
-        enabled = enabled && !config.hasWebUIShortcut(context),
+        enabled = enabled
+                && (webUiConfig.canAddWebUIShortcut() || modConfConfig.canAddWebUIShortcut())
+                && !(webUiConfig.hasWebUIShortcut(
+            context
+        ) || modConfConfig.hasWebUIShortcut(context)),
         contentPadding = PaddingValues(horizontal = 12.dp)
     ) {
         Icon(

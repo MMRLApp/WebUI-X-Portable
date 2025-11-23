@@ -6,4 +6,13 @@
     <string name="try_the_following">Try the following:</string>
     <string name="try_the_following_one">Update %1$s to the latest version from Google Play or GitHub Releases.</string>
     <string name="try_the_following_two">Reach out to the module developer for a possible workaround.</string>
+    <string name="shortcut_already_exists">Shortcut already exists.</string>
+    <string name="shortcut_creation_requirements_not_met">Cannot add shortcut: missing title or icon file.</string>
+    <string name="shortcut_icon_not_found">Cannot add shortcut: icon file not found.</string>
+    <string name="shortcut_icon_loading_error">Error loading shortcut icon.</string>
+    <string name="shortcut_icon_decode_error">Failed to decode shortcut icon.</string>
+    <string name="pin_shortcut_not_supported">Pinning shortcuts is not supported on this device/launcher.</string>
+    <string name="shortcut_add_request_failed">Failed to send shortcut request to launcher.</string>
+    <string name="shortcut_removed_successfully">Shortcut removed/disabled successfully.</string>
+    <string name="shortcut_removed_message">This shortcut is no longer available.</string>
 </resources>
