@@ -95,4 +95,6 @@
     <string name="webui_config_back_interceptor_title">Intercepteur de retour</string>
     <string name="yes">Oui</string>
     <string name="no">Non</string>
+    <string name="latest_commit_id">Identifiant du dernier commit</string>
+    <string name="build_tools_version">Version de l\'outil de compilation</string>
 </resources>
