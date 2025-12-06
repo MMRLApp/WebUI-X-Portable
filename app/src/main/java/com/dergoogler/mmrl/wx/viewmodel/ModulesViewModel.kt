@@ -83,7 +83,10 @@ class ModulesViewModel @Inject constructor(
     private fun dataObserver() {
         getLocalAllAsFlow()
             .combine(modulesMenu) { list, menu ->
-                if (list.isEmpty()) return@combine
+                if (list.isEmpty()) {
+                    isLoadingFlow.update { false }
+                    return@combine
+                }
 
                 cacheFlow.value = list.sortedWith(
                     comparator(menu.option, menu.descending)
