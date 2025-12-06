@@ -156,14 +156,14 @@ class ModulesViewModel @Inject constructor(
         if (descending) {
             when (option) {
                 Option.Name -> compareByDescending { it.name.lowercase() }
-                Option.UpdatedTime -> compareBy { it.lastUpdated }
-                Option.Size -> compareBy { it.size }
+                Option.UpdatedTime -> compareByDescending { it.lastUpdated }
+                Option.Size -> compareByDescending { it.size }
             }
         } else {
             when (option) {
                 Option.Name -> compareBy { it.name.lowercase() }
-                Option.UpdatedTime -> compareByDescending { it.lastUpdated }
-                Option.Size -> compareByDescending { it.size }
+                Option.UpdatedTime -> compareBy { it.lastUpdated }
+                Option.Size -> compareBy { it.size }
             }
         }
 
