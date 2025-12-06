@@ -83,22 +83,24 @@ class ModulesViewModel @Inject constructor(
     private fun dataObserver() {
         getLocalAllAsFlow()
             .combine(modulesMenu) { list, menu ->
-                if (list.isEmpty()) return@combine
+                cacheFlow.value = if (list.isEmpty()) {
+                    emptyList()
+                } else {
+                    list.sortedWith(
+                        comparator(menu.option, menu.descending)
+                    ).let { v ->
+                        val a = if (menu.pinEnabled) {
+                            v.sortedByDescending { it.state == State.ENABLE }
+                        } else v
 
-                cacheFlow.value = list.sortedWith(
-                    comparator(menu.option, menu.descending)
-                ).let { v ->
-                    val a = if (menu.pinEnabled) {
-                        v.sortedByDescending { it.state == State.ENABLE }
-                    } else v
+                        val b = if (menu.pinAction) {
+                            a.sortedByDescending { it.hasAction }
+                        } else a
 
-                    val b = if (menu.pinAction) {
-                        a.sortedByDescending { it.hasAction }
-                    } else a
-
-                    if (menu.pinWebUI) {
-                        b.sortedByDescending { it.hasWebUI }
-                    } else b
+                        if (menu.pinWebUI) {
+                            b.sortedByDescending { it.hasWebUI }
+                        } else b
+                    }
                 }
 
                 isLoadingFlow.update { false }
@@ -230,7 +232,7 @@ class ModulesViewModel @Inject constructor(
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = ModulesScreenState()
         )
 
