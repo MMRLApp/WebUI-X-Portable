@@ -39,6 +39,7 @@ class ModulesViewModel @Inject constructor(
             platform
         }
 
+    private val sourceFlow = MutableStateFlow(listOf<LocalModule>())
     private val cacheFlow = MutableStateFlow(listOf<LocalModule>())
     private val localFlow = MutableStateFlow(listOf<LocalModule>())
     val local get() = localFlow.asStateFlow()
@@ -81,26 +82,27 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun dataObserver() {
-        getLocalAllAsFlow()
+        sourceFlow
             .combine(modulesMenu) { list, menu ->
-                cacheFlow.value = if (list.isEmpty()) {
-                    emptyList()
-                } else {
-                    list.sortedWith(
-                        comparator(menu.option, menu.descending)
-                    ).let { v ->
-                        val a = if (menu.pinEnabled) {
-                            v.sortedByDescending { it.state == State.ENABLE }
-                        } else v
+                if (list.isEmpty()) {
+                    isLoadingFlow.update { false }
+                    return@combine
+                }
 
-                        val b = if (menu.pinAction) {
-                            a.sortedByDescending { it.hasAction }
-                        } else a
+                cacheFlow.value = list.sortedWith(
+                    comparator(menu.option, menu.descending)
+                ).let { v ->
+                    val a = if (menu.pinEnabled) {
+                        v.sortedByDescending { it.state == State.ENABLE }
+                    } else v
 
-                        if (menu.pinWebUI) {
-                            b.sortedByDescending { it.hasWebUI }
-                        } else b
-                    }
+                    val b = if (menu.pinAction) {
+                        a.sortedByDescending { it.hasAction }
+                    } else a
+
+                    if (menu.pinWebUI) {
+                        b.sortedByDescending { it.hasWebUI }
+                    } else b
                 }
 
                 isLoadingFlow.update { false }
@@ -203,7 +205,7 @@ class ModulesViewModel @Inject constructor(
         refreshing {
             try {
                 val modules = getModules()
-                cacheFlow.value = modules.await()
+                sourceFlow.value = modules.await()
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching modules", e)
             }
@@ -211,19 +213,7 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun getLocalAllAsFlow(): StateFlow<List<LocalModule>> {
-        return flow {
-            try {
-                val modules = getModules()
-                emit(modules.await())
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to load modules", e)
-                emit(emptyList())
-            }
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            emptyList()
-        )
+        return sourceFlow
     }
 
     val screenState: StateFlow<ModulesScreenState> = getLocalAllAsFlow()
