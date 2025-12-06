@@ -39,6 +39,7 @@ class ModulesViewModel @Inject constructor(
             platform
         }
 
+    private val sourceFlow = MutableStateFlow(listOf<LocalModule>())
     private val cacheFlow = MutableStateFlow(listOf<LocalModule>())
     private val localFlow = MutableStateFlow(listOf<LocalModule>())
     val local get() = localFlow.asStateFlow()
@@ -81,7 +82,7 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun dataObserver() {
-        getLocalAllAsFlow()
+        sourceFlow
             .combine(modulesMenu) { list, menu ->
                 if (list.isEmpty()) {
                     isLoadingFlow.update { false }
@@ -204,7 +205,7 @@ class ModulesViewModel @Inject constructor(
         refreshing {
             try {
                 val modules = getModules()
-                cacheFlow.value = modules.await()
+                sourceFlow.value = modules.await()
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching modules", e)
             }
