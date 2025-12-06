@@ -83,24 +83,22 @@ class ModulesViewModel @Inject constructor(
     private fun dataObserver() {
         getLocalAllAsFlow()
             .combine(modulesMenu) { list, menu ->
-                cacheFlow.value = if (list.isEmpty()) {
-                    emptyList()
-                } else {
-                    list.sortedWith(
-                        comparator(menu.option, menu.descending)
-                    ).let { v ->
-                        val a = if (menu.pinEnabled) {
-                            v.sortedByDescending { it.state == State.ENABLE }
-                        } else v
+                if (list.isEmpty()) return@combine
 
-                        val b = if (menu.pinAction) {
-                            a.sortedByDescending { it.hasAction }
-                        } else a
+                cacheFlow.value = list.sortedWith(
+                    comparator(menu.option, menu.descending)
+                ).let { v ->
+                    val a = if (menu.pinEnabled) {
+                        v.sortedByDescending { it.state == State.ENABLE }
+                    } else v
 
-                        if (menu.pinWebUI) {
-                            b.sortedByDescending { it.hasWebUI }
-                        } else b
-                    }
+                    val b = if (menu.pinAction) {
+                        a.sortedByDescending { it.hasAction }
+                    } else a
+
+                    if (menu.pinWebUI) {
+                        b.sortedByDescending { it.hasWebUI }
+                    } else b
                 }
 
                 isLoadingFlow.update { false }
