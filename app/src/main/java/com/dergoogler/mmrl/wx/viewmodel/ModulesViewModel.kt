@@ -213,19 +213,7 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun getLocalAllAsFlow(): StateFlow<List<LocalModule>> {
-        return flow {
-            try {
-                val modules = getModules()
-                emit(modules.await())
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to load modules", e)
-                emit(emptyList())
-            }
-        }.stateIn(
-            viewModelScope,
-            SharingStarted.Eagerly,
-            emptyList()
-        )
+        return sourceFlow
     }
 
     val screenState: StateFlow<ModulesScreenState> = getLocalAllAsFlow()
