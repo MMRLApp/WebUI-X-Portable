@@ -61,6 +61,7 @@ open class WebUIView(
     protected var initJob: Job? = null
     private var isInitialized = false
     internal var mSwipeView: WXSwipeRefresh? = null
+    private var isDestroyed = false // --- Defensive Patch ---
 
     init {
         setWebContentsDebuggingEnabled(options.debug)
@@ -94,16 +95,12 @@ open class WebUIView(
     protected open suspend fun onInit(isInitialized: Boolean) {}
 
     private fun initWhenReady() {
-        // Basic setup that can run immediately
         layoutParams = LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
         )
-
-        // Delay full initialization until view is properly attached
         doOnAttach {
             initJob = scope.launch {
-                // Wait for first frame to ensure Activity is ready
                 withContext(Dispatchers.Main) { awaitFrame() }
                 initView()
                 onInit(isInitialized)
@@ -113,23 +110,20 @@ open class WebUIView(
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
-        if (isInitialized) return
+        if (isInitialized || isDestroyed) return // --- Defensive Patch ---
 
         settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
             allowFileAccess = false
         }
-
-        // Background and styling
         with(options) {
             setBackgroundColor(colorScheme.background.toArgb())
             background = colorScheme.background.toArgb().toDrawable()
         }
-
-        // JavaScript interfaces (delayed until WebView is fully ready)
         post {
             isInitialized = true
+            Log.d(TAG, "WebUIView initialized/attached")
         }
     }
 
@@ -142,19 +136,23 @@ open class WebUIView(
         }
     }
 
-    fun postMessage(message: String) {
-        val uri = /* options.domain */ "*".toUri()
+    // --- Defensive Patch ---
+    private fun isReadyForWebOps(): Boolean =
+        isInitialized && !isDestroyed && isAttachedToWindow && handler != null
 
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
-            val compatMessage = WebMessageCompat(message)
-            WebViewCompat.postWebMessage(
-                this,
-                compatMessage,
-                uri
-            )
-        } else {
-            val baseMessage = WebMessage(message)
-            super.postWebMessage(baseMessage, uri)
+    fun postMessage(message: String) {
+        if (!isReadyForWebOps()) {
+            Log.w(TAG, "postMessage skipped, not ready"); return
+        }
+        val uri = /* options.domain */ "*".toUri()
+        try {
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
+                WebViewCompat.postWebMessage(this, WebMessageCompat(message), uri)
+            } else {
+                super.postWebMessage(WebMessage(message), uri)
+            }
+        } catch (t: Throwable) {
+            Log.e(TAG, "postMessage error", t)
         }
     }
 
@@ -224,71 +222,67 @@ open class WebUIView(
      */
     @Keep
     fun <T, D : Any?> postWXEvent(event: WXEventHandler<T, D?>) {
+        if (!isReadyForWebOps()) {
+            Log.w(TAG, "postWXEvent skipped, not ready")
+            return
+        }
         val activity = context.findActivity()
         if (activity == null) {
             console.error("[$TAG] Activity/WebView not available for postEvent")
             return
         }
-
         val type = event.getType()
         val data = event.data
-
-        val newEvent = WXRawEvent(
-            type = type,
-            data = data
-        )
-
+        val newEvent = WXRawEvent(type = type, data = data)
         val adapter = moshi.adapter(WXRawEvent::class.java)
-
         val jsonPayload = try {
             adapter.toJson(newEvent)
         } catch (e: Exception) {
             console.error("[$TAG] Failed to serialize WXEventHandler: ${e.message}")
             return
         }
-
-        options {
-            postMessage(jsonPayload)
-        }
+        options { postMessage(jsonPayload) }
     }
 
     @UiThread
-    fun runJs(script: String) {
-        post { evaluateJavascript(script, null) }
+    open fun runJs(script: String) {
+        if (!isReadyForWebOps()) {
+            Log.w(TAG, "runJs skipped, not ready"); return
+        }
+        post {
+            try {
+                evaluateJavascript(script, null)
+            } catch (t: Throwable) {
+                Log.e(TAG, "Exception evaluating JS", t)
+            }
+        }
     }
 
-    open fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?,
-    ) {
-        interfaces.forEach { inst ->
-            inst.instance.onActivityResult(requestCode, resultCode, data)
-        }
+    // --- Defensive Patch ---
+    override fun onDetachedFromWindow() {
+        isInitialized = false
+        super.onDetachedFromWindow()
+        Log.d(TAG, "WebUIView detached from window")
+    }
+
+    open fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        interfaces.forEach { inst -> inst.instance.onActivityResult(requestCode, resultCode, data) }
     }
 
     open fun onActivityResumeInterfaces() {
-        interfaces.forEach { inst ->
-            inst.instance.onActivityResume()
-        }
+        interfaces.forEach { it.instance.onActivityResume() }
     }
 
     open fun onActivityDestroyInterfaces() {
-        interfaces.forEach { inst ->
-            inst.instance.onActivityDestroy()
-        }
+        interfaces.forEach { it.instance.onActivityDestroy() }
     }
 
     open fun onActivityPauseInterfaces() {
-        interfaces.forEach { inst ->
-            inst.instance.onActivityPause()
-        }
+        interfaces.forEach { it.instance.onActivityPause() }
     }
 
     open fun onActivityStopInterfaces() {
-        interfaces.forEach { inst ->
-            inst.instance.onActivityStop()
-        }
+        interfaces.forEach { it.instance.onActivityStop() }
     }
 
     open fun removeAllJavaScriptInterfaces() {
@@ -301,21 +295,25 @@ open class WebUIView(
     override fun destroy() {
         stopLoading()
         clearHistory()
-
         initJob?.cancel()
-
         removeAllJavaScriptInterfaces()
-
+        isDestroyed = true // --- Defensive Patch ---
+        isInitialized = false // --- Defensive Patch ---
         super.destroy()
+        Log.d(TAG, "WebUIView destroyed")
     }
 
     open fun loadDomain() {
-        this.loadUrl("${options.domain}/index.html")
+        if (!isReadyForWebOps()) {
+            Log.w(TAG, "loadDomain skipped, not ready"); return
+        }
+        try {
+            loadUrl("${options.domain}/index.html")
+        } catch (t: Throwable) {
+            Log.e(TAG, "loadDomain error", t)
+        }
     }
 
-    /**
-     * # DO NOT USE
-     */
     @CallSuper
     @SuppressLint("JavascriptInterface")
     override fun addJavascriptInterface(obj: Any, name: String) {
@@ -323,18 +321,17 @@ open class WebUIView(
             Log.d("WebUIView", "$obj is not a WXInterface")
             return
         }
-
         if (interfaces.any { it.name == name }) {
             Log.w(TAG, "Interface ${obj.name} already exists")
             return
         }
-
-
-        super.addJavascriptInterface(obj, name)
-
-        interfaces += JavaScriptInterface.Instance(obj)
-
-        Log.d("WebUIView", "Added interface $name")
+        try {
+            super.addJavascriptInterface(obj, name)
+            interfaces += JavaScriptInterface.Instance(obj)
+            Log.d("WebUIView", "Added interface $name")
+        } catch (t: Throwable) {
+            Log.e(TAG, "addJavascriptInterface failed", t)
+        }
     }
 
     /**
@@ -352,13 +349,11 @@ open class WebUIView(
     fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
         try {
             val js = obj.createNew(createDefaultWxOptions(options))
-
             val assetHandlers = js.instance.assetHandlers
             if (assetHandlers.isNotEmpty()) {
                 Log.d(TAG, "Adding ${assetHandlers.size} asset handlers")
                 this.assetHandlers.addAll(assetHandlers)
             }
-
             addJavascriptInterface(js.instance, js.name)
         } catch (e: Exception) {
             throw BrickException(
@@ -392,7 +387,6 @@ open class WebUIView(
                 initargs,
                 parameterTypes,
             )
-
             addJavascriptInterface(interfaceObject)
         } catch (e: Exception) {
             throw BrickException(
@@ -426,7 +420,6 @@ open class WebUIView(
      */
     val console = object : WXConsole {
         private val String.escape get() = this.replace("'", "\\'")
-
         private fun levelParser(level: String, message: String, vararg args: String?) =
             runJs(
                 "console.$level('${message.escape}'${
@@ -440,7 +433,6 @@ open class WebUIView(
             val errorString = "Error('${throwable.message?.replace("'", "\\'")}', { cause: '${
                 throwable.cause.toString().replace("'", "\\'")
             }' })"
-
             runJs("console.error($errorString)")
         }
 
