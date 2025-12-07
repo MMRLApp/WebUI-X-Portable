@@ -1,5 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.activity.webui.interfaces
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageInfo
 import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
@@ -7,8 +9,11 @@ import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.topjohnwu.superuser.CallbackList
@@ -78,17 +83,13 @@ class KernelSUInterface(
     }
 
     @JavascriptInterface
-    fun moduleInfo(): String {
-        console.warn("$name.moduleInfo() have been removed due to security reasons.")
-        val currentModuleInfo = JSONObject()
-        currentModuleInfo.put("moduleDir", null)
-        currentModuleInfo.put("id", null)
-        return currentModuleInfo.toString()
+    fun exec(cmd: String): String {
+        return withNewRootShell { ShellUtils.fastCmd(this, cmd) }
     }
 
     @JavascriptInterface
-    fun exec(cmd: String): String {
-        return withNewRootShell { ShellUtils.fastCmd(this, cmd) }
+    fun execBool(cmd: String): Boolean {
+        return withNewRootShell { ShellUtils.fastCmdResult(this, cmd) }
     }
 
     @JavascriptInterface
@@ -227,6 +228,82 @@ class KernelSUInterface(
                 runJsCatching { shell.close() }
             }
         }
+    }
+
+    private val um = PlatformManager.userManager
+    private val pm = PlatformManager.packageManager
+    private val packages get(): List<PackageInfo> = pm.getInstalledPackagesAll(um, 0)
+
+    @JavascriptInterface
+    fun moduleInfo(): String {
+        val moduleInfos = JSONArray(PlatformManager.moduleManager.modules)
+        val currentModuleInfo = JSONObject()
+        currentModuleInfo.put("moduleDir", modId.moduleDir)
+        for (i in 0 until moduleInfos.length()) {
+            val currentInfo = moduleInfos.getJSONObject(i)
+
+            if (currentInfo.getString("id") != modId.toString()) {
+                continue
+            }
+
+            val keys = currentInfo.keys()
+            for (key in keys) {
+                currentModuleInfo.put(key, currentInfo[key])
+            }
+            break
+        }
+        return currentModuleInfo.toString()
+    }
+
+    @JavascriptInterface
+    fun listPackages(type: String): String {
+        val packageNames = packages.filter { appInfo ->
+                val flags = appInfo.applicationInfo?.flags ?: 0
+                when (type.lowercase()) {
+                    "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    "user" -> (flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                    else -> true
+                }
+            }
+            .map { it.packageName }
+            .sorted()
+
+        val jsonArray = JSONArray()
+        for (pkgName in packageNames) {
+            jsonArray.put(pkgName)
+        }
+        return jsonArray.toString()
+    }
+
+    @JavascriptInterface
+    fun getPackagesInfo(packageNamesJson: String): String {
+        val packageNames = JSONArray(packageNamesJson)
+        val jsonArray = JSONArray()
+        val appMap = packages.associateBy { it.packageName }
+        for (i in 0 until packageNames.length()) {
+            val pkgName = packageNames.getString(i)
+            val appInfo = appMap[pkgName]
+            if (appInfo != null) {
+                val app = appInfo.applicationInfo
+                val obj = JSONObject()
+                obj.put("packageName", appInfo.packageName)
+                obj.put("versionName", appInfo.versionName ?: "")
+                obj.put("versionCode", PackageInfoCompat.getLongVersionCode(appInfo))
+                obj.put("appLabel", app?.loadLabel(context.packageManager))
+                obj.put(
+                    "isSystem",
+                    if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL
+                )
+                obj.put("uid", app?.uid ?: JSONObject.NULL)
+                jsonArray.put(obj)
+            } else {
+                val obj = JSONObject()
+                obj.put("packageName", pkgName)
+                obj.put("error", "Package not found or inaccessible")
+                jsonArray.put(obj)
+            }
+        }
+        return jsonArray.toString()
     }
 
     override fun onActivityStop() {
