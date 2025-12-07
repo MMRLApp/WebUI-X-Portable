@@ -90,6 +90,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setDisableGlobalExitConfirm(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setDisableGlobalExitConfirm(value)
+        }
+    }
+
     fun setWebUIEngine(value: WebUIEngine) {
         viewModelScope.launch {
             userPreferencesRepository.setWebUIEngine(value)

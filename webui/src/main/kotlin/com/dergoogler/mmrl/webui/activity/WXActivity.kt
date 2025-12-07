@@ -221,6 +221,11 @@ open class WXActivity : ComponentActivity() {
             return
         }
 
+        if (options.disableGlobalExitConfirm) {
+            exit(options)
+            return
+        }
+
         if (options.config.exitConfirm) {
             confirm(
                 confirmData = ConfirmData(

@@ -69,6 +69,7 @@ data class WebUIOptions(
     val debug: Boolean = false,
     val remoteDebug: Boolean = false,
     val enableEruda: Boolean = false,
+    val disableGlobalExitConfirm: Boolean = false,
     val autoOpenEruda: Boolean = false,
     val debugDomain: String = "https://127.0.0.1:8080",
     val onUnsafeDomainRequest: ((Uri) -> Unit)? = null,

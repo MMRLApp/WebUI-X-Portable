@@ -62,9 +62,12 @@
     <string name="settings_date_pattern">Date pattern</string>
     <string name="settings_date_pattern_desc">Use your own date format</string>
     <string name="settings_date_pattern_dialog_desc">The date pattern will be parsed as:\n[color=primary]%1$s[/color]</string>
+    <string name="settings_global_exit_confirm">Disable Exit Confirm</string>
+    <string name="settings_global_exit_confirm_desc">Disables the confirmation dialog when exiting the WebUI.</string>
     <string name="controlled_by_native">Controlled by Native</string>
     <string name="controlled_by_javascript">Controlled by JavaScript</string>
     <string name="delete">Delete</string>
+    <string name="globally_disabled">Globally Disabled</string>
     <string name="webui_config">WebUI Config</string>
     <string name="webui_config_exit_confirm_title">Exit Confirm</string>
     <string name="webui_config_exit_confirm_desc">Enables a confirmation dialog when exiting the WebUI.</string>
@@ -97,6 +100,8 @@
     <string name="export_webui_config_json">Export WebUI Config JSON</string>
     <string name="general">General</string>
     <string name="developer">Developer</string>
+    <string name="behavior">Behavior</string>
+    <string name="behavior_desc">Change behavior of app features.</string>
     <string name="webui_config_kill_shell_when_background">Kill Shell</string>
     <string name="webui_config_kill_shell_when_background_desc">Kill the Shell when the WebUI moves into the background. Prevent\'s background code execution.</string>
     <string name="cache">Cache</string>

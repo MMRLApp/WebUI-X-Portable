@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
-import android.webkit.WebResourceResponse
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +36,7 @@ import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppThemeScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.BehaviorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DeveloperScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.LicensesScreenDestination
 
@@ -73,6 +73,13 @@ fun SettingsScreen() {
                     icon = R.drawable.color_swatch,
                     title = R.string.settings_app_theme,
                     desc = R.string.settings_app_theme_desc
+                )
+
+                NavButton(
+                    route = BehaviorScreenDestination,
+                    icon = R.drawable.activity,
+                    title = R.string.behavior,
+                    desc = R.string.behavior_desc
                 )
 
                 val manager: FeaturedManager? =

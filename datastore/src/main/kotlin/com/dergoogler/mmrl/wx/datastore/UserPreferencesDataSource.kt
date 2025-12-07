@@ -103,6 +103,14 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setDisableGlobalExitConfirm(value: Boolean) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                disableGlobalExitConfirm = value
+            )
+        }
+    }
+
     suspend fun setWebUIEngine(value: WebUIEngine) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
             it.copy(

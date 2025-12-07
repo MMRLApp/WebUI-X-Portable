@@ -33,6 +33,7 @@ import com.dergoogler.mmrl.platform.compose.rememberConfigFile
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.model.ModuleConfig
 import com.dergoogler.mmrl.ui.component.BottomSheet
+import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
 import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
@@ -44,6 +45,7 @@ import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -67,6 +69,7 @@ private val Context.interceptorList: List<RadioOptionItem<String?>>
 @Composable
 fun ConfigEditorScreen(module: LocalModule) {
     val navigator = LocalDestinationsNavigator.current
+    val userPrefs = LocalUserPreferences.current
     val context = LocalContext.current
     val modId = module.id
 
@@ -175,13 +178,18 @@ fun ConfigEditorScreen(module: LocalModule) {
             val hasNoJsBackInterceptor = webUIConfig.backInterceptor != "javascript"
 
             ListSwitchItem(
-                enabled = hasNoJsBackInterceptor,
+                enabled = hasNoJsBackInterceptor && !userPrefs.disableGlobalExitConfirm,
                 title = stringResource(R.string.webui_config_exit_confirm_title),
                 desc = stringResource(R.string.webui_config_exit_confirm_desc),
                 checked = hasNoJsBackInterceptor && webUIConfig.exitConfirm,
                 onChange = { isChecked ->
                     saveWebUIConfig {
                         "exitConfirm" change isChecked
+                    }
+                },
+                base = {
+                    if (userPrefs.disableGlobalExitConfirm) {
+                        labels = listOf { LabelItem(stringResource(R.string.globally_disabled)) }
                     }
                 }
             )
