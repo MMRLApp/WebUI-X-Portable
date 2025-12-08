@@ -129,4 +129,9 @@
     <string name="webui_additional_config">Ek Yapılandırma</string>
     <string name="webui_additional_config_desc">Modül geliştiricisi tarafından tanımlanan isteğe bağlı yapılandırmalar.</string>
     <string name="author">%1$s tarafından %2$s</string>
+    <string name="settings_global_exit_confirm">Çıkış Onayını Devre Dışı Bırak</string>
+    <string name="settings_global_exit_confirm_desc">WebUI\'den çıkıldığında onay iletişim kutusunu devre dışı bırakır.</string>
+    <string name="globally_disabled">Küresel olarak devre dışı</string>
+    <string name="behavior">Davranış</string>
+    <string name="behavior_desc">Uygulama özelliklerinin davranışını değiştir.</string>
 </resources>
