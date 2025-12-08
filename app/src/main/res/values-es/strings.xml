@@ -129,4 +129,9 @@
     <string name="settings_webui_engine_undefined">Indefinido</string>
     <string name="webui_config_pull_to_refresh_helper_title">Ayudante de tirar par actualizar</string>
     <string name="webui_config_pull_to_refresh_helper_desc">Inserta un script de JavaScript para controlar correctamente el comportamiento de tirar para actualizar de WebUI. Esta configuración no se aplica cuando se usa el interceptor de JavaScript o la depuración remota.</string>
+    <string name="behavior_desc">Cambia el comportamiento de las características de la aplicaión.</string>
+    <string name="behavior">Comportamiento</string>
+    <string name="globally_disabled">Deshabilitado globalmente</string>
+    <string name="settings_global_exit_confirm_desc">Deshabilita el cuadro de diálogo de confirmación al salir de la WebUI.</string>
+    <string name="settings_global_exit_confirm">Deshabilitar confirmación de salida</string>
 </resources>

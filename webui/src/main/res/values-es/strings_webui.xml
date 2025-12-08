@@ -36,6 +36,6 @@
     <string name="more_info">Más información</string>
     <string name="failed_to_load_desc">No se pudo cargar [b]%1$s[/b]\nError: [i]%2$s[/i]</string>
     <string name="failed_to_open_ssl_desc">No se pudo cargar [b]%1$s[/b] debido a un error SSL</string>
-    <string name="please_try_the_following">Pruebe lo siguiente:</string>
+    <string name="please_try_the_following">Por favor. pruebe lo siguiente:</string>
     <string name="proceed">Proceder</string>
 </resources>
