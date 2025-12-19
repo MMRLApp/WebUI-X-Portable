@@ -129,4 +129,9 @@
     <string name="settings_webui_engine_undefined">未定義</string>
     <string name="webui_config_pull_to_refresh_helper_title">引いて更新ヘルパー</string>
     <string name="webui_config_pull_to_refresh_helper_desc">WebUI の引いて更新の動作を正しく処理するための JavaScript スクリプトを挿入します。この設定は、JavaScript インターセプタまたはリモートデバッグを使用する場合は適用されません。</string>
+    <string name="settings_global_exit_confirm">終了の確認を無効化する</string>
+    <string name="settings_global_exit_confirm_desc">WebUI の終了時の確認ダイアログを無効化します。</string>
+    <string name="behavior">動作</string>
+    <string name="behavior_desc">アプリ機能の動作を変更します。</string>
+    <string name="globally_disabled">グローバルで無効化</string>
 </resources>
