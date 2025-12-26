@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_webui_engine_desc">Pilih mesin WebUI yang digunakan</string>
+    <string name="settings_webui_engine_ksu">KSU WebUI</string>
+    <string name="settings_webui_engine_prefer_module">Ikuti Konfigurasi Modul</string>
+    <string name="menu_sort_option_size">Ukuran</string>
+    <string name="settings_date_pattern_dialog_desc">Format tanggal akan diproses sebagai:\n[color=primary]%1$s[/color]</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+    <string name="latest_commit_id">ID Commit Terbaru</string>
+    <string name="build_tools_version">Versi Build Tool</string>
+    <string name="compile_sdk">Kompilasi SDK</string>
+    <string name="empty">Tidak ada</string>
+    <string name="settings_webui_engine">Mesin WebUI</string>
 </resources>
