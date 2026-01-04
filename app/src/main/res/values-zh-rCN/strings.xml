@@ -129,4 +129,9 @@
     <string name="settings_webui_engine_undefined">未定义</string>
     <string name="webui_config_pull_to_refresh_helper_title">下拉刷新助手</string>
     <string name="webui_config_pull_to_refresh_helper_desc">注入一个 JavaScript 程序以令 WebUI 正确的处理下拉刷新的行为。这个设定不会在使用 JavaScript 拦截器或者远程排错时应用。</string>
+    <string name="settings_global_exit_confirm">禁用退出时二次确认</string>
+    <string name="settings_global_exit_confirm_desc">在退出 WebUI 时不显示确认退出对话框</string>
+    <string name="globally_disabled">全局禁用</string>
+    <string name="behavior">行为</string>
+    <string name="behavior_desc">修改应用特性的行为</string>
 </resources>
