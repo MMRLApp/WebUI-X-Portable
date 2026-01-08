@@ -1,2 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="cancel">Huỷ bỏ</string>
+    <string name="loading">Đang tải…</string>
+    <string name="unknown_error">Lỗi Không Xác Định</string>
+    <string name="requireNewVersion_refresh">Làm mới</string>
+    <string name="confirm">Xác nhận</string>
+    <string name="requireNewVersion_cannot_load_webui">Không thể tải WebUI X</string>
+    <string name="requireNewVersion_require_text">yêu cầu tối thiểu %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following">Hãy thử các cách sau:</string>
+    <string name="requireNewVersion_try_the_following_one">Cập nhật %1$s lên phiên bản mới nhất từ Google Play hoặc GitHub Releases.</string>
+    <string name="requireNewVersion_try_the_following_two">Liên hệ với nhà phát triển mô-đun để tìm giải pháp khắc phục.</string>
+    <string name="says">%1$s thông báo</string>
+    <string name="title_or_icon_not_found">Không tìm thấy tiêu đề hoặc biểu tượng</string>
+    <string name="icon_not_found">Không tìm thấy biểu tượng</string>
+    <string name="exit">Thoát</string>
+    <string name="exit_desc">Bạn có chắc chắn muốn thoát khỏi WebUI này không?</string>
+    <string name="missing_mod_id">Thiếu ID Mô-đun</string>
+    <string name="class_not_found">Không tìm thấy lớp Activity đã xác định</string>
+    <string name="shortcut_already_exists">Lối tắt đã tồn tại.</string>
+    <string name="shortcut_creation_requirements_not_met">Không thể thêm lối tắt: thiếu tiêu đề hoặc tệp biểu tượng.</string>
+    <string name="shortcut_icon_not_found">Không thể thêm lối tắt: không tìm thấy tệp biểu tượng.</string>
+    <string name="shortcut_icon_loading_error">Lỗi khi tải biểu tượng lối tắt.</string>
+    <string name="shortcut_icon_decode_error">Lỗi giải mã biểu tượng lối tắt.</string>
+    <string name="pin_shortcut_not_supported">Thiết bị hoặc trình khởi chạy này không hỗ trợ ghim lối tắt.</string>
+    <string name="shortcut_add_request_failed">Gửi yêu cầu tạo lối tắt đến trình khởi chạy thất bại.</string>
+    <string name="shortcut_removed_successfully">Đã xóa/vô hiệu hóa lối tắt thành công.</string>
+    <string name="shortcut_removed_message">Lối tắt này không còn khả dụng.</string>
+    <string name="failed_to_load">Tải thất bại</string>
+    <string name="failed_to_open_ssl">Không thể mở do lỗi SSL</string>
+    <string name="check_your_internet_connection">Vui lòng kiểm tra kết nối internet của bạn</string>
+    <string name="refreshing_the_page">Đang làm mới trang</string>
+    <string name="restarting_the_webui_x">Đang khởi động lại WebUI X</string>
+    <string name="renderer_crashed">Tiến trình kết xuất WebView hiện không phản hồi. Bạn có muốn chấm dứt nó không?</string>
+    <string name="refresh">Làm mới</string>
+    <string name="more_info">Xem thêm</string>
+    <string name="failed_to_load_desc">Không thể tải [b]%1$s[/b]\nLỗi: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">Không thể tải [b]%1$s[/b] do lỗi SSL</string>
+    <string name="please_try_the_following">Vui lòng thử các cách sau:</string>
+    <string name="proceed">Tiếp tục</string>
+</resources>
