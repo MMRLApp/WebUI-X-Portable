@@ -10,7 +10,7 @@
     <string name="cancel">رد کردن</string>
     <string name="loading">بارگذاری…</string>
     <string name="unknown_error">خطای ناشناخته</string>
-    <string name="says">%1$s:</string>
+    <string name="says">%1$sمیگوید</string>
     <string name="title_or_icon_not_found">عنوان یا آیکون مورد نظر موجود نمیباشد</string>
     <string name="icon_not_found">آیکون موجود نیست</string>
     <string name="exit">خروج</string>
