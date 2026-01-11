@@ -14,12 +14,12 @@
     <string name="update_on">Cập nhật vào %s</string>
     <string name="modules">Mô-đun</string>
     <string name="settings">Cài đặt</string>
-    <string name="app_theme_palette">Bảng màu Chủ đề</string>
+    <string name="app_theme_palette">Bảng màu chủ đề</string>
     <string name="app_theme_dark_theme">Chủ đề Tối</string>
     <string name="app_theme_dark_theme_auto">Tự động</string>
     <string name="app_theme_dark_theme_light">Sáng</string>
     <string name="app_theme_dark_theme_dark">Tối</string>
-    <string name="settings_app_theme">Chủ đề Ứng dụng</string>
+    <string name="settings_app_theme">Chủ đề ứng dụng</string>
     <string name="settings_app_theme_desc">Thay đổi bảng màu và chế độ ban đêm</string>
     <string name="webui">WebUI</string>
     <string name="settings_developer_mode">Chế độ nhà phát triển</string>
