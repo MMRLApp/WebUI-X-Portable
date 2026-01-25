@@ -119,4 +119,19 @@
     <string name="compile_sdk">Скомпилировать SDK</string>
     <string name="settings_force_kill_webui_process">Принудительное завершение процесса WebUI</string>
     <string name="webui_additional_config">Дополнительная конфигурация</string>
+    <string name="settings_global_exit_confirm">Отключить подтверджение выхода</string>
+    <string name="settings_global_exit_confirm_desc">Отключает диалоговое окно подтверждения при выходе из WebUI.</string>
+    <string name="globally_disabled">Глобально отключено</string>
+    <string name="behavior">Поведение</string>
+    <string name="behavior_desc">Изменить поведение функции приложения.</string>
+    <string name="webui_config_content_security_policy_desc">Определяет политику безопасности, которая ограничивает веб-контент (скрипты, стили, изображения и т. д.), разрешенный к загрузке и выполнению в WebUI, для защиты от вредоносного кода.</string>
+    <string name="webui_config_pull_to_refresh_helper_title">Помощник Pull-to-Refresh</string>
+    <string name="webui_config_caching_desc">Включает или отключает кеширование для повышения производительности WebUI за счет локального хранения ресурсов.</string>
+    <string name="webui_config_caching_title">Кеширование</string>
+    <string name="webui_config_caching_max_age_title">Мксимальный срок хранения кеша</string>
+    <string name="webui_config_caching_max_age_desc">Устанавливает максимальное время (в секундах), в течение которого кешированные ресурсы считаются актуальными до их обновления.</string>
+    <string name="setting_about">О приложении</string>
+    <string name="setting_licenses">Лицензии</string>
+    <string name="latest_commit_id">ID последнего коммита</string>
+    <string name="settings_force_kill_webui_process_desc">Немедленно завершает текущий процесс WebUI X. [bold]Это не затрагивает KSU WebUI.[/bold]</string>
 </resources>
