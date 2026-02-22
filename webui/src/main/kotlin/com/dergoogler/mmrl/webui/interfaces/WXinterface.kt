@@ -6,11 +6,12 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Handler
 import android.webkit.WebView
+import androidx.activity.result.ActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.ext.findActivity
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.webui.PathHandler
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
@@ -72,7 +73,7 @@ open class WXInterface(
      */
     open var tag: String = "WXInterface"
 
-    open val assetHandlers: List<Pair<String, PathHandler>> = emptyList()
+    open val assetHandlers: List<Pair<String, HybridWebUI.PathHandler>> = emptyList()
 
     /**
      * Executes the given JavaScript script within the WebView.
@@ -174,10 +175,26 @@ open class WXInterface(
      * @param resultCode The result code returned by the child activity.
      * @param data An Intent, which can return result data to the parent activity.
      */
+    @Deprecated("Use onActivityResult(ActivityResult) instead")
     open fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
         data: Intent?,
+    ) {
+    }
+
+    /**
+     * Handles the result from an activity that was started for a result using the modern Activity Result APIs.
+     *
+     * This function is the recommended way to handle activity results, as it uses the type-safe
+     * [ActivityResult] object. It is called when an activity you launched with
+     * `registerForActivityResult` finishes.
+     *
+     * @param result An [ActivityResult] object containing the `resultCode` and `data` (an [Intent])
+     *               from the finished activity.
+     */
+    open fun onActivityResult(
+        result: ActivityResult,
     ) {
     }
 

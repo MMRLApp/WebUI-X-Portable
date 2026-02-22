@@ -7,6 +7,7 @@ import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.PromptData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
@@ -15,6 +16,7 @@ import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 
 open class WXChromeClient(
+    activity: ComponentActivity,
     private val options: WebUIOptions,
 ) : WebChromeClient() {
     private companion object {

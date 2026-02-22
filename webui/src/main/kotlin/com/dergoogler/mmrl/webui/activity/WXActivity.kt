@@ -16,6 +16,7 @@ import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.getValue
@@ -70,6 +71,15 @@ open class WXActivity : ComponentActivity() {
     private var isKeyboardShowing by mutableStateOf(false)
     private lateinit var rootView: View
     var view: WebUIXView? = null
+
+    val activityResultLauncher =
+        registerForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+            callback = { result ->
+                view?.wx?.onActivityResult(result)
+            }
+        )
+
 
     /**
      * Lazily initializes the [ModId] from the intent extras.
@@ -169,6 +179,8 @@ open class WXActivity : ComponentActivity() {
                 }
             }
         }
+
+
     }
 
     private fun adjustWebViewHeight(keypadHeight: Int) {

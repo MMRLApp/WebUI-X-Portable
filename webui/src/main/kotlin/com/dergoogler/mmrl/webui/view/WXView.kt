@@ -8,13 +8,12 @@ import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowInsetsController
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.annotation.CallSuper
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
-import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.webui.client.WXChromeClient
 import com.dergoogler.mmrl.webui.client.WXClient
 import com.dergoogler.mmrl.webui.client.WXRenderProcessClient
@@ -26,9 +25,11 @@ import com.dergoogler.mmrl.webui.interfaces.IntentInterface
 import com.dergoogler.mmrl.webui.interfaces.ModuleInterface
 import com.dergoogler.mmrl.webui.interfaces.PackageManagerInterface
 import com.dergoogler.mmrl.webui.interfaces.UserManagerInterface
-import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXInsetsEventData.Companion.toEventData
+import com.dergoogler.mmrl.webui.pathHandler.InternalPathHandler
+import com.dergoogler.mmrl.webui.pathHandler.SuPathHandler
+import com.dergoogler.mmrl.webui.pathHandler.WebrootPathHandler
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 
@@ -91,17 +92,20 @@ open class WXView(
 
         val activity = context.findActivity()
 
-        // Window configuration
-        activity.nullply {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
-            if (BuildCompat.atLeastT) {
-                windowInsetsController?.systemBarsBehavior =
-                    WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-        }
+        if (activity != null) {
+            activity.apply {
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                if (BuildCompat.atLeastT) {
+                    windowInsetsController?.systemBarsBehavior =
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
 
-        // WebView clients and settings
-        webChromeClient = WXChromeClient(options)
+                // WebView clients and settings
+                webChromeClient = WXChromeClient(this@apply as ComponentActivity, options)
+            }
+        } else {
+            Log.e("WXView", "WXActivity not found")
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             webViewRenderProcessClient = WXRenderProcessClient(options)
@@ -118,39 +122,35 @@ open class WXView(
 
         var clientSet = false
 
-        // Window insets handling
-        ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
-            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            val bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-            val left = insets.getInsets(WindowInsetsCompat.Type.systemBars()).left
-            val right = insets.getInsets(WindowInsetsCompat.Type.systemBars()).right
 
-            val newInsets = Insets(
-                top = top.asPx,
-                bottom = bottom.asPx,
-                left = left.asPx,
-                right = right.asPx
-            )
+        addPathHandler(
+            "/.${options.modId}/",
+            SuPathHandler("/data/adb/modules/${options.modId}".toSuFile())
+        )
+
+        addPathHandler("/.adb/", SuPathHandler("/data/adb".toSuFile()))
+        addPathHandler("/.config/", SuPathHandler("/data/adb/.config".toSuFile()))
+        addPathHandler("/.local/", SuPathHandler("/data/adb/.local".toSuFile()))
+
+        if (options.config.hasRootPathPermission) {
+            addPathHandler("/__root__", SuPathHandler("/".toSuFile()))
+        }
+
+        onApplyInsets = { view, insets ->
+            view.addPathHandler("/mmrl/", InternalPathHandler(options, insets))
+            view.addPathHandler("/internal/", InternalPathHandler(options, insets))
+
+            view.addPathHandler("/", WebrootPathHandler(options, insets))
 
             postWXEvent(
                 type = WXEvent.WX_ON_INSETS,
-                data = newInsets.toEventData()
+                data = insets.toEventData()
             )
-
-            if (options.debug) Log.d(TAG, "Insets: $newInsets")
-
-            val client = if (options.client != null) {
-                options.client(options, newInsets, assetHandlers)
-            } else {
-                WXClient(options, newInsets, assetHandlers)
-            }
-
-            client.mSwipeView = mSwipeView
-            super.webViewClient = client
-
-            clientSet = true
-            insets
         }
+
+        val client = WXClient(options, pathMatchers)
+        client.mSwipeView = mSwipeView
+        super.webViewClient = client
 
         // JavaScript interfaces (delayed until WebView is fully ready)
         post {

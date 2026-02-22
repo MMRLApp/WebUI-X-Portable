@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.webui.model
 
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -18,6 +19,12 @@ data class WXInsetsEventData(
 ) {
     companion object {
         fun Insets.toEventData() = WXInsetsEventData(
+            top = top,
+            bottom = bottom,
+            left = left,
+            right = right,
+        )
+        fun HybridWebUIInsets.toEventData() = WXInsetsEventData(
             top = top,
             bottom = bottom,
             left = left,

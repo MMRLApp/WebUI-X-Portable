@@ -409,6 +409,7 @@ data class WebUIConfig(
     val refreshInterceptor: String? = null,
     val exitConfirm: Boolean = true,
     val pullToRefresh: Boolean = false,
+    @Deprecated("")
     val allowUrls: MutableList<String> = mutableListOf(),
     val pullToRefreshHelper: Boolean = true,
     val historyFallbackFile: String = "index.html",
@@ -431,6 +432,7 @@ data class WebUIConfig(
     override fun getConfigType(): Class<WebUIConfig> = WebUIConfig::class.java
     override fun getDefaultConfigFactory(id: ModId): WebUIConfig = WebUIConfig(id)
 
+    @Deprecated("")
     internal val allowUrlsPatterns =
         allowUrls.mapNotNull { Pattern.compile(it, Pattern.CASE_INSENSITIVE) }
 

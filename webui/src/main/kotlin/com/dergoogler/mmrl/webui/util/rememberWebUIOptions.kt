@@ -78,6 +78,7 @@ data class WebUIOptions(
     val pluginsEnabled: Boolean = false,
     val userAgentString: String = "DON'T TRACK ME DOWN MOTHERFUCKER!",
     val colorScheme: ColorScheme = context.getColorScheme(id = 0, darkMode = isDarkMode),
+    @Deprecated("Not used anymore")
     val client: ((WebUIOptions, Insets, assetHandlers: List<Pair<String, PathHandler>>) -> WXClient)? = null,
     val disableConfigCaching: Boolean = false,
     val cls: Class<out WXActivity>? = null,

@@ -162,6 +162,8 @@ dependencies {
     implementation(projects.webui)
     implementation(projects.modconf)
     implementation(projects.jna)
+    implementation(projects.lua)
+    implementation(projects.hwui)
     implementation(libs.mmrl.ext)
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.platform)

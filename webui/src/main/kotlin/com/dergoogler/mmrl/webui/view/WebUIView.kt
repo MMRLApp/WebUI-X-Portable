@@ -7,8 +7,8 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup.LayoutParams
 import android.webkit.WebMessage
-import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.activity.result.ActivityResult
 import androidx.annotation.CallSuper
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
@@ -22,7 +22,7 @@ import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.moshi.moshi
-import com.dergoogler.mmrl.webui.PathHandler
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.webui.interfaces.WXConsole
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
@@ -56,7 +56,7 @@ import kotlinx.coroutines.withContext
 @SuppressLint("ViewConstructor")
 open class WebUIView(
     protected val options: WebUIOptions,
-) : WebView(options.context) {
+) : HybridWebUI(options.context, options.domain) {
     private val scope = CoroutineScope(Dispatchers.Main)
     protected var initJob: Job? = null
     private var isInitialized = false
@@ -115,7 +115,7 @@ open class WebUIView(
         settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
-            allowFileAccess = false
+            allowFileAccess = true
         }
         with(options) {
             setBackgroundColor(colorScheme.background.toArgb())
@@ -245,17 +245,12 @@ open class WebUIView(
     }
 
     @UiThread
-    open fun runJs(script: String) {
+    override fun runJs(script: String) {
         if (!isReadyForWebOps()) {
             Log.w(TAG, "runJs skipped, not ready"); return
         }
-        post {
-            try {
-                evaluateJavascript(script, null)
-            } catch (t: Throwable) {
-                Log.e(TAG, "Exception evaluating JS", t)
-            }
-        }
+
+        super.runJs(script)
     }
 
     // --- Defensive Patch ---
@@ -267,6 +262,10 @@ open class WebUIView(
 
     open fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         interfaces.forEach { inst -> inst.instance.onActivityResult(requestCode, resultCode, data) }
+    }
+
+    open fun onActivityResult(result: ActivityResult) {
+        interfaces.forEach { inst -> inst.instance.onActivityResult(result) }
     }
 
     open fun onActivityResumeInterfaces() {
@@ -409,48 +408,6 @@ open class WebUIView(
     @Throws(BrickException::class)
     fun addJavascriptInterface(vararg obj: JavaScriptInterface<out WXInterface>) {
         obj.forEach { addJavascriptInterface(it) }
-    }
-
-    /**
-     * A [WXConsole] implementation for logging messages from the WebView.
-     *
-     * This object provides methods for logging messages at different levels (error, info, log, warn)
-     * by executing corresponding JavaScript `console` commands in the WebView.
-     * It also handles escaping special characters in messages and arguments to prevent JavaScript errors.
-     */
-    val console = object : WXConsole {
-        private val String.escape get() = this.replace("'", "\\'")
-        private fun levelParser(level: String, message: String, vararg args: String?) =
-            runJs(
-                "console.$level('${message.escape}'${
-                    args.joinToString(
-                        prefix = if (args.isNotEmpty()) ", " else "",
-                        separator = ", "
-                    ) { "'${it?.escape}'" }
-                })")
-
-        override fun error(throwable: Throwable) {
-            val errorString = "Error('${throwable.message?.replace("'", "\\'")}', { cause: '${
-                throwable.cause.toString().replace("'", "\\'")
-            }' })"
-            runJs("console.error($errorString)")
-        }
-
-        override fun trace(message: String) {
-            if (options.debug) levelParser("trace", message)
-        }
-
-        override fun error(message: String, vararg args: String?) =
-            levelParser("error", message, *args)
-
-        override fun info(message: String, vararg args: String?) =
-            levelParser("info", message, *args)
-
-        override fun log(message: String, vararg args: String?) =
-            levelParser("log", message, *args)
-
-        override fun warn(message: String, vararg args: String?) =
-            levelParser("warn", message, *args)
     }
 
     companion object {

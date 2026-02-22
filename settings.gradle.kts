@@ -26,5 +26,7 @@ include(
     ":helper",
     ":datastore",
     ":jna",
-    ":modconf"
+    ":modconf",
+    ":lua",
+    ":hwui"
 )

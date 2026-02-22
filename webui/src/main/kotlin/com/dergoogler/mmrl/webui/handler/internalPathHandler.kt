@@ -2,7 +2,6 @@ package com.dergoogler.mmrl.webui.handler
 
 import android.util.Log
 import com.dergoogler.mmrl.webui.PathHandler
-import com.dergoogler.mmrl.webui.asScriptResponse
 import com.dergoogler.mmrl.webui.asStyleResponse
 import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WebColors

@@ -12,61 +12,28 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.dergoogler.mmrl.ext.nullply
-import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
-import com.dergoogler.mmrl.webui.PathHandler
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIClient
 import com.dergoogler.mmrl.webui.R
-import com.dergoogler.mmrl.webui.WXAssetLoader
 import com.dergoogler.mmrl.webui.component.ErrorScreen
-import com.dergoogler.mmrl.webui.forbiddenResponse
-import com.dergoogler.mmrl.webui.handler.internalPathHandler
-import com.dergoogler.mmrl.webui.handler.suPathHandler
-import com.dergoogler.mmrl.webui.handler.webrootPathHandler
-import com.dergoogler.mmrl.webui.model.Insets
 import com.dergoogler.mmrl.webui.model.WebResourceErrors
 import com.dergoogler.mmrl.webui.model.invoke
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.drawCompose
 import com.dergoogler.mmrl.webui.view.WXSwipeRefresh
 import com.dergoogler.mmrl.webui.view.WebUIView
-import com.dergoogler.mmrl.webui.wxAssetLoader
 
-open class WXClient : WebViewClient {
+open class WXClient : HybridWebUIClient {
     private val mOptions: WebUIOptions
-    private val mWxAssetsLoader: WXAssetLoader
     internal var mSwipeView: WXSwipeRefresh? = null
 
     constructor(
         options: WebUIOptions,
-        insets: Insets,
-        assetHandlers: List<Pair<String, PathHandler>> = emptyList(),
-    ) {
+        matchers: MutableList<HybridWebUI.PathMatcher>,
+    ) : super(matchers) {
         mOptions = options
-        mWxAssetsLoader = wxAssetLoader(
-            handlers = buildList {
-                add("/mmrl/" to internalPathHandler(mOptions, insets))
-                add("/internal/" to internalPathHandler(mOptions, insets))
-                add(".${mOptions.modId}/" to suPathHandler("/data/adb/modules/${mOptions.modId}".toSuFile()))
-                add("/.adb/" to suPathHandler("/data/adb".toSuFile()))
-                add("/.config/" to suPathHandler("/data/adb/.config".toSuFile()))
-                add("/.local/" to suPathHandler("/data/adb/.local".toSuFile()))
-
-                if (mOptions.config.hasRootPathPermission) {
-                    add("/__root__" to suPathHandler("/".toSuFile()))
-                }
-
-                addAll(assetHandlers)
-
-                add("/" to webrootPathHandler(mOptions, insets))
-            }
-        )
-    }
-
-    constructor(options: WebUIOptions, assetsLoader: WXAssetLoader) {
-        mOptions = options
-        mWxAssetsLoader = assetsLoader
     }
 
     private fun openUri(uri: Uri) {
@@ -192,28 +159,7 @@ open class WXClient : WebViewClient {
         return false
     }
 
-    override fun shouldInterceptRequest(
-        view: WebView?,
-        request: WebResourceRequest,
-    ): WebResourceResponse? {
-        val urlString = request.url.toString()
-
-        // Check if the request is from an allowed domain
-        if (!isAllowedUrl(urlString)) {
-            Log.d(TAG, "Blocking request from unauthorized domain: $urlString")
-            return forbiddenResponse
-        }
-
-        // Handle favicon requests
-        if (urlString.endsWith("/favicon.ico")) {
-            Log.d(TAG, "Blocking favicon.ico request for $urlString")
-            return WebResourceResponse("image/png", null, null)
-        }
-
-        if (mOptions.debug) Log.d(TAG, "shouldInterceptRequest: ${request.url}")
-        return mWxAssetsLoader(request.url)
-    }
-
+    @Deprecated("")
     private fun isAllowedUrl(requestHost: String?): Boolean = mOptions.config {
         if (requestHost == null) return@config false
         if (allowUrls.isEmpty()) return@config true
