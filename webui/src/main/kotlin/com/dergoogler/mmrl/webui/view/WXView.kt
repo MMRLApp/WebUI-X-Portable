@@ -31,10 +31,13 @@ import com.dergoogler.mmrl.webui.pathHandler.WebrootPathHandler
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
+import com.dergoogler.mmrl.webui.util.lua.LuaEngine
 
 @SuppressLint("SetJavaScriptEnabled")
 open class WXView : WebUIView {
-    constructor(options: WebUIOptions): super(options) {
+    private lateinit var luaEngine: LuaEngine
+
+    constructor(options: WebUIOptions) : super(options) {
         this.options = options
     }
 
@@ -87,6 +90,9 @@ open class WXView : WebUIView {
                 this@apply.userAgentString = this@options.userAgentString
             }
         }
+
+        this.luaEngine = LuaEngine(options, this)
+        luaEngine.run()
 
         addPathHandler(
             "/.${options.modId}/",

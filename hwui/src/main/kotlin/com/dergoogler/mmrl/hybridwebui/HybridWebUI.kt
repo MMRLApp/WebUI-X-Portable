@@ -30,7 +30,7 @@ import java.util.Locale
 
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
 open class HybridWebUI : WebView {
-    protected var uri: Uri
+    var uri: Uri
     protected val pathMatchers: MutableList<PathMatcher> = mutableListOf()
     private var onInsetsEvent: OnInsetsEvent? = null
     private val insetsCache = object : LruCache<String, HybridWebUIInsets>(16) {}

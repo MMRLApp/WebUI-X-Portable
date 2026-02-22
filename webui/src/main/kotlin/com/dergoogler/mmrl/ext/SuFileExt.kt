@@ -1,8 +1,7 @@
 package com.dergoogler.mmrl.ext
 
 import com.dergoogler.mmrl.platform.file.SuFile
-import java.io.File
-import java.io.FileOutputStream
+import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -71,3 +70,24 @@ internal fun byteBufferForEncoding(chunkSize: Int, encoder: CharsetEncoder): Byt
     val maxBytesPerChar = ceil(encoder.maxBytesPerChar()).toInt()
     return ByteBuffer.allocate(chunkSize * maxBytesPerChar)
 }
+
+val SuFile.buffer
+    get(): ByteBuffer = this.newInputStream().buffer
+
+val SuFile.directBuffer
+    get(): ByteBuffer = this.newInputStream().directBuffer
+
+val InputStream.buffer
+    get(): ByteBuffer {
+        val bytes = this.use { it.readBytes() }
+        return ByteBuffer.wrap(bytes)
+    }
+
+val InputStream.directBuffer
+    get(): ByteBuffer {
+        val bytes = this.use { it.readBytes() }
+        val direct = ByteBuffer.allocateDirect(bytes.size)
+        direct.put(bytes)
+        direct.rewind()
+        return direct
+    }
