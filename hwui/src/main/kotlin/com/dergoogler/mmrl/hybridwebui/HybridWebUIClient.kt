@@ -33,20 +33,24 @@ open class HybridWebUIClient(
 
             val response = try {
                 handler.handle(newRequest)
-            } catch (t: Exception) {
-                WebResourceResponse(
-                    "plain/text",
-                    "UTF-8",
-                    500,
-                    "Internal Server Error",
-                    null,
-                    ByteArrayInputStream("Message: ${t.message}\n\nStacktrace: ${t.stackTraceToString()}".toByteArray())
-                )
+            } catch (t: Throwable) {
+                shouldInterceptRequestError(t, newRequest)
             } ?: continue
 
             return response
         }
 
         return null
+    }
+
+    open fun shouldInterceptRequestError(throwable: Throwable, request: HybridWebUIResourceRequest): WebResourceResponse? {
+        return WebResourceResponse(
+            "plain/text",
+            "UTF-8",
+            500,
+            "Internal Server Error",
+            null,
+            ByteArrayInputStream("Message: ${throwable.message}\n\nStacktrace: ${throwable.stackTraceToString()}".toByteArray())
+        )
     }
 }
