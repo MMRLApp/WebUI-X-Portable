@@ -1,5 +1,4 @@
 -- str.lua
--- String utilities
 
 local M = {}
 

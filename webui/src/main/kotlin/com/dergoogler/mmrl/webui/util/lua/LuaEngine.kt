@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.webui.util.lua
 
 import android.util.Log
-import android.webkit.WebResourceResponse
 import androidx.core.net.toUri
 import com.dergoogler.mmrl.ext.directBuffer
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
@@ -10,13 +9,6 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
 import party.iroiro.luajava.lua51.Lua51
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.InputStreamReader
-import java.io.PrintStream
 
 class LuaEngine(
     private val options: WebUIOptions,
@@ -37,34 +29,6 @@ class LuaEngine(
 
         lua.setExternalLoader(LuaSuFileLoader(options));
 
-        // ── Java type helpers ──────────────────────────────────────────────────────
-
-        lua.pushJavaClass(WebResourceResponse::class.java)
-        lua.setGlobal("WebResourceResponse")
-
-        // Streams
-        lua.pushJavaClass(ByteArrayInputStream::class.java)
-        lua.setGlobal("ByteArrayInputStream")
-
-        lua.pushJavaClass(ByteArrayOutputStream::class.java)
-        lua.setGlobal("ByteArrayOutputStream")
-
-        lua.pushJavaClass(FileInputStream::class.java)
-        lua.setGlobal("FileInputStream")
-
-        lua.pushJavaClass(FileOutputStream::class.java)
-        lua.setGlobal("FileOutputStream")
-
-        lua.pushJavaClass(BufferedReader::class.java)
-        lua.setGlobal("BufferedReader")
-
-        lua.pushJavaClass(InputStreamReader::class.java)
-        lua.setGlobal("InputStreamReader")
-
-        lua.pushJavaClass(PrintStream::class.java)
-        lua.setGlobal("PrintStream")
-
-        // Core Java types
         lua.pushJavaClass(String::class.java)
         lua.setGlobal("String")
 
@@ -86,7 +50,6 @@ class LuaEngine(
         lua.pushJavaClass(StringBuilder::class.java)
         lua.setGlobal("StringBuilder")
 
-        // Collections
         lua.pushJavaClass(HashMap::class.java)
         lua.setGlobal("HashMap")
 

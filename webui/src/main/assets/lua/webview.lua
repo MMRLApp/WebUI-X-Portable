@@ -1,16 +1,15 @@
 -- webview.lua
--- WebView response helpers and handler registration
 
-local java = require("wx:java")
-local luajava = java.luajava
+local ByteArrayInputStream = java.import("java.io.ByteArrayInputStream")
+local WebResourceResponse = java.import("android.webkit.WebResourceResponse")
 
 local M = {}
 
 -- Stream helper
 
 function M.stringToStream(s)
-    local jstr = luajava.newInstance("java.lang.String", s)
-    return luajava.newInstance("java.io.ByteArrayInputStream", jstr:getBytes("UTF-8"))
+    str = String(s):getBytes("UTF-8")
+    return ByteArrayInputStream(str)
 end
 
 -- Response helpers

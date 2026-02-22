@@ -267,10 +267,14 @@ open class HybridWebUI : WebView {
         WebViewCompat.addWebMessageListener(
             this,
             objectName,
-            setOf("${uri.scheme}://${uri.authority}")
+            setOf("*")
         ) { view, message, uri, isMainFrame, reply ->
-            val newEvent = HybridWebUIEvent(view, message, reply, uri, isMainFrame)
-            event.listen(newEvent)
+            try {
+                val newEvent = HybridWebUIEvent(view, message, reply, uri, isMainFrame)
+                event.listen(newEvent)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error handling event", e)
+            }
         }
     }
 
