@@ -37,4 +37,5 @@
     <string name="failed_to_open_ssl_desc">Невозможно загрузить [b]%1$s[/b] из-за ошибки SSL</string>
     <string name="please_try_the_following">Пожалуйста, попробуйте следующее:</string>
     <string name="proceed">Продолжить</string>
+    <string name="failed_to_open_ssl">Не удалось открыть из-за SSL</string>
 </resources>
