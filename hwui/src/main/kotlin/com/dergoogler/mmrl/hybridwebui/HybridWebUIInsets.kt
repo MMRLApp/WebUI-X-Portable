@@ -48,6 +48,8 @@ data class HybridWebUIInsets(
         }
 
     companion object {
+        val Empty = HybridWebUIInsets(0, 0, 0, 0)
+
         fun androidx.core.graphics.Insets.toWebUIInsets(
             density: Float,
         ): HybridWebUIInsets {

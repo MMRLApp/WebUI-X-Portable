@@ -7,9 +7,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowInsetsController
-import android.webkit.WebView
 import androidx.activity.ComponentActivity
-import androidx.annotation.CallSuper
 import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
@@ -31,49 +29,22 @@ import com.dergoogler.mmrl.webui.pathHandler.InternalPathHandler
 import com.dergoogler.mmrl.webui.pathHandler.SuPathHandler
 import com.dergoogler.mmrl.webui.pathHandler.WebrootPathHandler
 import com.dergoogler.mmrl.webui.util.WebUIOptions
+import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 
-/**
- * WXView is a custom [WebView] component designed for the **WebUI X Engine**.
- * It provides enhanced functionality for web-based user interfaces within Android applications.
- *
- * This class handles the initialization of the WebView, including setting up JavaScript interfaces,
- * managing window insets, and configuring various WebView settings. It also provides helper
- * methods for interacting with the WebView from native code, such as posting messages,
- * handling events, and executing JavaScript.
- *
- * **Key Features:**
- * - **Simplified Initialization:**  Handles common WebView setup tasks automatically.
- * - **JavaScript Interface Management:**  Provides a structured way to add and manage JavaScript interfaces.
- * - **Window Inset Handling:**  Adjusts WebView content based on system window insets.
- * - **Event Handling:**  Facilitates communication between the WebView and native code through events.
- * - **Helper Methods:**  Offers convenient methods for common WebView operations.
- *
- * **Constructors:**
- * - `WXView(options: WebUIOptions)`: Initializes the WXView with the specified [WebUIOptions].
- *   This is the recommended constructor for creating a WXView instance.
- * - `WXView(context: Context)`: Constructor for creating WXView programmatically.
- *   **Note:** This constructor will throw an [UnsupportedOperationException] as default options are not supported.
- *   You must use the constructor with [WebUIOptions].
- * - `WXView(context: Context, attrs: AttributeSet)`:  Used for inflating WXView from XML layouts.
- *   **Note:** This constructor will throw an [UnsupportedOperationException] as default options are not supported.
- *   You must use the constructor with [WebUIOptions].
- * - `WXView(context: Context, attrs: AttributeSet, defStyle: Int)`: Used for inflating WXView from XML layouts
- *   with a default style attribute.
- *   **Note:** This constructor will throw an [UnsupportedOperationException] as default options are not supported.
- *   You must use the constructor with [WebUIOptions].
- *
- * @param options The [WebUIOptions] used to configure this WXView.
- */
 @SuppressLint("SetJavaScriptEnabled")
-open class WXView(
-    options: WebUIOptions,
-) : WebUIView(options) {
-    constructor(context: Context) : this(WebUIOptions(context = context)) {
+open class WXView : WebUIView {
+    constructor(options: WebUIOptions): super(options) {
+        this.options = options
+    }
+
+    constructor(context: Context) : this(context.defaultWebUiOptions) {
+        this.options = context.defaultWebUiOptions
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
-    constructor(context: Context, attrs: AttributeSet) : this(WebUIOptions(context = context)) {
+    constructor(context: Context, attrs: AttributeSet) : this(context.defaultWebUiOptions) {
+        this.options = context.defaultWebUiOptions
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
@@ -81,14 +52,13 @@ open class WXView(
         context: Context,
         attrs: AttributeSet,
         defStyle: Int,
-    ) : this(WebUIOptions(context = context)) {
+    ) : this(context.defaultWebUiOptions) {
+        this.options = context.defaultWebUiOptions
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
-    override suspend fun onInit(isInitialized: Boolean) {
-        super.onInit(isInitialized)
-
-        if (isInitialized) return
+    override suspend fun onInit() {
+        super.onInit()
 
         val activity = context.findActivity()
 
@@ -99,8 +69,6 @@ open class WXView(
                     windowInsetsController?.systemBarsBehavior =
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
-
-                // WebView clients and settings
                 webChromeClient = WXChromeClient(this@apply as ComponentActivity, options)
             }
         } else {
@@ -120,57 +88,33 @@ open class WXView(
             }
         }
 
-        var clientSet = false
-
-
         addPathHandler(
             "/.${options.modId}/",
             SuPathHandler("/data/adb/modules/${options.modId}".toSuFile())
         )
-
         addPathHandler("/.adb/", SuPathHandler("/data/adb".toSuFile()))
         addPathHandler("/.config/", SuPathHandler("/data/adb/.config".toSuFile()))
         addPathHandler("/.local/", SuPathHandler("/data/adb/.local".toSuFile()))
 
         if (options.config.hasRootPathPermission) {
-            addPathHandler("/__root__", SuPathHandler("/".toSuFile()))
-        }
-
-        onApplyInsets = { view, insets ->
-            view.addPathHandler("/mmrl/", InternalPathHandler(options, insets))
-            view.addPathHandler("/internal/", InternalPathHandler(options, insets))
-
-            view.addPathHandler("/", WebrootPathHandler(options, insets))
-
-            postWXEvent(
-                type = WXEvent.WX_ON_INSETS,
-                data = insets.toEventData()
-            )
+            addPathHandler("/__root__/", SuPathHandler("/".toSuFile()))
         }
 
         val client = WXClient(options, pathMatchers)
         client.mSwipeView = mSwipeView
         super.webViewClient = client
 
-        // JavaScript interfaces (delayed until WebView is fully ready)
-        post {
-            addJavascriptInterfaces()
-            options.debugger {
-                Log.d(TAG, "WebUI X fully initialized")
-            }
+        addJavascriptInterfaces()
 
-            // Wait until client is definitely set
-            if (!clientSet) {
-                options.debugger {
-                    Log.d(TAG, "Waiting for client to be set")
-                }
-                postDelayed({ loadDomain() }, 100)
-            } else {
-                options.debugger {
-                    Log.d(TAG, "Client already set, loading domain")
-                }
-                loadDomain()
-            }
+        onInsets { view, insets ->
+            view.addPathHandler("/mmrl/", InternalPathHandler(options, insets))
+            view.addPathHandler("/internal/", InternalPathHandler(options, insets))
+            view.addPathHandler("/", WebrootPathHandler(options, insets))
+
+            postWXEvent(
+                type = WXEvent.WX_ON_INSETS,
+                data = insets.toEventData()
+            )
         }
     }
 
@@ -194,7 +138,6 @@ open class WXView(
         }
     }
 
-    @CallSuper
     override fun destroy() {
         super.destroy()
 
@@ -212,27 +155,14 @@ open class WXView(
         Log.d(TAG, "WebUI X cleaned up")
     }
 
-    private val Int.asPx: Int
-        get() = (this / context.resources.displayMetrics.density).toInt()
-
-
-    /**
-     * Loads the domain URL specified in the [WebUIOptions].
-     *
-     * This function checks if a new app version is required. If it is,
-     * it loads a "require new version" page. Otherwise, it loads the
-     * `domainUrl` from the options.
-     */
     override fun loadDomain() {
         options {
             if (requireNewAppVersion?.required == true) {
                 loadData(
                     requireNewVersionErrorPage(), "text/html", "UTF-8"
                 )
-
                 return@options
             }
-
             loadUrl(domainUrl)
         }
     }

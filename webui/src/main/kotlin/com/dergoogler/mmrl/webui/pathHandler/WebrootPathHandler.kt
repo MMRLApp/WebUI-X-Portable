@@ -28,7 +28,7 @@ class WebrootPathHandler(
     private val customJsHead get() = SuFile(configJsBase, "head")
     private val customJsBody get() = SuFile(configJsBase, "body")
 
-    private var directory: SuFile = SuFile(options.webRoot).getCanonicalDirPath().toSuFile()
+    private val directory: SuFile get() = SuFile(options.webRoot).getCanonicalDirPath().toSuFile()
 
     init {
         SuFile.createDirectories(customJsHead, customJsBody, configStyleBase)

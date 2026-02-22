@@ -6,10 +6,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import android.util.LruCache
 import android.view.ViewGroup.LayoutParams
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.RelativeLayout
+import androidx.annotation.CallSuper
 import androidx.annotation.RequiresFeature
 import androidx.annotation.UiThread
 import androidx.annotation.WorkerThread
@@ -27,19 +29,25 @@ import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
-open class HybridWebUI(
-    private val context: Context,
-    val uri: Uri,
-) : WebView(context) {
+open class HybridWebUI : WebView {
+    protected var uri: Uri
     protected val pathMatchers: MutableList<PathMatcher> = mutableListOf()
+    private var onInsetsEvent: OnInsetsEvent? = null
+    private val insetsCache = object : LruCache<String, HybridWebUIInsets>(16) {}
+
+    constructor(context: Context, uri: Uri) : super(context) {
+        this.uri = uri
+        setup()
+    }
 
     constructor(context: Context, url: String) : this(
         context, url.toUri()
-    )
+    ) {
+        setup()
+    }
 
-    var onApplyInsets: ((view: HybridWebUI, insets: HybridWebUIInsets) -> Unit)? = null
-
-    init {
+    @CallSuper
+    protected open fun setup() {
         overScrollMode = OVER_SCROLL_NEVER
 
         layoutParams = LayoutParams(
@@ -47,23 +55,7 @@ open class HybridWebUI(
             RelativeLayout.LayoutParams.MATCH_PARENT
         )
 
-        ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
-            if (view !is WebView) {
-                Log.w(TAG, "View is not a WebView")
-                return@setOnApplyWindowInsetsListener WindowInsetsCompat.CONSUMED
-            }
-
-            if (onApplyInsets == null) {
-                Log.w(TAG, "onApplyInsets is not set")
-                return@setOnApplyWindowInsetsListener WindowInsetsCompat.CONSUMED
-            }
-
-            val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            val webUiInsets = inset.toWebUIInsets(context.resources.displayMetrics.density)
-            onApplyInsets?.invoke(this@HybridWebUI, webUiInsets)
-
-            return@setOnApplyWindowInsetsListener WindowInsetsCompat.CONSUMED
-        }
+        setupInsets()
 
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
@@ -71,8 +63,45 @@ open class HybridWebUI(
         settings.blockNetworkLoads = false
 
         webViewClient = HybridWebUIClient(pathMatchers)
+    }
 
-        super.loadUrl(uri.toString())
+    val areInsetsAvailable get() = insetsCache.size() != 0 && insetsCache.get("insets") is HybridWebUIInsets
+
+    fun interface OnInsetsEvent {
+        fun onApply(view: HybridWebUI, insets: HybridWebUIInsets)
+    }
+
+    fun onInsets(event: OnInsetsEvent) {
+        this.onInsetsEvent = event
+        // if setup() already ran earlier, we need to attach the listener now
+        setupInsets()
+    }
+
+    protected fun setupInsets() {
+        // if no listener yet, nothing to do (this can happen during construction)
+        if (onInsetsEvent == null) {
+            return
+        }
+
+        // Check if the insets cache is not empty to retrieve a cached value
+        if (insetsCache.size() != 0) {
+            val value = insetsCache.get("insets") ?: HybridWebUIInsets.Empty
+            onInsetsEvent?.onApply(this@HybridWebUI, value)
+            return
+        }
+
+        onInsetsEvent?.let {
+            ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
+                val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                val webUiInsets =
+                    inset.toWebUIInsets(context.resources.displayMetrics.density).also { sets ->
+                        insetsCache.put("insets", sets)
+                    }
+
+                it.onApply(this@HybridWebUI, webUiInsets)
+                WindowInsetsCompat.CONSUMED
+            }
+        }
     }
 
     fun loadPage() {
@@ -282,6 +311,7 @@ open class HybridWebUI(
             if (!uri.path.orEmpty().startsWith(mPath)) {
                 return null
             }
+
             return mHandler
         }
 

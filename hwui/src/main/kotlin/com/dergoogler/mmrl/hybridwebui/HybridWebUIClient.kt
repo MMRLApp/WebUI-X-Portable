@@ -16,39 +16,35 @@ open class HybridWebUIClient(
         request: WebResourceRequest,
     ): WebResourceResponse? {
         val url = request.url
-        val encodedPath = url.encodedPath ?: ""
 
         for (matcher in pathMatchers) {
-            val handler: HybridWebUI.PathHandler? = matcher.match(url)
-            if (handler != null) {
-                val suffixPath: String = matcher.getSuffixPath(encodedPath)
+            val handler = matcher.match(url) ?: continue
+            val suffixPath = matcher.getSuffixPath(url.path!!)
 
-                val newRequest = HybridWebUIResourceRequest(
-                    method = request.method,
-                    requestHeaders = request.requestHeaders,
-                    url = request.url,
-                    path = suffixPath,
-                    hasGesture = request.hasGesture(),
-                    isForMainFrame = request.isForMainFrame,
-                    isRedirect = request.isRedirect
+            val newRequest = HybridWebUIResourceRequest(
+                method = request.method,
+                requestHeaders = request.requestHeaders,
+                url = request.url,
+                path = suffixPath,
+                hasGesture = request.hasGesture(),
+                isForMainFrame = request.isForMainFrame,
+                isRedirect = request.isRedirect
+            )
+
+            val response = try {
+                handler.handle(newRequest)
+            } catch (t: Exception) {
+                WebResourceResponse(
+                    "plain/text",
+                    "UTF-8",
+                    500,
+                    "Internal Server Error",
+                    null,
+                    ByteArrayInputStream("Message: ${t.message}\n\nStacktrace: ${t.stackTraceToString()}".toByteArray())
                 )
+            } ?: continue
 
-                try {
-                    val response = handler.handle(newRequest)
-                    if (response != null) {
-                        return response
-                    }
-                } catch (t: Exception) {
-                    return WebResourceResponse(
-                        "application/json",
-                        "UTF-8",
-                        500,
-                        "Internal Server Error",
-                        null,
-                        ByteArrayInputStream("Message: ${t.message}\n\nStacktrace: ${t.stackTraceToString()}".toByteArray())
-                    )
-                }
-            }
+            return response
         }
 
         return null

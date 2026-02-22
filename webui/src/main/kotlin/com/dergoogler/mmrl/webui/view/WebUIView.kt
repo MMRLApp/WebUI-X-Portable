@@ -23,7 +23,6 @@ import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.moshi.moshi
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.webui.interfaces.WXConsole
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
@@ -31,6 +30,7 @@ import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXEventHandler
 import com.dergoogler.mmrl.webui.model.WXRawEvent
 import com.dergoogler.mmrl.webui.util.WebUIOptions
+import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,41 +38,27 @@ import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * A custom WebView class that provides additional functionality for WebUI.
- *
- * This class extends the base WebView and adds features such as:
- * - Options management using [WebUIOptions].
- * - Simplified message posting to the WebView.
- * - Event handling for WebUI events.
- * - Utility functions for running JavaScript code and handling errors.
- * - Console logging integration.
- *
- * @property options The options for this WebUIView.
- * @property interfaces A set of JavaScript interface names that have been added to this WebView.
- * @property console A [WXConsole] implementation for logging messages from the WebView.
- */
 @Keep
 @SuppressLint("ViewConstructor")
-open class WebUIView(
-    protected val options: WebUIOptions,
-) : HybridWebUI(options.context, options.domain) {
+open class WebUIView : HybridWebUI {
     private val scope = CoroutineScope(Dispatchers.Main)
     protected var initJob: Job? = null
-    private var isInitialized = false
     internal var mSwipeView: WXSwipeRefresh? = null
-    private var isDestroyed = false // --- Defensive Patch ---
+    private var isDestroyed = false
+    protected lateinit var options: WebUIOptions
 
-    init {
-        setWebContentsDebuggingEnabled(options.debug)
+    constructor(options: WebUIOptions) : super(options.context, options.domain) {
+        this.options = options
         initWhenReady()
     }
 
-    constructor(context: Context) : this(WebUIOptions(context = context)) {
+    constructor(context: Context) : this(context.defaultWebUiOptions) {
+        this.options = context.defaultWebUiOptions
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
-    constructor(context: Context, attrs: AttributeSet) : this(WebUIOptions(context = context)) {
+    constructor(context: Context, attrs: AttributeSet) : this(context.defaultWebUiOptions) {
+        this.options = context.defaultWebUiOptions
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
@@ -80,7 +66,8 @@ open class WebUIView(
         context: Context,
         attrs: AttributeSet,
         defStyle: Int,
-    ) : this(WebUIOptions(context = context)) {
+    ) : this(context.defaultWebUiOptions) {
+        this.options = context.defaultWebUiOptions
         throw UnsupportedOperationException("Default constructor not supported. Use constructor with options.")
     }
 
@@ -92,9 +79,11 @@ open class WebUIView(
     protected val interfaces: HashSet<JavaScriptInterface.Instance> = hashSetOf()
     protected val assetHandlers: MutableList<Pair<String, PathHandler>> = mutableListOf()
 
-    protected open suspend fun onInit(isInitialized: Boolean) {}
+    protected open suspend fun onInit() {}
 
     private fun initWhenReady() {
+        setWebContentsDebuggingEnabled(options.debug)
+
         layoutParams = LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
@@ -102,29 +91,30 @@ open class WebUIView(
         doOnAttach {
             initJob = scope.launch {
                 withContext(Dispatchers.Main) { awaitFrame() }
-                initView()
-                onInit(isInitialized)
+                if (!isDestroyed) {
+                    initView()
+                    onInit()
+                }
             }
         }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun initView() {
-        if (isInitialized || isDestroyed) return // --- Defensive Patch ---
+        if (isDestroyed) return
 
         settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
             allowFileAccess = true
         }
+
         with(options) {
             setBackgroundColor(colorScheme.background.toArgb())
             background = colorScheme.background.toArgb().toDrawable()
         }
-        post {
-            isInitialized = true
-            Log.d(TAG, "WebUIView initialized/attached")
-        }
+
+        Log.d(TAG, "WebUIView initialized/attached")
     }
 
     fun <R> options(block: WebUIOptions.() -> R): R? {
@@ -136,15 +126,14 @@ open class WebUIView(
         }
     }
 
-    // --- Defensive Patch ---
     private fun isReadyForWebOps(): Boolean =
-        isInitialized && !isDestroyed && isAttachedToWindow && handler != null
+        !isDestroyed && isAttachedToWindow && handler != null
 
     fun postMessage(message: String) {
         if (!isReadyForWebOps()) {
             Log.w(TAG, "postMessage skipped, not ready"); return
         }
-        val uri = /* options.domain */ "*".toUri()
+        val uri = "*".toUri()
         try {
             if (WebViewFeature.isFeatureSupported(WebViewFeature.POST_WEB_MESSAGE)) {
                 WebViewCompat.postWebMessage(this, WebMessageCompat(message), uri)
@@ -156,70 +145,26 @@ open class WebUIView(
         }
     }
 
-    /**
-     * Posts a [WXEvent] to the WebView.
-     *
-     * @param type The type of the event.
-     */
     @Keep
     fun postWXEvent(type: WXEvent) =
         postWXEvent<WXEvent, Nothing>(type, null)
 
-    /**
-     * Posts an event with the given [type] string to the WebView.
-     *
-     * @param type The type of the event.
-     */
     @Keep
     fun postWXEvent(type: String) =
         postWXEvent<String, Nothing>(type, null)
 
-    /**
-     * Posts a [WXEvent] with the given [data] to the WebView.
-     *
-     * @param type The type of the event.
-     * @param data The data to be sent with the event.
-     * @param D The type of the data.
-     */
     @Keep
     fun <D : Any?> postWXEvent(type: WXEvent, data: D?) =
         postWXEvent<WXEvent, D>(type, data)
 
-    /**
-     * Posts an event with the given [type] string and [data] to the WebView.
-     *
-     * @param type The type of the event.
-     * @param data The data to be sent with the event.
-     * @param D The type of the data.
-     */
     @Keep
     fun <D : Any?> postWXEvent(type: String, data: D?) =
         postWXEvent<String, D>(type, data)
 
-    /**
-     * Posts an event with the given [type] and [data] to the WebView.
-     * This is a generic function that can be used to post any type of event.
-     *
-     * @param type The type of the event.
-     * @param data The data to be sent with the event.
-     * @param T The type of the event type.
-     * @param D The type of the data.
-     */
     @Keep
     fun <T, D : Any?> postWXEvent(type: T, data: D?) =
         postWXEvent<T, D?>(WXEventHandler<T, D?>(type, data))
 
-    /**
-     * Posts the given [WXEventHandler] event to the WebView.
-     *
-     * It serializes the event to JSON and sends it as a message to the WebView.
-     * If the activity or WebView is not available, or if serialization fails,
-     * an error is logged and the event is not posted.
-     *
-     * @param event The event to be posted.
-     * @param T The type of the event type.
-     * @param D The type of the data.
-     */
     @Keep
     fun <T, D : Any?> postWXEvent(event: WXEventHandler<T, D?>) {
         if (!isReadyForWebOps()) {
@@ -249,13 +194,10 @@ open class WebUIView(
         if (!isReadyForWebOps()) {
             Log.w(TAG, "runJs skipped, not ready"); return
         }
-
         super.runJs(script)
     }
 
-    // --- Defensive Patch ---
     override fun onDetachedFromWindow() {
-        isInitialized = false
         super.onDetachedFromWindow()
         Log.d(TAG, "WebUIView detached from window")
     }
@@ -290,14 +232,12 @@ open class WebUIView(
         }
     }
 
-    @CallSuper
     override fun destroy() {
         stopLoading()
         clearHistory()
         initJob?.cancel()
         removeAllJavaScriptInterfaces()
-        isDestroyed = true // --- Defensive Patch ---
-        isInitialized = false // --- Defensive Patch ---
+        isDestroyed = true
         super.destroy()
         Log.d(TAG, "WebUIView destroyed")
     }
@@ -313,7 +253,6 @@ open class WebUIView(
         }
     }
 
-    @CallSuper
     @SuppressLint("JavascriptInterface")
     override fun addJavascriptInterface(obj: Any, name: String) {
         if (obj !is WXInterface) {
@@ -333,19 +272,10 @@ open class WebUIView(
         }
     }
 
-    /**
-     * Adds a JavaScript interface to the WebView.
-     *
-     * This function takes a [JavaScriptInterface] object, creates a new instance of it
-     * using the provided [WXOptions], and then adds it to the WebView using the
-     * [addJavascriptInterface] method.
-     *
-     * @param obj The [JavaScriptInterface] object to add.
-     * @throws BrickException if an error occurs while adding the interface.
-     */
+    @CallSuper
     @Throws(BrickException::class)
     @SuppressLint("JavascriptInterface")
-    fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
+    open fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
         try {
             val js = obj.createNew(createDefaultWxOptions(options))
             val assetHandlers = js.instance.assetHandlers
@@ -362,18 +292,7 @@ open class WebUIView(
         }
     }
 
-    /**
-     * Adds a JavaScript interface to this WebView.
-     *
-     * This function simplifies the process of adding JavaScript interfaces by allowing you to
-     * directly specify the interface class [T] and optionally provide constructor arguments
-     * and parameter types.
-     *
-     * @param T The type of the JavaScript interface, which must extend [WXInterface].
-     * @param initargs An optional array of arguments to be passed to the constructor of the interface.
-     * @param parameterTypes An optional array of parameter types for the constructor of the interface.
-     * @throws BrickException if an error occurs while adding the interface.
-     */
+    @CallSuper
     @Throws(BrickException::class)
     @SuppressLint("JavascriptInterface")
     inline fun <reified T : WXInterface> addJavascriptInterface(
@@ -395,18 +314,9 @@ open class WebUIView(
         }
     }
 
-    /**
-     * Adds multiple JavaScript interfaces to this WebView.
-     *
-     * This function iterates over the provided JavaScript interfaces and adds each one
-     * to the WebView using the [addJavascriptInterface] method.
-     *
-     * @param obj A vararg of [JavaScriptInterface] objects to be added.
-     * @throws BrickException If an error occurs while adding any of the JavaScript interfaces.
-     * @see addJavascriptInterface
-     */
+    @CallSuper
     @Throws(BrickException::class)
-    fun addJavascriptInterface(vararg obj: JavaScriptInterface<out WXInterface>) {
+    open fun addJavascriptInterface(vararg obj: JavaScriptInterface<out WXInterface>) {
         obj.forEach { addJavascriptInterface(it) }
     }
 

@@ -232,6 +232,7 @@ data class WebUIOptions(
 
     companion object {
         const val TAG = "WebUIOptions"
+        val Context.defaultWebUiOptions get() = WebUIOptions(context = this)
     }
 
     @Suppress("RedundantIf")

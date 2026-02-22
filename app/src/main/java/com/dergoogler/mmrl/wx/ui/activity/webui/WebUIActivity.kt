@@ -43,6 +43,12 @@ class WebUIActivity : WXActivity() {
             return "WebUI X/$mmrlVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
         }
 
+    private suspend fun CoroutineScope.getReady() = initPlatform(
+        scope = this,
+        context = this@WebUIActivity,
+        platform = userPrefs.workingMode.toPlatform()
+    )
+
     override suspend fun onRender(scope: CoroutineScope) {
         initPlatform(userPrefs)
         super.onRender(scope)
@@ -51,12 +57,7 @@ class WebUIActivity : WXActivity() {
         val loading = createLoadingRenderer(colorScheme)
         setContentView(loading)
 
-        val ready = initPlatform(
-            scope = scope,
-            context = this@WebUIActivity,
-            platform = userPrefs.workingMode.toPlatform()
-        )
-
+        val ready = scope.getReady()
         if (!ready.await()) {
             confirm(
                 ConfirmData(
@@ -72,10 +73,10 @@ class WebUIActivity : WXActivity() {
             return
         }
 
-        init(colorScheme)
+        init(scope, colorScheme)
     }
 
-    private fun init(colorScheme: ColorScheme) {
+    private suspend fun init(scope: CoroutineScope, colorScheme: ColorScheme) {
         val modId =
             this@WebUIActivity.modId ?: throw BrickException("modId cannot be null or empty")
 
@@ -98,8 +99,15 @@ class WebUIActivity : WXActivity() {
             cls = WebUIActivity::class.java
         )
 
+
+
         this@WebUIActivity.view = WebUIXView(options).apply {
             wx.addJavascriptInterface<KernelSUInterface>()
+
+            val ready = scope.getReady()
+            if (ready.await()) {
+                wx.loadDomain()
+            }
         }
 
         // Activity Title
