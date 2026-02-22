@@ -1,5 +1,6 @@
 -- webview.lua
 
+local String = java.import("java.lang.String")
 local ByteArrayInputStream = java.import("java.io.ByteArrayInputStream")
 local WebResourceResponse = java.import("android.webkit.WebResourceResponse")
 

@@ -13,6 +13,7 @@ import androidx.core.view.doOnAttach
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXRefreshEventData
 import com.dergoogler.mmrl.webui.util.WebUIOptions
@@ -95,6 +96,8 @@ open class WebUIXView : FrameLayout, SwipeRefreshLayout.OnRefreshListener {
 
     constructor(options: WebUIOptions) : this(options.context) {
         val wxView = WXView(options)
+
+        id = R.id.webuixview
 
         this.mView = wxView
         this.mOptions = options

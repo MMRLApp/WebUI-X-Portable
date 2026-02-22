@@ -50,6 +50,8 @@ open class HybridWebUI : WebView {
     protected open fun setup() {
         overScrollMode = OVER_SCROLL_NEVER
 
+        id = R.id.hybridwebview
+
         layoutParams = LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.MATCH_PARENT
@@ -395,7 +397,7 @@ open class HybridWebUI : WebView {
         private val String.escape get() = this.replace("'", "\\'")
         private fun levelParser(level: String, message: String, vararg args: String?) =
             runJs(
-                "console.$level('${message.escape}'${
+                "console.$level(`${message.escape}`${
                     args.joinToString(
                         prefix = if (args.isNotEmpty()) ", " else "",
                         separator = ", "
@@ -403,9 +405,9 @@ open class HybridWebUI : WebView {
                 })")
 
         override fun error(throwable: Throwable) {
-            val errorString = "Error('${throwable.message?.replace("'", "\\'")}', { cause: '${
+            val errorString = "Error(`${throwable.message?.replace("'", "\\'")}`, { cause: `${
                 throwable.cause.toString().replace("'", "\\'")
-            }' })"
+            }` })"
             runJs("console.error($errorString)")
         }
 

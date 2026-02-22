@@ -23,6 +23,7 @@ import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.moshi.moshi
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
+import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
@@ -83,6 +84,8 @@ open class WebUIView : HybridWebUI {
 
     private fun initWhenReady() {
         setWebContentsDebuggingEnabled(options.debug)
+
+        id = R.id.webuiview
 
         layoutParams = LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,

@@ -2,8 +2,9 @@
 
 local M = {}
 
+local String  = java.import("java.lang.String")
 local Log     = java.import("android.util.Log")
-local TAG     = String("Log")
+local TAG     = String("Lua")
 
 function M.log(...)
     local parts = {}

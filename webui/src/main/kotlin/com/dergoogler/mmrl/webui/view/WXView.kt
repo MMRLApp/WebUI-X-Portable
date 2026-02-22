@@ -12,6 +12,7 @@ import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
+import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.client.WXChromeClient
 import com.dergoogler.mmrl.webui.client.WXClient
 import com.dergoogler.mmrl.webui.client.WXRenderProcessClient
@@ -40,6 +41,7 @@ open class WXView : WebUIView {
 
     constructor(options: WebUIOptions) : super(options) {
         this.options = options
+        this.luaEngine = LuaEngine(options)
     }
 
     constructor(context: Context) : this(context.defaultWebUiOptions) {
@@ -63,6 +65,8 @@ open class WXView : WebUIView {
 
     override suspend fun onInit() {
         super.onInit()
+
+        id = R.id.wxview
 
         val activity = context.findActivity()
 
@@ -91,8 +95,6 @@ open class WXView : WebUIView {
                 this@apply.userAgentString = this@options.userAgentString
             }
         }
-
-        this.luaEngine = LuaEngine(options, this)
 
         try {
             luaEngine.run()
@@ -131,9 +133,14 @@ open class WXView : WebUIView {
     }
 
     private fun addJavascriptInterfaces() {
+        Log.d(TAG, luaEngine.toString())
+
         addJavascriptInterface<FileInputInterface>()
         addJavascriptInterface<FileOutputInterface>()
-        addJavascriptInterface<ApplicationInterface>()
+        addJavascriptInterface<ApplicationInterface>(
+            arrayOf(luaEngine),
+            arrayOf(LuaEngine::class.java)
+        )
         addJavascriptInterface<FileInterface>()
         addJavascriptInterface<ModuleInterface>()
         addJavascriptInterface<UserManagerInterface>()
