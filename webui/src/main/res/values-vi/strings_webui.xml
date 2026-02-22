@@ -2,7 +2,7 @@
 <resources>
     <string name="cancel">Huỷ bỏ</string>
     <string name="loading">Đang tải…</string>
-    <string name="unknown_error">Lỗi Không Xác Định</string>
+    <string name="unknown_error">Lỗi không xác định</string>
     <string name="requireNewVersion_refresh">Làm mới</string>
     <string name="confirm">Xác nhận</string>
     <string name="requireNewVersion_cannot_load_webui">Không thể tải WebUI X</string>
