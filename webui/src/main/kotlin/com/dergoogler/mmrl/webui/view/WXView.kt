@@ -32,6 +32,7 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.util.lua.LuaEngine
+import party.iroiro.luajava.LuaException
 
 @SuppressLint("SetJavaScriptEnabled")
 open class WXView : WebUIView {
@@ -92,7 +93,12 @@ open class WXView : WebUIView {
         }
 
         this.luaEngine = LuaEngine(options, this)
-        luaEngine.run()
+
+        try {
+            luaEngine.run()
+        } catch (e: LuaException) {
+            Log.e(TAG, "Error running Lua", e)
+        }
 
         addPathHandler(
             "/.${options.modId}/",
