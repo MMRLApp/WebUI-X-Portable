@@ -10,11 +10,14 @@ import java.io.IOException
 
 class AssetsPathHandler(
     private val options: WebUIOptions,
-) : HybridWebUI.BasePathHandler() {
+) : HybridWebUI.PathHandler() {
 
     private val assetHelper get() = options.context.assets
 
-    override fun handle(request: HybridWebUIResourceRequest): WebResourceResponse {
+    override fun handle(
+        view: HybridWebUI,
+        request: HybridWebUIResourceRequest,
+    ): WebResourceResponse {
         val path = request.path ?: return notFoundResponse
 
         try {

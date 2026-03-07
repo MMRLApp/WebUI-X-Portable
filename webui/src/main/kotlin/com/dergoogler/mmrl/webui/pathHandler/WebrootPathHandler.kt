@@ -20,7 +20,7 @@ import java.io.IOException
 class WebrootPathHandler(
     private val options: WebUIOptions,
     private val insets: HybridWebUIInsets,
-) : HybridWebUI.BasePathHandler() {
+) : HybridWebUI.PathHandler() {
 
     private val configBase get() = options.modId.moduleConfigDir
     private val configStyleBase get() = SuFile(configBase, "style")
@@ -61,7 +61,10 @@ class WebrootPathHandler(
         }
     }
 
-    override fun handle(request: HybridWebUIResourceRequest): WebResourceResponse {
+    override fun handle(
+        view: HybridWebUI,
+        request: HybridWebUIResourceRequest,
+    ): WebResourceResponse {
         val path = request.path.ifEmpty { options.indexFile }
 
         reversedPaths.forEach {

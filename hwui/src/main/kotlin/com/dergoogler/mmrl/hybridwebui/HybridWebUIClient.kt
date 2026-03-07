@@ -5,11 +5,10 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pathMatchers
 import java.io.ByteArrayInputStream
 
-open class HybridWebUIClient(
-    protected val pathMatchers: MutableList<HybridWebUI.PathMatcher>,
-) : WebViewClient() {
+open class HybridWebUIClient() : WebViewClient() {
     @WorkerThread
     override fun shouldInterceptRequest(
         view: WebView,
@@ -32,7 +31,7 @@ open class HybridWebUIClient(
             )
 
             val response = try {
-                handler.handle(newRequest)
+                handler.handle(view as HybridWebUI, newRequest)
             } catch (t: Throwable) {
                 shouldInterceptRequestError(t, newRequest)
             } ?: continue
@@ -43,7 +42,10 @@ open class HybridWebUIClient(
         return null
     }
 
-    open fun shouldInterceptRequestError(throwable: Throwable, request: HybridWebUIResourceRequest): WebResourceResponse? {
+    open fun shouldInterceptRequestError(
+        throwable: Throwable,
+        request: HybridWebUIResourceRequest,
+    ): WebResourceResponse? {
         return WebResourceResponse(
             "plain/text",
             "UTF-8",

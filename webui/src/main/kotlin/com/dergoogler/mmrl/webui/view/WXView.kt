@@ -114,7 +114,7 @@ open class WXView : WebUIView {
             addPathHandler("/__root__/", SuPathHandler("/".toSuFile()))
         }
 
-        val client = WXClient(options, pathMatchers)
+        val client = WXClient(options)
         client.mSwipeView = mSwipeView
         super.webViewClient = client
 

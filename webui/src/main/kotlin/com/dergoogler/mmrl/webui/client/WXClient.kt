@@ -12,7 +12,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import com.dergoogler.mmrl.ext.nullply
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIClient
 import com.dergoogler.mmrl.webui.model.invoke
 import com.dergoogler.mmrl.webui.util.WebUIOptions
@@ -24,8 +23,7 @@ open class WXClient : HybridWebUIClient {
 
     constructor(
         options: WebUIOptions,
-        matchers: MutableList<HybridWebUI.PathMatcher>,
-    ) : super(matchers) {
+    ) : super() {
         mOptions = options
     }
 

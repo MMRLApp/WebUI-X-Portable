@@ -10,8 +10,11 @@ import java.io.IOException
 
 class SuPathHandler(
     private val directory: SuFile,
-) : HybridWebUI.BasePathHandler() {
-    override fun handle(request: HybridWebUIResourceRequest): WebResourceResponse {
+) : HybridWebUI.PathHandler() {
+    override fun handle(
+        view: HybridWebUI,
+        request: HybridWebUIResourceRequest,
+    ): WebResourceResponse {
         val path = request.path ?: return notFoundResponse
 
         return try {

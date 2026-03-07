@@ -99,14 +99,14 @@ class WebUIActivity : WXActivity() {
             cls = WebUIActivity::class.java
         )
 
-
-
         this@WebUIActivity.view = WebUIXView(options).apply {
-            wx.addJavascriptInterface<KernelSUInterface>()
+            with(wx) {
+                addJavascriptInterface<KernelSUInterface>()
 
-            val ready = scope.getReady()
-            if (ready.await()) {
-                wx.loadDomain()
+                val ready = scope.getReady()
+                if (ready.await()) {
+                    wx.loadDomain()
+                }
             }
         }
 

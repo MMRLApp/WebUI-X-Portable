@@ -12,18 +12,22 @@ import java.io.IOException
 class InternalPathHandler(
     private val options: WebUIOptions,
     private val insets: HybridWebUIInsets,
-) : HybridWebUI.BasePathHandler() {
+) : HybridWebUI.PathHandler() {
     val colorScheme get() = options.colorScheme
     val webColors get() = WebColors(colorScheme)
 
     val assetsPathHandler = AssetsPathHandler(options)
 
-    override fun handle(request: HybridWebUIResourceRequest): WebResourceResponse {
+    override fun handle(
+        view: HybridWebUI,
+        request: HybridWebUIResourceRequest,
+    ): WebResourceResponse {
         val path = request.path ?: return notFoundResponse
 
         try {
             if (path.matches(Regex("^assets(/.*)?$"))) {
                 return assetsPathHandler.handle(
+                    view,
                     HybridWebUIResourceRequest(
                         method = request.method,
                         isForMainFrame = request.isForMainFrame,

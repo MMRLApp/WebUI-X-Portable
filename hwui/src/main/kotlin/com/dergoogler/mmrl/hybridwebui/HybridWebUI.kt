@@ -3,14 +3,17 @@
 package com.dergoogler.mmrl.hybridwebui
 
 import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.util.LruCache
 import android.view.ViewGroup.LayoutParams
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.RelativeLayout
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.annotation.RequiresFeature
 import androidx.annotation.UiThread
@@ -18,9 +21,19 @@ import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.filePathCallback
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.insetsCache
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.onInsetsEvent
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pathMatchers
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pendingSaveData
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.saveFileLauncher
+import com.dergoogler.mmrl.hybridwebui.event.SaveFileLauncherEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URLConnection
@@ -31,9 +44,6 @@ import java.util.Locale
 @SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
 open class HybridWebUI : WebView {
     var uri: Uri
-    protected val pathMatchers: MutableList<PathMatcher> = mutableListOf()
-    private var onInsetsEvent: OnInsetsEvent? = null
-    private val insetsCache = object : LruCache<String, HybridWebUIInsets>(16) {}
 
     constructor(context: Context, uri: Uri) : super(context) {
         this.uri = uri
@@ -64,7 +74,36 @@ open class HybridWebUI : WebView {
         settings.allowFileAccess = false
         settings.blockNetworkLoads = false
 
-        webViewClient = HybridWebUIClient(pathMatchers)
+        webViewClient = HybridWebUIClient()
+        webChromeClient = HybridWebUIChromeClient()
+
+        addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
+    }
+
+    fun interface OnFileSaveRequest {
+        operator fun invoke(bytes: ByteArray, fileName: String, mimeType: String)
+
+        companion object {
+            val DefaultSaveFileLauncher: (ByteArray, String, String) -> Unit
+                get() = def@{ data, fileName, mimeType ->
+                    if (saveFileLauncher == null) {
+                        return@def
+                    }
+
+                    pendingSaveData = data
+                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = mimeType
+                        putExtra(Intent.EXTRA_TITLE, fileName)
+                    }
+                    try {
+                        saveFileLauncher!!.launch(intent)
+                    } catch (e: Exception) {
+                        pendingSaveData = null
+                        e.printStackTrace()
+                    }
+                }
+        }
     }
 
     val areInsetsAvailable get() = insetsCache.size() != 0 && insetsCache.get("insets") is HybridWebUIInsets
@@ -74,7 +113,7 @@ open class HybridWebUI : WebView {
     }
 
     fun onInsets(event: OnInsetsEvent) {
-        this.onInsetsEvent = event
+        onInsetsEvent = event
         // if setup() already ran earlier, we need to attach the listener now
         setupInsets()
     }
@@ -110,11 +149,6 @@ open class HybridWebUI : WebView {
         super.loadUrl(uri.toString())
     }
 
-    interface PathHandler {
-        @WorkerThread
-        fun handle(request: HybridWebUIResourceRequest): WebResourceResponse?
-    }
-
     @UiThread
     open fun runJs(script: String) {
         post {
@@ -126,7 +160,17 @@ open class HybridWebUI : WebView {
         }
     }
 
-    abstract class BasePathHandler : PathHandler {
+    abstract class PathHandler {
+        @Deprecated("This will take no future effect")
+        @WorkerThread
+        open fun handle(request: HybridWebUIResourceRequest): WebResourceResponse? = null
+
+        @WorkerThread
+        open fun handle(
+            view: HybridWebUI,
+            request: HybridWebUIResourceRequest,
+        ): WebResourceResponse? = null
+
         companion object {
             enum class ResponseStatus(
                 val code: Int,
@@ -273,7 +317,7 @@ open class HybridWebUI : WebView {
         ) { view, message, uri, isMainFrame, reply ->
             try {
                 val newEvent = HybridWebUIEvent(view, message, reply, uri, isMainFrame)
-                event.listen(newEvent)
+                event.listen(this, newEvent)
             } catch (e: Exception) {
                 Log.e(TAG, "Error handling event", e)
             }
@@ -428,17 +472,79 @@ open class HybridWebUI : WebView {
             levelParser("warn", message, *args)
     }
 
-    interface EventListener {
+    abstract class EventListener {
         @UiThread
         @SuppressLint("RequiresFeature")
         @RequiresFeature(
             name = WebViewFeature.WEB_MESSAGE_LISTENER,
             enforcement = "androidx.webkit.WebViewFeature#isFeatureSupported"
         )
-        fun listen(event: HybridWebUIEvent)
+        @Deprecated("This will take no future effect")
+        open fun listen(event: HybridWebUIEvent) {
+        }
+
+        @UiThread
+        @SuppressLint("RequiresFeature")
+        @RequiresFeature(
+            name = WebViewFeature.WEB_MESSAGE_LISTENER,
+            enforcement = "androidx.webkit.WebViewFeature#isFeatureSupported"
+        )
+        open fun listen(view: HybridWebUI, event: HybridWebUIEvent) {
+        }
     }
 
     companion object {
         const val TAG = "HybridWebUI"
+
+
+        fun ComponentActivity.setDefaultFileChooserLauncher() {
+            HybridWebUIState.fileChooserLauncher = registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                val uris: Array<Uri>? = when (result.resultCode) {
+                    RESULT_OK -> result.data?.let { data ->
+                        when {
+                            data.clipData != null -> {
+                                Array(data.clipData!!.itemCount) { i ->
+                                    data.clipData!!.getItemAt(i).uri // Multiple files
+                                }
+                            }
+
+                            data.data != null -> {
+                                arrayOf(data.data!!)
+                            } // Single file
+                            else -> null
+                        }
+                    }
+
+                    else -> null
+                }
+
+                filePathCallback?.onReceiveValue(uris)
+                filePathCallback = null
+            }
+        }
+
+        fun ComponentActivity.setDefaultSaveFileLauncher() {
+            saveFileLauncher = registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                val uri = if (result.resultCode == RESULT_OK) result.data?.data else null
+                val data = pendingSaveData
+                if (uri != null && data != null) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                            contentResolver.openOutputStream(uri)?.use { it.write(data) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            pendingSaveData = null
+                        }
+                    }
+                } else {
+                    pendingSaveData = null
+                }
+            }
+        }
     }
 }

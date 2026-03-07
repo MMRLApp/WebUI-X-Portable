@@ -26,6 +26,10 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI.Companion.setDefaultFileChooserLauncher
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI.Companion.setDefaultSaveFileLauncher
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI.OnFileSaveRequest.Companion.DefaultSaveFileLauncher
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
@@ -142,11 +146,20 @@ open class WXActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+
+        setDefaultSaveFileLauncher()
+        setDefaultFileChooserLauncher()
+
+        HybridWebUIState.onSaveFileRequest { bytes, fileName, mimeType ->
+            DefaultSaveFileLauncher(bytes, fileName, mimeType)
+        }
+
         modId = intent.getModId()
 
         lifecycleScope.launch {
             onRender(this)
             registerBackEvents()
+
 
             config {
                 rootView.viewTreeObserver.addOnGlobalLayoutListener {
@@ -179,8 +192,6 @@ open class WXActivity : ComponentActivity() {
                 }
             }
         }
-
-
     }
 
     private fun adjustWebViewHeight(keypadHeight: Int) {

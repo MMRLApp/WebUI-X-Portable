@@ -5,9 +5,9 @@ import android.webkit.ConsoleMessage
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
-import android.webkit.WebChromeClient
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIChromeClient
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.PromptData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
@@ -18,7 +18,7 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 open class WXChromeClient(
     activity: ComponentActivity,
     private val options: WebUIOptions,
-) : WebChromeClient() {
+) : HybridWebUIChromeClient() {
     private companion object {
         const val TAG = "WXChromeClient"
     }
