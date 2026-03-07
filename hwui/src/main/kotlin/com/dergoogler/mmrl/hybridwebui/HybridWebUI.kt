@@ -301,7 +301,7 @@ open class HybridWebUI : WebView {
             )
     }
 
-    fun addPathHandler(path: String, handler: PathHandler, authority: Uri = uri) {
+    fun addPathHandler(path: String, handler: PathHandler, authority: Uri = "${uri.scheme}://${uri.authority}".toUri()) {
         pathMatchers.add(PathMatcher(authority, path, false, handler))
     }
 
