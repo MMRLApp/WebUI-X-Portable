@@ -318,23 +318,31 @@ open class HybridWebUI : WebView {
         event: EventListener,
         allowedOriginRules: Set<String>,
     ) {
-        WebViewCompat.addWebMessageListener(
-            this,
-            objectName,
-            setOf("*")
-        ) { view, message, uri, isMainFrame, reply ->
-            try {
-                val newEvent = HybridWebUIEvent(view, message, reply, uri, isMainFrame)
-                event.listen(this, newEvent)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error handling event", e)
+        try {
+            WebViewCompat.addWebMessageListener(
+                this,
+                objectName,
+                setOf("*")
+            ) { view, message, uri, isMainFrame, reply ->
+                try {
+                    val newEvent = HybridWebUIEvent(view, message, reply, uri, isMainFrame)
+                    event.listen(this, newEvent)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error handling event", e)
+                }
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding event listener", e)
         }
     }
 
     @SuppressLint("RequiresFeature")
     fun removeEventListener(objectName: String) {
-        WebViewCompat.removeWebMessageListener(this, objectName)
+        try {
+            WebViewCompat.removeWebMessageListener(this, objectName)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing event listener", e)
+        }
     }
 
     class PathMatcher(
