@@ -305,11 +305,19 @@ open class HybridWebUI : WebView {
         pathMatchers.add(PathMatcher(authority, path, false, handler))
     }
 
+    fun addEventListener(objectName: String, event: EventListener) {
+        addEventListener(objectName, event, setOf("${uri.scheme}://${uri.authority}"))
+    }
+
     /**
      * Event listeners needs to be added before the webpage loads!
      */
     @SuppressLint("RequiresFeature")
-    fun addEventListener(objectName: String, event: EventListener) {
+    fun addEventListener(
+        objectName: String,
+        event: EventListener,
+        allowedOriginRules: Set<String>,
+    ) {
         WebViewCompat.addWebMessageListener(
             this,
             objectName,
