@@ -183,14 +183,32 @@ open class WXActivity : ComponentActivity() {
                             )
                         )
 
-                        if (windowResize && keyboardVisibleNow) {
-                            adjustWebViewHeight(keypadHeight)
-                        } else {
-                            resetWebViewHeight()
-                        }
+                        updateWebViewKeyboardMapping(
+                            keyboardVisibleNow,
+                            windowResize,
+                            keypadHeight
+                        )
                     }
                 }
             }
+        }
+    }
+
+    private fun updateWebViewKeyboardMapping(
+        isVisible: Boolean,
+        isNativeResize: Boolean,
+        height: Int,
+    ) {
+        if (!isVisible) {
+            resetWebViewHeight()
+            removeCssKeyboardHeight()
+            return
+        }
+
+        if (isNativeResize) {
+            adjustWebViewHeight(height)
+        } else {
+            setCssKeyboardHeight(height)
         }
     }
 
@@ -204,6 +222,21 @@ open class WXActivity : ComponentActivity() {
         val params = view?.layoutParams
         params?.height = LinearLayout.LayoutParams.MATCH_PARENT
         view?.layoutParams = params
+    }
+
+
+    fun setCssKeyboardHeight(keypadHeight: Int) {
+        val density = this.resources.displayMetrics.density
+        val cssPixel = (keypadHeight / density).toInt()
+        view?.wx?.runJs(
+            "document.documentElement.style.setProperty('--window-keyboard-height', '${cssPixel}px');",
+        )
+    }
+
+    private fun removeCssKeyboardHeight() {
+        view?.wx?.runJs(
+            "document.documentElement.style.removeProperty('--window-keyboard-height');",
+        )
     }
 
     private fun registerBackEvents() {
