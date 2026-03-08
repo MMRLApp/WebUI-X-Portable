@@ -143,7 +143,10 @@ android {
         "**/*.proto"
     )
 
-    dependenciesInfo.includeInApk = false
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 
     applicationVariants.configureEach {
         outputs.configureEach {
