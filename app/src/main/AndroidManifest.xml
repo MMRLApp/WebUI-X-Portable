@@ -74,6 +74,7 @@
             android:name="${__packageName__}.ui.activity.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
+            android:hardwareAccelerated="true"
             android:exported="true"
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"

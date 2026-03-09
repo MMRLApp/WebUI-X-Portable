@@ -6,11 +6,13 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.util.Log
+import android.view.ViewGroup
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.compose.runtime.mutableStateListOf
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIClient
 import com.dergoogler.mmrl.webui.model.invoke
@@ -64,13 +66,6 @@ open class WXClient : HybridWebUIClient {
         handler.cancel()
     }
 
-    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail): Boolean {
-        mSwipeView.nullply {
-            isRefreshing = false
-        }
-        Log.e(TAG, "Renderer crashed. Did it crash? ${detail.didCrash()}")
-        return true // or false to kill app
-    }
 //
 //    @OptIn(ExperimentalMaterial3Api::class)
 //    override fun onReceivedError(
@@ -110,6 +105,27 @@ open class WXClient : HybridWebUIClient {
 //            }
 //        }
 //    }
+
+    override fun shouldInterceptRequest(
+        view: WebView,
+        request: WebResourceRequest,
+    ): WebResourceResponse? {
+        networkRequests.add(request)
+        return super.shouldInterceptRequest(view, request)
+    }
+
+    // Inside your WebViewClient class
+    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+        Log.e(TAG, "Renderer crashed! Did it exit cleanly? ${detail?.didCrash()}")
+
+        view?.let {
+            val parent = it.parent as? ViewGroup
+            parent?.removeView(it)
+            it.destroy()
+        }
+
+        return true
+    }
 
     override fun onReceivedHttpError(
         view: WebView?,
@@ -159,7 +175,9 @@ open class WXClient : HybridWebUIClient {
         }
     }
 
-    private companion object {
-        const val TAG = "WXClient"
+    companion object {
+        private const val TAG = "WXClient"
+
+        val networkRequests = mutableStateListOf<WebResourceRequest>()
     }
 }

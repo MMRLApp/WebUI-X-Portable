@@ -6,7 +6,7 @@ import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.WebView
-import androidx.activity.ComponentActivity
+import androidx.compose.runtime.mutableStateListOf
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIChromeClient
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.PromptData
@@ -16,11 +16,12 @@ import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 
 open class WXChromeClient(
-    activity: ComponentActivity,
     private val options: WebUIOptions,
 ) : HybridWebUIChromeClient() {
-    private companion object {
-        const val TAG = "WXChromeClient"
+    companion object {
+        val consoleLogs = mutableStateListOf<ConsoleMessage>()
+
+        private const val TAG = "WXChromeClient"
     }
 
     override fun onJsAlert(
@@ -105,6 +106,8 @@ open class WXChromeClient(
     }
 
     override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+        consoleLogs.add(consoleMessage)
+
         val message = """
             ${consoleMessage.message()}
             Source: ${consoleMessage.sourceId()}

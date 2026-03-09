@@ -1,7 +1,15 @@
 package com.dergoogler.mmrl.wx.ui.activity.webui
 
+import android.annotation.SuppressLint
 import android.os.Build
+import android.util.Log
+import androidx.activity.compose.setContent
 import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.viewinterop.AndroidView
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
@@ -13,6 +21,8 @@ import com.dergoogler.mmrl.webui.view.WebUIXView
 import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
+import com.dergoogler.mmrl.wx.ui.component.DraggableFab
+import com.dergoogler.mmrl.wx.ui.component.devtools.DevTools
 import com.dergoogler.mmrl.wx.util.initPlatform
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +34,8 @@ import javax.inject.Inject
 class WebUIActivity : WXActivity() {
     @Inject
     internal lateinit var userPreferencesRepository: UserPreferencesRepository
+
+    private var openDevTools by mutableStateOf(false)
 
     private val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
 
@@ -76,6 +88,7 @@ class WebUIActivity : WXActivity() {
         init(scope, colorScheme)
     }
 
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     private suspend fun init(scope: CoroutineScope, colorScheme: ColorScheme) {
         val modId =
             this@WebUIActivity.modId ?: throw BrickException("modId cannot be null or empty")
@@ -104,6 +117,7 @@ class WebUIActivity : WXActivity() {
                 addJavascriptInterface<KernelSUInterface>()
 
                 val ready = scope.getReady()
+                Log.d("GAY", ready.toString())
                 if (ready.await()) {
                     wx.loadDomain()
                 }
@@ -117,6 +131,24 @@ class WebUIActivity : WXActivity() {
             }
         }
 
-        setContentView(view)
+        val v = view
+        if (v == null) {
+            val loading = createLoadingRenderer(options.colorScheme)
+            setContentView(loading)
+            return
+        }
+
+        setContent {
+            AndroidView({ v })
+
+            MaterialTheme(colorScheme = options.colorScheme) {
+                DraggableFab(onClick = { openDevTools = true })
+                DevTools(
+                    webview = v.wx,
+                    isOpen = openDevTools,
+                    onDismissRequest = { openDevTools = false }
+                )
+            }
+        }
     }
 }

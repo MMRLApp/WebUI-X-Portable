@@ -5,9 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
-import android.view.ViewGroup
 import android.view.WindowInsetsController
-import androidx.activity.ComponentActivity
 import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
@@ -33,7 +31,6 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.util.lua.LuaEngine
-import party.iroiro.luajava.LuaException
 
 @SuppressLint("SetJavaScriptEnabled")
 open class WXView : WebUIView {
@@ -77,10 +74,10 @@ open class WXView : WebUIView {
                     windowInsetsController?.systemBarsBehavior =
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
-                webChromeClient = WXChromeClient(this@apply as ComponentActivity, options)
+                webChromeClient = WXChromeClient(options)
             }
         } else {
-            Log.e("WXView", "WXActivity not found")
+            Log.e(TAG, "WXActivity not found")
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -94,12 +91,6 @@ open class WXView : WebUIView {
                 }
                 this@apply.userAgentString = this@options.userAgentString
             }
-        }
-
-        try {
-            luaEngine.run()
-        } catch (e: LuaException) {
-            Log.e(TAG, "Error running Lua", e)
         }
 
         addPathHandler(
@@ -120,27 +111,23 @@ open class WXView : WebUIView {
 
         addJavascriptInterfaces()
 
-        onInsets { view, insets ->
-            view.addPathHandler("/mmrl/", InternalPathHandler(options, insets))
-            view.addPathHandler("/internal/", InternalPathHandler(options, insets))
-            view.addPathHandler("/", WebrootPathHandler(options, insets))
+        addPathHandler("/mmrl/", InternalPathHandler(options, insets))
+        addPathHandler("/internal/", InternalPathHandler(options, insets))
+        addPathHandler("/", WebrootPathHandler(options, insets))
 
-            postWXEvent(
-                type = WXEvent.WX_ON_INSETS,
-                data = insets.toEventData()
-            )
-        }
+        Log.d(TAG, "Insets: $insets")
+
+        postWXEvent(
+            type = WXEvent.WX_ON_INSETS,
+            data = insets.toEventData()
+        )
+
     }
 
     private fun addJavascriptInterfaces() {
-        Log.d(TAG, luaEngine.toString())
-
         addJavascriptInterface<FileInputInterface>()
         addJavascriptInterface<FileOutputInterface>()
-        addJavascriptInterface<ApplicationInterface>(
-            arrayOf(luaEngine),
-            arrayOf(LuaEngine::class.java)
-        )
+        addJavascriptInterface<ApplicationInterface>()
         addJavascriptInterface<FileInterface>()
         addJavascriptInterface<ModuleInterface>()
         addJavascriptInterface<UserManagerInterface>()
@@ -158,7 +145,8 @@ open class WXView : WebUIView {
     }
 
     override fun destroy() {
-        super.destroy()
+        WXClient.networkRequests.clear()
+        WXChromeClient.consoleLogs.clear()
 
         try {
             for (inst in interfaces) {
@@ -168,9 +156,7 @@ open class WXView : WebUIView {
             Log.e(TAG, "Error unregistering interfaces", e)
         }
 
-        (parent as? ViewGroup)?.removeView(this)
-        removeAllViews()
-
+        super.destroy()
         Log.d(TAG, "WebUI X cleaned up")
     }
 

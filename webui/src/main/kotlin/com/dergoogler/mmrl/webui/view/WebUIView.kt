@@ -241,8 +241,8 @@ open class WebUIView : HybridWebUI {
         initJob?.cancel()
         removeAllJavaScriptInterfaces()
         isDestroyed = true
-        super.destroy()
         Log.d(TAG, "WebUIView destroyed")
+        super.destroy()
     }
 
     open fun loadDomain() {

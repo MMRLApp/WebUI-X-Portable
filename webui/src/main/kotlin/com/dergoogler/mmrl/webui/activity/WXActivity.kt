@@ -7,9 +7,12 @@ import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Process
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -311,9 +314,20 @@ open class WXActivity : ComponentActivity() {
     @CallSuper
     override fun onDestroy() {
         view.nullply {
-            wx.onActivityDestroyInterfaces()
+            wx.stopLoading()
+            wx.loadUrl("about:blank")
+            wx.webViewClient = WebViewClient()
+            wx.webChromeClient = WebChromeClient()
+            (wx.parent as? ViewGroup)?.removeView(view)
+            wx.post {
+                try {
+                    wx.removeAllViews()
+                    wx.destroy()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Post-destroy crash prevented", e)
+                }
+            }
         }
-
         super.onDestroy()
     }
 

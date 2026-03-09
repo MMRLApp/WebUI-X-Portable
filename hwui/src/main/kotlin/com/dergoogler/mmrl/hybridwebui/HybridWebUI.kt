@@ -26,8 +26,6 @@ import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.filePathCallback
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.insetsCache
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.onInsetsEvent
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pathMatchers
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pendingSaveData
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.saveFileLauncher
@@ -67,8 +65,6 @@ open class HybridWebUI : WebView {
             RelativeLayout.LayoutParams.MATCH_PARENT
         )
 
-        setupInsets()
-
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
         settings.allowFileAccess = false
@@ -106,44 +102,18 @@ open class HybridWebUI : WebView {
         }
     }
 
-    val areInsetsAvailable get() = insetsCache.size() != 0 && insetsCache.get("insets") is HybridWebUIInsets
-
-    fun interface OnInsetsEvent {
-        fun onApply(view: HybridWebUI, insets: HybridWebUIInsets)
-    }
-
-    fun onInsets(event: OnInsetsEvent) {
-        onInsetsEvent = event
-        // if setup() already ran earlier, we need to attach the listener now
-        setupInsets()
-    }
-
-    protected fun setupInsets() {
-        // if no listener yet, nothing to do (this can happen during construction)
-        if (onInsetsEvent == null) {
-            return
+    private var _insets: HybridWebUIInsets? = null
+        get() {
+            if (field != null) return field
+            val rootInsets = ViewCompat.getRootWindowInsets(this)
+                ?.getInsets(WindowInsetsCompat.Type.systemBars())
+                ?: return null
+            field = rootInsets.toWebUIInsets(context.resources.displayMetrics.density)
+            return field
         }
 
-        // Check if the insets cache is not empty to retrieve a cached value
-        if (insetsCache.size() != 0) {
-            val value = insetsCache.get("insets") ?: HybridWebUIInsets.Empty
-            onInsetsEvent?.onApply(this@HybridWebUI, value)
-            return
-        }
-
-        onInsetsEvent?.let {
-            ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
-                val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                val webUiInsets =
-                    inset.toWebUIInsets(context.resources.displayMetrics.density).also { sets ->
-                        insetsCache.put("insets", sets)
-                    }
-
-                it.onApply(this@HybridWebUI, webUiInsets)
-                WindowInsetsCompat.CONSUMED
-            }
-        }
-    }
+    val areInsetsAvailable get() = _insets != null
+    val insets get() = _insets ?: HybridWebUIInsets.Empty
 
     fun loadPage() {
         super.loadUrl(uri.toString())
@@ -301,7 +271,11 @@ open class HybridWebUI : WebView {
             )
     }
 
-    fun addPathHandler(path: String, handler: PathHandler, authority: Uri = "${uri.scheme}://${uri.authority}".toUri()) {
+    fun addPathHandler(
+        path: String,
+        handler: PathHandler,
+        authority: Uri = "${uri.scheme}://${uri.authority}".toUri(),
+    ) {
         pathMatchers.add(PathMatcher(authority, path, false, handler))
     }
 
@@ -562,5 +536,10 @@ open class HybridWebUI : WebView {
                 }
             }
         }
+    }
+
+    override fun destroy() {
+        pathMatchers.clear()
+        super.destroy()
     }
 }

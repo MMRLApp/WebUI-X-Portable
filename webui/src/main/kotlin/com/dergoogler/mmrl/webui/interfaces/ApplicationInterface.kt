@@ -11,7 +11,6 @@ import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.exit
 import com.dergoogler.mmrl.webui.model.App
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfig.Companion.toValueMap
 import com.dergoogler.mmrl.webui.moshi
-import com.dergoogler.mmrl.webui.util.lua.LuaEngine
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +18,6 @@ import kotlinx.coroutines.launch
 @Keep
 class ApplicationInterface(
     wxOptions: WXOptions,
-    private val luaEngine: LuaEngine,
 ) : WXInterface(wxOptions) {
     override var name: String = "webui"
     override var tag: String = "ApplicationInterface"
@@ -28,16 +26,6 @@ class ApplicationInterface(
     fun exit() {
         withActivity {
             exit(options)
-        }
-    }
-
-    @JavascriptInterface
-    fun lua(script: String): Any? {
-        try {
-            return luaEngine.evalPrimitive(script)
-        } catch (e: Exception) {
-            console.error(e)
-            return null
         }
     }
 
