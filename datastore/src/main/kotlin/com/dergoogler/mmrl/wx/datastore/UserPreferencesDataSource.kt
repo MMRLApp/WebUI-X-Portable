@@ -87,6 +87,14 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setEnableDevTools(value: Boolean) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                enableDevTools = value
+            )
+        }
+    }
+
     suspend fun setEnableAutoOpenEruda(value: Boolean) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
             it.copy(

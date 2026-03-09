@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.takeTrue
+import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.listItem.dsl.List
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Item
@@ -37,6 +38,7 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.TextEditDialogIte
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.DialogSupportingText
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.End
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Labels
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.LearnMore
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.component.scaffold.Scaffold
@@ -112,6 +114,17 @@ fun DeveloperScreen() {
                 ) {
                     Title(R.string.settings_security_inject_eruda)
                     Description(R.string.settings_security_inject_eruda_desc)
+                }
+
+                DeveloperSwitch(
+                    checked = userPreferences.enableDevTools,
+                    onChange = viewModel::setEnableDevTools
+                ) {
+                    Title(R.string.settings_security_enable_devtools)
+                    Description(R.string.settings_security_enable_devtools_desc)
+                    Labels {
+                        LabelItem(stringResource(R.string.beta))
+                    }
                 }
 
                 DeveloperSwitch(

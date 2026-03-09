@@ -59,7 +59,7 @@ data class UserPreferences(
     )
 
     @OptIn(ExperimentalContracts::class)
-    fun developerMode(
+    inline fun developerMode(
         also: UserPreferences.() -> Boolean,
     ): Boolean {
         contract {

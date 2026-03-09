@@ -36,6 +36,9 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setEnableEruda(value: Boolean) =
         userPreferencesDataSource.setEnableEruda(value)
 
+    suspend fun setEnableDevTools(value: Boolean) =
+        userPreferencesDataSource.setEnableDevTools(value)
+
     suspend fun setEnableAutoOpenEruda(value: Boolean) =
         userPreferencesDataSource.setEnableAutoOpenEruda(value)
 

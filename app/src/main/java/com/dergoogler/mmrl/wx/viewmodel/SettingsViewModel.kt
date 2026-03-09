@@ -78,6 +78,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setEnableDevTools(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setEnableDevTools(value)
+        }
+    }
+
     fun setEnableAutoOpenEruda(value: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setEnableAutoOpenEruda(value)

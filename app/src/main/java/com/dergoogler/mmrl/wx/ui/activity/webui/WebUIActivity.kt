@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,6 +21,7 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WebUIXView
 import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.component.devtools.DevTools
@@ -37,7 +39,7 @@ class WebUIActivity : WXActivity() {
 
     private var openDevTools by mutableStateOf(false)
 
-    private val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
+    val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
 
     private val userAgent
         get(): String {
@@ -86,6 +88,10 @@ class WebUIActivity : WXActivity() {
         }
 
         init(scope, colorScheme)
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -139,15 +145,19 @@ class WebUIActivity : WXActivity() {
         }
 
         setContent {
+            val prefs by userPreferencesRepository.data.collectAsState(UserPreferences())
+
             AndroidView({ v })
 
-            MaterialTheme(colorScheme = options.colorScheme) {
-                DraggableFab(onClick = { openDevTools = true })
-                DevTools(
-                    webview = v.wx,
-                    isOpen = openDevTools,
-                    onDismissRequest = { openDevTools = false }
-                )
+            if (prefs.developerMode && prefs.enableDevTools) {
+                MaterialTheme(colorScheme = options.colorScheme) {
+                    DraggableFab(onClick = { openDevTools = true })
+                    DevTools(
+                        webview = v.wx,
+                        isOpen = openDevTools,
+                        onDismissRequest = { openDevTools = false }
+                    )
+                }
             }
         }
     }
