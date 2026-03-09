@@ -31,8 +31,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.dergoogler.mmrl.wx.R
 import kotlinx.coroutines.launch
 
 @Composable
@@ -44,9 +46,9 @@ fun ViewTab(
 
     val pages = remember {
         listOf(
-            "DOM",
-            "Console",
-            "Network"
+            R.string.dom,
+            R.string.console,
+            R.string.network
         )
     }
 
@@ -80,7 +82,7 @@ fun ViewTab(
                         unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     ) {
                         Text(
-                            text = text,
+                            text = stringResource(text),
                             style = MaterialTheme.typography.labelLarge,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

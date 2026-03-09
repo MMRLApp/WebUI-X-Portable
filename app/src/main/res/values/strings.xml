@@ -134,4 +134,7 @@
     <string name="settings_force_kill_webui_process_desc">Immediately terminates the currently running WebUI X process. [bold]This does not affect KSU WebUI.[/bold]</string>
     <string name="webui_additional_config">Additional Config</string>
     <string name="webui_additional_config_desc">Optional configurations defined by the module developer.</string>
+    <string name="dom">DOM</string>
+    <string name="console">Console</string>
+    <string name="network">Network</string>
 </resources>

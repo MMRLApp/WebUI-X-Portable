@@ -38,6 +38,7 @@ data class UserPreferences(
     @ProtoNumber(38) val enableAutoOpenEruda: Boolean = false,
     @ProtoNumber(39) val forceKillWebUIProcess: Boolean = false,
     @ProtoNumber(40) val disableGlobalExitConfirm: Boolean = false,
+    @ProtoNumber(41) val enableDevTools: Boolean = false,
 ) {
     fun isDarkMode() = when (darkMode) {
         DarkMode.AlwaysOff -> false
