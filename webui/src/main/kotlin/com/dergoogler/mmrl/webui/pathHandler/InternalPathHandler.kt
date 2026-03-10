@@ -5,6 +5,7 @@ import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIResourceRequest
+import com.dergoogler.mmrl.webui.devtools.CONSOLE_OVERRIDE_JS
 import com.dergoogler.mmrl.webui.model.WebColors
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import java.io.IOException
@@ -46,6 +47,10 @@ class InternalPathHandler(
 
             if (path.matches(Regex("colors\\.css"))) {
                 return webColors.allCssColors.asStyleResponse()
+            }
+
+            if (path.matches(Regex("console\\.js"))) {
+                return CONSOLE_OVERRIDE_JS.asScriptResponse()
             }
 
             return notFoundResponse

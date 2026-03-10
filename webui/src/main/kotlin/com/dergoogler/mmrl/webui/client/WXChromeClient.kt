@@ -13,13 +13,15 @@ import com.dergoogler.mmrl.ui.component.dialog.PromptData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.dialog.prompt
 import com.dergoogler.mmrl.webui.R
+import com.dergoogler.mmrl.webui.devtools.RichLogEntry
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 
 open class WXChromeClient(
     private val options: WebUIOptions,
 ) : HybridWebUIChromeClient() {
     companion object {
-        val consoleLogs = mutableStateListOf<ConsoleMessage>()
+        internal val consoleLogs = mutableStateListOf<ConsoleMessage>()
+        internal val richLogs = mutableStateListOf<RichLogEntry>()
 
         private const val TAG = "WXChromeClient"
     }

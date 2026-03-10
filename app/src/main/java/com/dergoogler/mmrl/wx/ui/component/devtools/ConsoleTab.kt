@@ -55,56 +55,38 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dergoogler.mmrl.webui.client.WXChromeClient
+import com.dergoogler.mmrl.webui.devtools.PrimitiveKind
+import com.dergoogler.mmrl.webui.devtools.ResultNode
+import com.dergoogler.mmrl.webui.devtools.RichLogEntry
+import com.dergoogler.mmrl.webui.devtools.wrappedResult
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.wx.R
 import org.json.JSONObject
 
-// ---------------------------------------------------------------------------
-// Unified log entry model
-// ---------------------------------------------------------------------------
-
 private sealed class LogEntry {
-    data class WebMessage(val msg: ConsoleMessage) : LogEntry()
-    data class EvalInput(val code: String) : LogEntry()
+    abstract val timestamp: Long
+
+    data class WebMessage(val entry: RichLogEntry) : LogEntry() {
+        override val timestamp get() = entry.timestamp
+    }
+
+    data class EvalInput(
+        val code: String,
+        override val timestamp: Long = System.currentTimeMillis(),
+    ) : LogEntry()
+
     sealed class EvalResult : LogEntry() {
-        data class Parsed(val root: ResultNode) : EvalResult()
-        data class Error(val message: String) : EvalResult()
+        data class Parsed(
+            val root: ResultNode,
+            override val timestamp: Long = System.currentTimeMillis(),
+        ) : EvalResult()
+
+        data class Error(
+            val message: String,
+            override val timestamp: Long = System.currentTimeMillis(),
+        ) : EvalResult()
     }
 }
-
-// ---------------------------------------------------------------------------
-// Result tree model
-// ---------------------------------------------------------------------------
-
-private sealed class ResultNode {
-    abstract val key: String?
-    abstract val depth: Int
-
-    data class Primitive(
-        override val key: String?,
-        val value: String,
-        val kind: PrimitiveKind,
-        override val depth: Int,
-    ) : ResultNode()
-
-    data class Expandable(
-        override val key: String?,
-        val label: String,
-        val closeToken: String,
-        val children: List<ResultNode>,
-        override val depth: Int,
-        val id: String,
-    ) : ResultNode()
-}
-
-private enum class PrimitiveKind {
-    STRING, NUMBER, BOOLEAN, NULL_UNDEFINED, FUNCTION, OTHER
-}
-
-// ---------------------------------------------------------------------------
-// Flat row model for rendering
-// ---------------------------------------------------------------------------
 
 private sealed class FlatRow {
     data class PrimitiveRow(val node: ResultNode.Primitive) : FlatRow()
@@ -112,13 +94,9 @@ private sealed class FlatRow {
     data class CloseRow(val token: String, val depth: Int, val parentId: String) : FlatRow()
 }
 
-// ---------------------------------------------------------------------------
-// ConsoleTab
-// ---------------------------------------------------------------------------
-
 @Composable
 fun ConsoleTab(webview: WXView) {
-    val console = WXChromeClient.consoleLogs
+    val richLogs = webview.richLogs
     val evalEntries = remember { mutableStateListOf<LogEntry>() }
     val listState = rememberLazyListState()
 
@@ -126,21 +104,26 @@ fun ConsoleTab(webview: WXView) {
     var searchQuery by remember { mutableStateOf("") }
     var jsInput by remember { mutableStateOf("") }
 
-    val allEntries: List<LogEntry> = remember(console.size, evalEntries.size) {
-        console.map { LogEntry.WebMessage(it) } + evalEntries
+    val allEntries: List<LogEntry> = remember(richLogs.size, evalEntries.size) {
+        (richLogs.map { LogEntry.WebMessage(it) } + evalEntries)
+            .sortedBy { it.timestamp }
     }
 
     val filtered: List<LogEntry> = remember(allEntries.size, filterLevel, searchQuery) {
         allEntries.filter { entry ->
             when (entry) {
                 is LogEntry.WebMessage -> {
-                    val levelMatch = filterLevel == null || entry.msg.messageLevel() == filterLevel
-                    val queryMatch = searchQuery.isBlank() || entry.msg.message()
-                        .contains(searchQuery, ignoreCase = true)
+                    val levelMatch = filterLevel == null || entry.entry.level == filterLevel
+                    val queryMatch = searchQuery.isBlank() || entry.entry.args.any { node ->
+                        node is ResultNode.Primitive &&
+                                node.value.contains(searchQuery, ignoreCase = true)
+                    }
                     levelMatch && queryMatch
                 }
+
                 is LogEntry.EvalInput ->
                     searchQuery.isBlank() || entry.code.contains(searchQuery, ignoreCase = true)
+
                 is LogEntry.EvalResult.Parsed -> true
                 is LogEntry.EvalResult.Error ->
                     searchQuery.isBlank() || entry.message.contains(searchQuery, ignoreCase = true)
@@ -148,11 +131,11 @@ fun ConsoleTab(webview: WXView) {
         }
     }
 
-    val errorCount = remember(console.size) {
-        console.count { it.messageLevel() == ConsoleMessage.MessageLevel.ERROR }
+    val errorCount = remember(richLogs.size) {
+        richLogs.count { it.level == ConsoleMessage.MessageLevel.ERROR }
     }
-    val warnCount = remember(console.size) {
-        console.count { it.messageLevel() == ConsoleMessage.MessageLevel.WARNING }
+    val warnCount = remember(richLogs.size) {
+        richLogs.count { it.level == ConsoleMessage.MessageLevel.WARNING }
     }
 
     LaunchedEffect(filtered.size) {
@@ -168,7 +151,7 @@ fun ConsoleTab(webview: WXView) {
             errorCount = errorCount,
             warnCount = warnCount,
             onClear = {
-                WXChromeClient.consoleLogs.clear()
+                richLogs.clear()
                 evalEntries.clear()
             }
         )
@@ -193,7 +176,7 @@ fun ConsoleTab(webview: WXView) {
             LazyColumn(state = listState, modifier = Modifier.weight(1f)) {
                 itemsIndexed(filtered) { _, entry ->
                     when (entry) {
-                        is LogEntry.WebMessage -> ConsoleRow(msg = entry.msg)
+                        is LogEntry.WebMessage -> ConsoleRow(entry = entry.entry)
                         is LogEntry.EvalInput -> EvalInputRow(code = entry.code)
                         is LogEntry.EvalResult.Error -> EvalErrorRow(message = entry.message)
                         is LogEntry.EvalResult.Parsed -> EvalTreeRow(root = entry.root)
@@ -222,87 +205,17 @@ fun ConsoleTab(webview: WXView) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// JS eval
-// ---------------------------------------------------------------------------
-
-private var nodeIdCounter = 0
-
 private fun submitJs(code: String, webview: WXView, evalEntries: MutableList<LogEntry>) {
-    evalEntries.add(LogEntry.EvalInput(code))
+    val inputTime = System.currentTimeMillis()
+    evalEntries.add(LogEntry.EvalInput(code, timestamp = inputTime))
 
-    val wrapped = """
-        (function() {
-            function formatValue(val, depth) {
-                if (depth === undefined) depth = 0;
-                if (val === undefined) return { type:'primitive', kind:'undefined', value:'undefined' };
-                if (val === null) return { type:'primitive', kind:'null', value:'null' };
-                if (typeof val === 'boolean') return { type:'primitive', kind:'boolean', value:String(val) };
-                if (typeof val === 'number') return { type:'primitive', kind:'number', value:String(val) };
-                if (typeof val === 'string') return { type:'primitive', kind:'string', value:val };
-                if (typeof val === 'symbol') return { type:'primitive', kind:'other', value:val.toString() };
-                if (typeof val === 'function') {
-                    var src = Function.prototype.toString.call(val);
-                    var sig = src.split('\n')[0].replace(/\{.*/, '').trim();
-                    return { type:'primitive', kind:'function', value:'f ' + sig };
-                }
-                if (Array.isArray(val)) {
-                    if (depth >= 3) return { type:'primitive', kind:'other', value:'[Array(' + val.length + ')]' };
-                    var items = [];
-                    for (var i = 0; i < Math.min(val.length, 50); i++) {
-                        try {
-                            var child = formatValue(val[i], depth + 1);
-                            child.key = String(i);
-                            items.push(child);
-                        } catch(e) {
-                            items.push({ type:'primitive', kind:'other', value:'?', key:String(i) });
-                        }
-                    }
-                    if (val.length > 50) items.push({ type:'primitive', kind:'other', value:'... ' + (val.length - 50) + ' more', key:'...' });
-                    return { type:'expandable', label:'Array(' + val.length + ')', closeToken:']', children:items };
-                }
-                if (typeof val === 'object') {
-                    if (depth >= 3) return { type:'primitive', kind:'other', value:'{...}' };
-                    var prefix = '';
-                    if (val.constructor && val.constructor.name && val.constructor.name !== 'Object') {
-                        prefix = val.constructor.name;
-                    }
-                    var keys = [];
-                    try { keys = Object.getOwnPropertyNames(val).filter(function(k){ return k !== '__proto__'; }); } catch(e) {}
-                    if (keys.length === 0) try { keys = Object.keys(val); } catch(e) {}
-                    var pairs = [];
-                    var shown = 0;
-                    for (var i = 0; i < keys.length && shown < 30; i++) {
-                        var k = keys[i];
-                        try {
-                            var child = formatValue(val[k], depth + 1);
-                            child.key = k;
-                            pairs.push(child);
-                            shown++;
-                        } catch(e) {
-                            pairs.push({ type:'primitive', kind:'other', value:'[getter]', key:k });
-                            shown++;
-                        }
-                    }
-                    if (keys.length > 30) pairs.push({ type:'primitive', kind:'other', value:'... ' + (keys.length - 30) + ' more keys', key:'...' });
-                    return { type:'expandable', label:prefix, closeToken:'}', children:pairs };
-                }
-                return { type:'primitive', kind:'other', value:String(val) };
-            }
-            try {
-                var __r = eval(${escapeJsString(code)});
-                return JSON.stringify({ ok:true, value:formatValue(__r) });
-            } catch(e) {
-                return JSON.stringify({ ok:false, value:e.toString() });
-            }
-        })()
-    """.trimIndent()
-
-    webview.evaluateJavascript(wrapped) { raw ->
+    webview.evaluateJavascript(wrappedResult((code))) { raw ->
+        val resultTime = System.currentTimeMillis()
         if (raw == null || raw == "null") {
             evalEntries.add(
                 LogEntry.EvalResult.Parsed(
-                    ResultNode.Primitive(null, "null", PrimitiveKind.NULL_UNDEFINED, 0)
+                    root = ResultNode.Primitive(null, "null", PrimitiveKind.NULL_UNDEFINED, 0),
+                    timestamp = resultTime
                 )
             )
             return@evaluateJavascript
@@ -312,50 +225,23 @@ private fun submitJs(code: String, webview: WXView, evalEntries: MutableList<Log
             val inner = JSONObject(outer.getString("v"))
             val ok = inner.getBoolean("ok")
             if (!ok) {
-                evalEntries.add(LogEntry.EvalResult.Error(inner.getString("value")))
+                evalEntries.add(
+                    LogEntry.EvalResult.Error(
+                        message = inner.getString("value"),
+                        timestamp = resultTime
+                    )
+                )
                 return@evaluateJavascript
             }
-            val tree = parseResultNode(inner.getJSONObject("value"), key = null, depth = 0)
-            evalEntries.add(LogEntry.EvalResult.Parsed(tree))
+            val tree = ResultNode.parse(inner.getJSONObject("value"), key = null, depth = 0)
+            evalEntries.add(LogEntry.EvalResult.Parsed(root = tree, timestamp = resultTime))
         } catch (e: Exception) {
-            evalEntries.add(LogEntry.EvalResult.Error("Parse error: ${e.message}"))
-        }
-    }
-}
-
-private fun parseResultNode(obj: JSONObject, key: String?, depth: Int): ResultNode {
-    return when (obj.getString("type")) {
-        "expandable" -> {
-            val label = obj.optString("label", "")
-            val closeToken = obj.optString("closeToken", "}")
-            val childArray = obj.optJSONArray("children")
-            val children = mutableListOf<ResultNode>()
-            if (childArray != null) {
-                for (i in 0 until childArray.length()) {
-                    val childObj = childArray.getJSONObject(i)
-                    val childKey = if (childObj.has("key")) childObj.getString("key") else null
-                    children.add(parseResultNode(childObj, childKey, depth + 1))
-                }
-            }
-            ResultNode.Expandable(
-                key = key,
-                label = label,
-                closeToken = closeToken,
-                children = children,
-                depth = depth,
-                id = "node_${nodeIdCounter++}"
+            evalEntries.add(
+                LogEntry.EvalResult.Error(
+                    message = "Parse error: ${e.message}",
+                    timestamp = resultTime
+                )
             )
-        }
-        else -> {
-            val kind = when (obj.optString("kind")) {
-                "string" -> PrimitiveKind.STRING
-                "number" -> PrimitiveKind.NUMBER
-                "boolean" -> PrimitiveKind.BOOLEAN
-                "null", "undefined" -> PrimitiveKind.NULL_UNDEFINED
-                "function" -> PrimitiveKind.FUNCTION
-                else -> PrimitiveKind.OTHER
-            }
-            ResultNode.Primitive(key, obj.optString("value", ""), kind, depth)
         }
     }
 }
@@ -369,9 +255,92 @@ private fun escapeJsString(code: String): String {
     return "\"$escaped\""
 }
 
-// ---------------------------------------------------------------------------
-// Eval rows
-// ---------------------------------------------------------------------------
+@Composable
+private fun ConsoleRow(entry: RichLogEntry) {
+    val colors = consoleColors()
+    val rowStyle = when (entry.level) {
+        ConsoleMessage.MessageLevel.ERROR -> ConsoleRowStyle(
+            colors.error.copy(alpha = 0.08f), colors.error,
+            colors.error.copy(alpha = 0.7f), R.drawable.exclamation_circle
+        )
+
+        ConsoleMessage.MessageLevel.WARNING -> ConsoleRowStyle(
+            colors.warn.copy(alpha = 0.08f), colors.warn,
+            colors.warn.copy(alpha = 0.7f), R.drawable.alert_triangle_filled
+        )
+
+        ConsoleMessage.MessageLevel.TIP -> ConsoleRowStyle(
+            colors.tip.copy(alpha = 0.06f), colors.tip,
+            colors.tip.copy(alpha = 0.6f), R.drawable.bulb
+        )
+
+        ConsoleMessage.MessageLevel.DEBUG -> ConsoleRowStyle(
+            Color.Transparent, colors.debug,
+            Color.Transparent, R.drawable.bug
+        )
+
+        else -> ConsoleRowStyle(
+            Color.Transparent, MaterialTheme.colorScheme.onSurface,
+            Color.Transparent, null
+        )
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(rowStyle.bg)
+            .drawLeftBorder(rowStyle.borderColor, 2.dp)
+            .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        rowStyle.icon?.let {
+            Icon(
+                painter = painterResource(it),
+                contentDescription = entry.level.name,
+                modifier = Modifier
+                    .size(14.dp)
+                    .padding(top = 2.dp),
+                tint = rowStyle.textColor.copy(alpha = 0.8f)
+            )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            entry.args.forEach { node ->
+                when (node) {
+                    is ResultNode.Primitive -> {
+                        Text(
+                            text = node.value,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace
+                            ),
+                            color = rowStyle.textColor,
+                            softWrap = true
+                        )
+                    }
+
+                    is ResultNode.Expandable -> {
+                        EvalTreeRow(root = node)
+                    }
+                }
+            }
+
+            if (entry.source.isNotBlank()) {
+                Text(
+                    text = "${entry.source.substringAfterLast("/")}:${entry.line}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace
+                    ),
+                    color = rowStyle.textColor.copy(alpha = 0.45f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun EvalInputRow(code: String) {
@@ -437,18 +406,14 @@ private fun EvalErrorRow(message: String) {
 }
 
 @Composable
-private fun EvalTreeRow(root: ResultNode) {
+internal fun EvalTreeRow(root: ResultNode) {
     val collapsedIds = remember { mutableStateListOf<String>() }
 
     val rows = remember(root, collapsedIds.toList()) {
         buildList { flattenNode(root, this, collapsedIds) }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.03f))
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         rows.forEach { row ->
             EvalNodeRow(
                 node = row,
@@ -486,7 +451,6 @@ private fun EvalNodeRow(
     onToggle: (String) -> Unit,
 ) {
     val indentPerLevel = 12.dp
-
     val stringColor = Color(0xFF22C55E)
     val numberColor = Color(0xFF60A5FA)
     val boolColor = Color(0xFFF59E0B)
@@ -512,7 +476,12 @@ private fun EvalNodeRow(
                 Text(
                     text = buildAnnotatedString {
                         if (p.key != null) {
-                            withStyle(SpanStyle(color = keyColor, fontFamily = FontFamily.Monospace)) {
+                            withStyle(
+                                SpanStyle(
+                                    color = keyColor,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            ) {
                                 append(p.key)
                             }
                             withStyle(SpanStyle(color = punctColor)) { append(": ") }
@@ -527,7 +496,12 @@ private fun EvalNodeRow(
                         }
                         val displayValue = if (p.kind == PrimitiveKind.STRING && p.key != null)
                             "\"${p.value}\"" else p.value
-                        withStyle(SpanStyle(color = valueColor, fontFamily = FontFamily.Monospace)) {
+                        withStyle(
+                            SpanStyle(
+                                color = valueColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        ) {
                             append(displayValue)
                         }
                     },
@@ -557,7 +531,8 @@ private fun EvalNodeRow(
             ) {
                 Icon(
                     painter = painterResource(
-                        if (node.isCollapsed) R.drawable.chevron_right else R.drawable.chevron_down
+                        if (node.isCollapsed) R.drawable.chevron_right
+                        else R.drawable.chevron_down
                     ),
                     contentDescription = null,
                     modifier = Modifier.size(10.dp),
@@ -566,13 +541,23 @@ private fun EvalNodeRow(
                 Text(
                     text = buildAnnotatedString {
                         if (e.key != null) {
-                            withStyle(SpanStyle(color = keyColor, fontFamily = FontFamily.Monospace)) {
+                            withStyle(
+                                SpanStyle(
+                                    color = keyColor,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            ) {
                                 append(e.key)
                             }
                             withStyle(SpanStyle(color = punctColor)) { append(": ") }
                         }
                         if (e.label.isNotEmpty()) {
-                            withStyle(SpanStyle(color = labelColor, fontFamily = FontFamily.Monospace)) {
+                            withStyle(
+                                SpanStyle(
+                                    color = labelColor,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            ) {
                                 append(e.label)
                             }
                             append(" ")
@@ -613,10 +598,6 @@ private fun EvalNodeRow(
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Toolbar
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun ConsoleToolbar(
@@ -684,46 +665,91 @@ private fun ConsoleToolbar(
         VerticalDivider(modifier = Modifier.height(16.dp), color = dividerColor)
 
         LevelFilterChip(
-            icon = { Icon(painterResource(R.drawable.exclamation_circle), null, modifier = Modifier.size(13.dp)) },
+            icon = {
+                Icon(
+                    painterResource(R.drawable.exclamation_circle),
+                    null,
+                    modifier = Modifier.size(13.dp)
+                )
+            },
             label = if (errorCount > 0) "$errorCount" else null,
             selected = filterLevel == ConsoleMessage.MessageLevel.ERROR,
             selectedColor = colors.error,
-            onClick = { onFilterChange(if (filterLevel == ConsoleMessage.MessageLevel.ERROR) null else ConsoleMessage.MessageLevel.ERROR) }
+            onClick = {
+                onFilterChange(
+                    if (filterLevel == ConsoleMessage.MessageLevel.ERROR) null
+                    else ConsoleMessage.MessageLevel.ERROR
+                )
+            }
         )
         LevelFilterChip(
-            icon = { Icon(painterResource(R.drawable.alert_triangle_filled), null, modifier = Modifier.size(13.dp)) },
+            icon = {
+                Icon(
+                    painterResource(R.drawable.alert_triangle_filled),
+                    null,
+                    modifier = Modifier.size(13.dp)
+                )
+            },
             label = if (warnCount > 0) "$warnCount" else null,
             selected = filterLevel == ConsoleMessage.MessageLevel.WARNING,
             selectedColor = colors.warn,
-            onClick = { onFilterChange(if (filterLevel == ConsoleMessage.MessageLevel.WARNING) null else ConsoleMessage.MessageLevel.WARNING) }
+            onClick = {
+                onFilterChange(
+                    if (filterLevel == ConsoleMessage.MessageLevel.WARNING) null
+                    else ConsoleMessage.MessageLevel.WARNING
+                )
+            }
         )
         LevelFilterChip(
-            icon = { Icon(painterResource(R.drawable.info_circle), null, modifier = Modifier.size(13.dp)) },
+            icon = {
+                Icon(
+                    painterResource(R.drawable.info_circle),
+                    null,
+                    modifier = Modifier.size(13.dp)
+                )
+            },
             label = null,
             selected = filterLevel == ConsoleMessage.MessageLevel.LOG,
             selectedColor = MaterialTheme.colorScheme.primary,
-            onClick = { onFilterChange(if (filterLevel == ConsoleMessage.MessageLevel.LOG) null else ConsoleMessage.MessageLevel.LOG) }
+            onClick = {
+                onFilterChange(
+                    if (filterLevel == ConsoleMessage.MessageLevel.LOG) null
+                    else ConsoleMessage.MessageLevel.LOG
+                )
+            }
         )
         LevelFilterChip(
-            icon = { Icon(painterResource(R.drawable.bulb), null, modifier = Modifier.size(13.dp)) },
+            icon = {
+                Icon(
+                    painterResource(R.drawable.bulb),
+                    null,
+                    modifier = Modifier.size(13.dp)
+                )
+            },
             label = null,
             selected = filterLevel == ConsoleMessage.MessageLevel.TIP,
             selectedColor = colors.tip,
-            onClick = { onFilterChange(if (filterLevel == ConsoleMessage.MessageLevel.TIP) null else ConsoleMessage.MessageLevel.TIP) }
+            onClick = {
+                onFilterChange(
+                    if (filterLevel == ConsoleMessage.MessageLevel.TIP) null
+                    else ConsoleMessage.MessageLevel.TIP
+                )
+            }
         )
         LevelFilterChip(
             icon = { Icon(painterResource(R.drawable.bug), null, modifier = Modifier.size(13.dp)) },
             label = null,
             selected = filterLevel == ConsoleMessage.MessageLevel.DEBUG,
             selectedColor = colors.debug,
-            onClick = { onFilterChange(if (filterLevel == ConsoleMessage.MessageLevel.DEBUG) null else ConsoleMessage.MessageLevel.DEBUG) }
+            onClick = {
+                onFilterChange(
+                    if (filterLevel == ConsoleMessage.MessageLevel.DEBUG) null
+                    else ConsoleMessage.MessageLevel.DEBUG
+                )
+            }
         )
     }
 }
-
-// ---------------------------------------------------------------------------
-// Filter chip
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun LevelFilterChip(
@@ -755,83 +781,6 @@ private fun LevelFilterChip(
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Console row (real WebView messages)
-// ---------------------------------------------------------------------------
-
-@Composable
-private fun ConsoleRow(msg: ConsoleMessage) {
-    val colors = consoleColors()
-    val level = msg.messageLevel()
-    val rowStyle = when (level) {
-        ConsoleMessage.MessageLevel.ERROR -> ConsoleRowStyle(
-            colors.error.copy(alpha = 0.08f), colors.error,
-            colors.error.copy(alpha = 0.7f), R.drawable.exclamation_circle
-        )
-        ConsoleMessage.MessageLevel.WARNING -> ConsoleRowStyle(
-            colors.warn.copy(alpha = 0.08f), colors.warn,
-            colors.warn.copy(alpha = 0.7f), R.drawable.alert_triangle_filled
-        )
-        ConsoleMessage.MessageLevel.TIP -> ConsoleRowStyle(
-            colors.tip.copy(alpha = 0.06f), colors.tip,
-            colors.tip.copy(alpha = 0.6f), R.drawable.bulb
-        )
-        ConsoleMessage.MessageLevel.DEBUG -> ConsoleRowStyle(
-            Color.Transparent, colors.debug, Color.Transparent, R.drawable.bug
-        )
-        ConsoleMessage.MessageLevel.LOG -> ConsoleRowStyle(
-            Color.Transparent, MaterialTheme.colorScheme.onSurface,
-            Color.Transparent, R.drawable.info_circle
-        )
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(rowStyle.bg)
-            .drawLeftBorder(rowStyle.borderColor, 2.dp)
-            .padding(horizontal = 8.dp, vertical = 5.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Icon(
-            painter = painterResource(rowStyle.icon),
-            contentDescription = level.name,
-            modifier = Modifier
-                .size(14.dp)
-                .padding(top = 1.dp),
-            tint = rowStyle.textColor.copy(alpha = 0.8f)
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = msg.message(),
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace
-                ),
-                color = rowStyle.textColor,
-                softWrap = true
-            )
-            val source = msg.sourceId()
-            if (source.isNotBlank()) {
-                Text(
-                    text = "${source.substringAfterLast("/")}:${msg.lineNumber()}",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 10.sp,
-                        fontFamily = FontFamily.Monospace
-                    ),
-                    color = rowStyle.textColor.copy(alpha = 0.45f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-// ---------------------------------------------------------------------------
-// JS input bar
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun JsInputBar(
@@ -907,15 +856,11 @@ private fun JsInputBar(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Helpers / tokens
-// ---------------------------------------------------------------------------
-
 private data class ConsoleRowStyle(
     val bg: Color,
     val textColor: Color,
     val borderColor: Color,
-    @get:DrawableRes val icon: Int,
+    @get:DrawableRes val icon: Int?,
 )
 
 private data class ConsoleColorTokens(

@@ -31,7 +31,7 @@ fun DevTools(
             when (pageIndex) {
                 0 -> DomTab(webview)
                 1 -> ConsoleTab(webview)
-                2 -> NetworkTab()
+                2 -> NetworkTab(webview)
             }
         }
     }

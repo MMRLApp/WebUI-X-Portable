@@ -22,6 +22,7 @@ import com.dergoogler.mmrl.webui.interfaces.IntentInterface
 import com.dergoogler.mmrl.webui.interfaces.ModuleInterface
 import com.dergoogler.mmrl.webui.interfaces.PackageManagerInterface
 import com.dergoogler.mmrl.webui.interfaces.UserManagerInterface
+import com.dergoogler.mmrl.webui.interfaces.WXConsoleInterface
 import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXInsetsEventData.Companion.toEventData
 import com.dergoogler.mmrl.webui.pathHandler.InternalPathHandler
@@ -133,6 +134,7 @@ open class WXView : WebUIView {
         addJavascriptInterface<UserManagerInterface>()
         addJavascriptInterface<PackageManagerInterface>()
         addJavascriptInterface<IntentInterface>()
+        addJavascriptInterface<WXConsoleInterface>()
 
         if (options.pluginsEnabled && options.config.dexFiles.isNotEmpty()) {
             for (dexFile in options.config.dexFiles) {
@@ -144,9 +146,14 @@ open class WXView : WebUIView {
         }
     }
 
+    val richLogs get() = WXChromeClient.richLogs
+    val consoleLogs get() = WXChromeClient.consoleLogs
+    val networkRequests get() = WXClient.networkRequests
+
     override fun destroy() {
         WXClient.networkRequests.clear()
         WXChromeClient.consoleLogs.clear()
+        WXChromeClient.richLogs.clear()
 
         try {
             for (inst in interfaces) {

@@ -41,11 +41,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.ui.component.Tab
-import com.dergoogler.mmrl.webui.client.WXClient
+import com.dergoogler.mmrl.webui.view.WXView
 
 @Composable
-fun NetworkTab() {
-    val requests = WXClient.networkRequests
+fun NetworkTab(webview: WXView) {
+    val requests = webview.networkRequests
 
     val columns = listOf(
         ColumnDef("Name", 220.dp),
