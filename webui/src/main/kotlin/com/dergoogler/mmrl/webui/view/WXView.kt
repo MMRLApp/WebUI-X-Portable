@@ -32,6 +32,7 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.util.lua.LuaEngine
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState
 
 @SuppressLint("SetJavaScriptEnabled")
 open class WXView : WebUIView {
@@ -116,8 +117,6 @@ open class WXView : WebUIView {
         addPathHandler("/internal/", InternalPathHandler(options, insets))
         addPathHandler("/", WebrootPathHandler(options, insets))
 
-        Log.d(TAG, "Insets: $insets")
-
         postWXEvent(
             type = WXEvent.WX_ON_INSETS,
             data = insets.toEventData()
@@ -151,10 +150,6 @@ open class WXView : WebUIView {
     val networkRequests get() = WXClient.networkRequests
 
     override fun destroy() {
-        WXClient.networkRequests.clear()
-        WXChromeClient.consoleLogs.clear()
-        WXChromeClient.richLogs.clear()
-
         try {
             for (inst in interfaces) {
                 inst.unregister()
@@ -167,6 +162,14 @@ open class WXView : WebUIView {
         Log.d(TAG, "WebUI X cleaned up")
     }
 
+    fun clearState() {
+        WXClient.networkRequests.clear()
+        WXChromeClient.consoleLogs.clear()
+        WXChromeClient.richLogs.clear()
+        HybridWebUIState.pathMatchers.clear()
+        Log.d(TAG, "WebUI X state cleaned up")
+    }
+    
     override fun loadDomain() {
         options {
             if (requireNewAppVersion?.required == true) {
@@ -182,4 +185,5 @@ open class WXView : WebUIView {
     companion object {
         private const val TAG = "WXView"
     }
+
 }
