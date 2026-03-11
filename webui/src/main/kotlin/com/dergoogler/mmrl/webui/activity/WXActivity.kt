@@ -313,13 +313,8 @@ open class WXActivity : ComponentActivity() {
     @CallSuper
     override fun onDestroy() {
         view.nullply {
-            wx.stopLoading()
-            wx.loadUrl("about:blank")
-            wx.webViewClient = WebViewClient()
-            wx.webChromeClient = WebChromeClient()
-            (wx.parent as? ViewGroup)?.removeView(view)
-            wx.removeAllViews()
-            wx.destroy()
+            wx.onActivityDestroyInterfaces()
+            wx.clearState()
         }
 
         super.onDestroy()
