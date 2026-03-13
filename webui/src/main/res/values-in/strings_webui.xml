@@ -1,9 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="requireNewVersion_cannot_load_webui">Tidak dapat memuat WebUI</string>
-    <string name="requireNewVersion_try_the_following">Cobalah hal berikut ini:</string>
+    <string name="requireNewVersion_try_the_following">Cobalah hal berikut:</string>
     <string name="requireNewVersion_try_the_following_one">Perbarui %1$s ke versi terbaru dari Google Play atau GitHub Releases.</string>
-    <string name="requireNewVersion_try_the_following_two">Hubungi pengembang modul untuk solusi sementara.</string>
-    <string name="requireNewVersion_refresh">Muat ulang</string>
-    <string name="requireNewVersion_require_text">membutuhkan versi %1$s sekurang-kurangnya &gt;=</string>
+    <string name="requireNewVersion_try_the_following_two">Hubungi pengembang modul untuk mencari solusi alternatif.</string>
+    <string name="requireNewVersion_refresh">Segarkan</string>
+    <string name="requireNewVersion_require_text">memerlukan minimal %1$s &gt;=</string>
+    <string name="confirm">Ya</string>
+    <string name="cancel">Batal</string>
+    <string name="loading">Memuat…</string>
+    <string name="unknown_error">Kesalahan Tidak Diketahui</string>
+    <string name="says">%1$s mengatakan</string>
+    <string name="title_or_icon_not_found">Judul atau ikon tidak ditemukan</string>
+    <string name="icon_not_found">Ikon tidak ditemukan</string>
+    <string name="exit">Keluar</string>
+    <string name="exit_desc">Apakah Anda yakin ingin keluar dari WebUI ini?</string>
+    <string name="missing_mod_id">ID Modul Hilang</string>
+    <string name="class_not_found">Tidak dapat menemukan activity class yang ditentukan</string>
+    <string name="shortcut_already_exists">Pintasan sudah ada.</string>
+    <string name="shortcut_creation_requirements_not_met">Tidak dapat menambahkan pintasan: berkas judul atau ikon hilang.</string>
+    <string name="shortcut_icon_not_found">Tidak dapat menambahkan pintasan: berkas ikon tidak ditemukan.</string>
+    <string name="shortcut_icon_loading_error">Kesalahan saat memuat ikon pintasan.</string>
+    <string name="shortcut_icon_decode_error">Gagal mendekode ikon pintasan.</string>
+    <string name="pin_shortcut_not_supported">Penyematan pintasan tidak didukung pada perangkat/peluncur ini.</string>
+    <string name="shortcut_add_request_failed">Gagal mengirim permintaan pintasan ke peluncur.</string>
+    <string name="shortcut_removed_successfully">Pintasan berhasil dihapus/dinonaktifkan.</string>
+    <string name="shortcut_removed_message">Pintasan ini sudah tidak tersedia lagi.</string>
+    <string name="failed_to_load">Gagal memuat</string>
+    <string name="failed_to_open_ssl">Tidak dapat dibuka karena SSL</string>
+    <string name="check_your_internet_connection">Periksa koneksi internet Anda</string>
+    <string name="refreshing_the_page">Menyegarkan halaman</string>
+    <string name="restarting_the_webui_x">Memulai ulang WebUI X</string>
+    <string name="renderer_crashed">Proses Render WebView tidak responsif. Apakah Anda ingin menghentikannya?</string>
+    <string name="refresh">Segarkan</string>
+    <string name="more_info">Informasi selengkapnya</string>
+    <string name="failed_to_load_desc">Tidak dapat memuat [b]%1$s[/b]\nKesalahan: [i]%2$s[/i]</string>
+    <string name="failed_to_open_ssl_desc">Tidak dapat memuat [b]%1$s[/b] karena kesalahan SSL</string>
+    <string name="please_try_the_following">Silakan coba hal berikut:</string>
+    <string name="proceed">Lanjutkan</string>
 </resources>

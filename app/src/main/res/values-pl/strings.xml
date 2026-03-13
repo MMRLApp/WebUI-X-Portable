@@ -134,4 +134,10 @@
     <string name="globally_disabled">Wyłączone globalnie</string>
     <string name="behavior">Zachowanie</string>
     <string name="behavior_desc">Zmień zachowanie funkcji aplikacji.</string>
+    <string name="dom">DOM</string>
+    <string name="console">Konsola</string>
+    <string name="network">Sieć</string>
+    <string name="settings_security_enable_devtools">DevTools</string>
+    <string name="settings_security_enable_devtools_desc">W przeciwieństwie do Erudy, ta konsola debugowania może być używana nawet ze zdalnymi hostami.</string>
+    <string name="beta">Beta</string>
 </resources>
