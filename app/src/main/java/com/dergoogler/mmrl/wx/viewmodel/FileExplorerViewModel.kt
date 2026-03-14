@@ -12,9 +12,9 @@ import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.platform.file.SuFileInputStream
 import com.dergoogler.mmrl.platform.file.SuFileOutputStream
-import com.dergoogler.mmrl.platform.file.suContentResolver
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.util.wxContentResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -246,8 +246,8 @@ class FileExplorerViewModel @Inject constructor(
 
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val contentResolver = context.suContentResolver
-                    val inputStream = contentResolver.openSuInputStream(uri)
+                    val contentResolver = context.wxContentResolver
+                    val inputStream = contentResolver.openInputStream(uri)
                         ?: return@withContext FileOperationResult.Error("Cannot open file")
 
                     // Get original filename if targetFileName is not provided
@@ -302,8 +302,8 @@ class FileExplorerViewModel @Inject constructor(
             val results = withContext(Dispatchers.IO) {
                 uris.map { uri ->
                     try {
-                        val contentResolver = context.suContentResolver
-                        val inputStream = contentResolver.openSuInputStream(uri)
+                        val contentResolver = context.wxContentResolver
+                        val inputStream = contentResolver.openInputStream(uri)
                             ?: return@map "Cannot open file" to false
 
                         val fileName =
@@ -363,8 +363,8 @@ class FileExplorerViewModel @Inject constructor(
 
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val contentResolver = context.suContentResolver
-                    val outputStream = contentResolver.openSuOutputStream(targetUri)
+                    val contentResolver = context.wxContentResolver
+                    val outputStream = contentResolver.openOutputStream(targetUri)
                         ?: return@withContext FileOperationResult.Error("Cannot open target location")
 
                     val inputStream = SuFileInputStream(file)
@@ -411,7 +411,7 @@ class FileExplorerViewModel @Inject constructor(
             val results = withContext(Dispatchers.IO) {
                 validFiles.map { file ->
                     try {
-                        val contentResolver = context.suContentResolver
+                        val contentResolver = context.wxContentResolver
                         // Create a document in the target directory
                         val documentUri = contentResolver.takePersistableUriPermission(
                             targetDirectoryUri,
@@ -420,7 +420,7 @@ class FileExplorerViewModel @Inject constructor(
 
                         // This is a simplified approach - in reality, you might need to use
                         // DocumentsContract.createDocument() for creating files in document tree
-                        val outputStream = contentResolver.openSuOutputStream(targetDirectoryUri)
+                        val outputStream = contentResolver.openOutputStream(targetDirectoryUri)
                             ?: return@map file.name to false
 
                         val inputStream = SuFileInputStream(file)
