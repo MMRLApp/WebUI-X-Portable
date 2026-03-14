@@ -36,7 +36,7 @@ data class UserPreferences(
     @ProtoNumber(35) val enableErudaConsole: Boolean = false,
     @ProtoNumber(37) val webuiEngine: WebUIEngine = WebUIEngine.PREFER_MODULE,
     @ProtoNumber(38) val enableAutoOpenEruda: Boolean = false,
-    @ProtoNumber(39) val forceKillWebUIProcess: Boolean = false,
+    @ProtoNumber(39) val forceKillWebUIProcess: Boolean = true,
     @ProtoNumber(40) val disableGlobalExitConfirm: Boolean = false,
     @ProtoNumber(41) val enableDevTools: Boolean = false,
 ) {

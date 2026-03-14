@@ -97,6 +97,14 @@ class WebUIActivity : WXActivity() {
         init(scope, colorScheme)
     }
 
+    override fun onDestroy() {
+        if (userPrefs.forceKillWebUIProcess) {
+            view?.wx?.destroy()
+        }
+
+        super.onDestroy()
+    }
+
     override fun onResume() {
         super.onResume()
     }

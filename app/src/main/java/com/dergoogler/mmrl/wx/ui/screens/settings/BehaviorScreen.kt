@@ -57,6 +57,13 @@ fun BehaviorScreen() {
                 Description(R.string.settings_global_exit_confirm_desc)
             }
 
+            SwitchItem(
+                checked = userPreferences.forceKillWebUIProcess,
+                onChange = viewModel::setForceKillWebUIProcess
+            ) {
+                Title(R.string.settings_force_kill_webui_process)
+                Description(R.string.settings_force_kill_webui_process_desc)
+            }
         }
     }
 }
