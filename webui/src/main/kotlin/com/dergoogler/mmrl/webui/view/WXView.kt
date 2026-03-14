@@ -164,7 +164,7 @@ open class WXView : WebUIView {
     }
 
     fun clearState() {
-        WXClient.networkRequests.clear()
+        WXClient.networkRequests.clear() 
         WXChromeClient.richLogs.clear()
         HybridWebUIState.pathMatchers.clear()
         Log.d(TAG, "WebUI X state cleaned up")
