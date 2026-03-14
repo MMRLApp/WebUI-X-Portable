@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="we_hit_a_brick_crash">We hit a brick!</string>
+    <string name="copy_logs">Copy Logs</string>
+    <string name="report_to_issues">Report to issues</string>
+    <string name="help">Help</string>
+</resources>

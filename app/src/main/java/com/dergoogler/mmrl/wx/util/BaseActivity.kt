@@ -35,6 +35,7 @@ open class BaseActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setMyCrashHandler()
         enableEdgeToEdge()
     }
 

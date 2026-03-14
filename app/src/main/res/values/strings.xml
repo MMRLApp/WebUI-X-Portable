@@ -140,4 +140,5 @@
     <string name="settings_security_enable_devtools">DevTools</string>
     <string name="settings_security_enable_devtools_desc">Unlike Eruda, this debugging console can be used even with remote hosts.</string>
     <string name="beta">Beta</string>
+    <string name="stack_trace_truncated">%s\\n… %d more</string>
 </resources>

@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.wx.ui.activity.webui
 
 import android.annotation.SuppressLint
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.material3.ColorScheme
@@ -26,6 +27,7 @@ import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.component.devtools.DevTools
 import com.dergoogler.mmrl.wx.util.initPlatform
+import com.dergoogler.mmrl.wx.util.setMyCrashHandler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -56,6 +58,11 @@ class WebUIActivity : WXActivity() {
 
             return "WebUI X/$mmrlVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
         }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        setMyCrashHandler()
+        super.onCreate(savedInstanceState)
+    }
 
     private suspend fun CoroutineScope.getReady() = initPlatform(
         scope = this,
