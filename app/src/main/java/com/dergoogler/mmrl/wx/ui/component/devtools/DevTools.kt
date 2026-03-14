@@ -13,7 +13,7 @@ fun DevTools(
     onDismissRequest: () -> Unit,
     webview: WXView,
 ) {
-    val pagerState = rememberPagerState { 3 }
+    val pagerState = rememberPagerState(1) { 3 }
 
     DevToolsContainer(
         isVisible = isOpen,

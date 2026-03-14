@@ -8,4 +8,22 @@ data class RichLogEntry(
     val source: String,
     val line: Int,
     val timestamp: Long = System.currentTimeMillis(),
-)
+) {
+    companion object {
+        fun ConsoleMessage.toRichLogEntry(): RichLogEntry {
+            return RichLogEntry(
+                level = messageLevel(),
+                args = listOf(
+                    ResultNode.Primitive(
+                        key = null,
+                        value = message(),
+                        kind = PrimitiveKind.STRING,
+                        depth = 0
+                    )
+                ),
+                source = sourceId(),
+                line = lineNumber(),
+            )
+        }
+    }
+}

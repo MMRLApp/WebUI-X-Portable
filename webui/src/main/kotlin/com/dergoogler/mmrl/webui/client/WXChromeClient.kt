@@ -6,7 +6,6 @@ import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.WebView
-import androidx.compose.runtime.mutableStateListOf
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIChromeClient
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.PromptData
@@ -14,14 +13,14 @@ import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.dialog.prompt
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.devtools.RichLogEntry
+import com.dergoogler.mmrl.webui.devtools.RichLogEntry.Companion.toRichLogEntry
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 
 open class WXChromeClient(
     private val options: WebUIOptions,
 ) : HybridWebUIChromeClient() {
     companion object {
-        internal val consoleLogs = mutableStateListOf<ConsoleMessage>()
-        internal val richLogs = mutableStateListOf<RichLogEntry>()
+        internal val richLogs = mutableListOf<RichLogEntry>()
 
         private const val TAG = "WXChromeClient"
     }
@@ -108,7 +107,7 @@ open class WXChromeClient(
     }
 
     override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-        consoleLogs.add(consoleMessage)
+        richLogs.add(consoleMessage.toRichLogEntry())
 
         val message = """
             ${consoleMessage.message()}

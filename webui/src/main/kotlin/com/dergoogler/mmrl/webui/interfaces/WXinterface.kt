@@ -302,6 +302,7 @@ open class WXInterface(
     }
 
     val richLogs get() = WXChromeClient.richLogs
-    val consoleLogs get() = WXChromeClient.consoleLogs
+    @Deprecated("Use richLogs instead")
+    val consoleLogs get() = WXChromeClient.richLogs
     val networkRequests get() = WXClient.networkRequests
 }

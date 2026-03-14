@@ -12,7 +12,6 @@ import android.webkit.SslErrorHandler
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.compose.runtime.mutableStateListOf
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIClient
 import com.dergoogler.mmrl.webui.devtools.CONSOLE_OVERRIDE_JS
@@ -180,6 +179,6 @@ open class WXClient : HybridWebUIClient {
     companion object {
         private const val TAG = "WXClient"
 
-        internal val networkRequests = mutableStateListOf<WebResourceRequest>()
+        internal val networkRequests = mutableListOf<WebResourceRequest>()
     }
 }

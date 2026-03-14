@@ -9,6 +9,7 @@ import android.view.WindowInsetsController
 import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIState
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.client.WXChromeClient
@@ -32,7 +33,6 @@ import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
 import com.dergoogler.mmrl.webui.util.lua.LuaEngine
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState
 
 @SuppressLint("SetJavaScriptEnabled")
 open class WXView : WebUIView {
@@ -146,7 +146,8 @@ open class WXView : WebUIView {
     }
 
     val richLogs get() = WXChromeClient.richLogs
-    val consoleLogs get() = WXChromeClient.consoleLogs
+    @Deprecated("Use richLogs instead")
+    val consoleLogs get() = WXChromeClient.richLogs
     val networkRequests get() = WXClient.networkRequests
 
     override fun destroy() {
@@ -164,7 +165,6 @@ open class WXView : WebUIView {
 
     fun clearState() {
         WXClient.networkRequests.clear()
-        WXChromeClient.consoleLogs.clear()
         WXChromeClient.richLogs.clear()
         HybridWebUIState.pathMatchers.clear()
         Log.d(TAG, "WebUI X state cleaned up")
