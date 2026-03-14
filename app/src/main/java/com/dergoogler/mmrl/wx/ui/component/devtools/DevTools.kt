@@ -1,10 +1,8 @@
 package com.dergoogler.mmrl.wx.ui.component.devtools
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import com.dergoogler.mmrl.webui.view.WXView
 
 @Composable
@@ -26,7 +24,8 @@ fun DevTools(
         }
     ) {
         HorizontalPager(
-            state = pagerState, modifier = Modifier.fillMaxSize(), userScrollEnabled = false
+            state = pagerState,
+            userScrollEnabled = false
         ) { pageIndex ->
             when (pageIndex) {
                 0 -> DomTab(webview)
