@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.webui.devtools
+package com.dergoogler.mmrl.hybridwebui
 
 import org.json.JSONObject
 

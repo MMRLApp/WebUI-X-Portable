@@ -12,8 +12,6 @@ import androidx.annotation.UiThread
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.webui.client.WXChromeClient
-import com.dergoogler.mmrl.webui.client.WXClient
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXView
@@ -301,8 +299,6 @@ open class WXInterface(
         }
     }
 
-    val richLogs get() = WXChromeClient.richLogs
-    @Deprecated("Use richLogs instead")
-    val consoleLogs get() = WXChromeClient.richLogs
-    val networkRequests get() = WXClient.networkRequests
+    val consoleLogs get() = webView.store.consoleStore
+    val networkRequests get() = webView.store.networkStore
 }

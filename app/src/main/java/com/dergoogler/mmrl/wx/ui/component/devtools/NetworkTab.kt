@@ -93,7 +93,7 @@ fun NetworkTab(webview: WXView) {
 
         HorizontalDivider(thickness = 0.5.dp, color = dividerColor)
 
-        if (requests.isEmpty()) {
+        if (requests.all.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -110,7 +110,7 @@ fun NetworkTab(webview: WXView) {
 
             Column(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(modifier = Modifier.weight(listWeight)) {
-                    itemsIndexed(requests) { index, request ->
+                    itemsIndexed(requests.all) { index, request ->
                         val url = request.url
                         val name = url.lastPathSegment ?: url.host ?: url.toString()
                         val method = request.method ?: "GET"

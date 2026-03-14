@@ -55,10 +55,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dergoogler.mmrl.webui.devtools.PrimitiveKind
-import com.dergoogler.mmrl.webui.devtools.ResultNode
-import com.dergoogler.mmrl.webui.devtools.RichLogEntry
-import com.dergoogler.mmrl.webui.devtools.wrappedResult
+import com.dergoogler.mmrl.hybridwebui.ConsoleEntry
+import com.dergoogler.mmrl.hybridwebui.PrimitiveKind
+import com.dergoogler.mmrl.hybridwebui.ResultNode
+import com.dergoogler.mmrl.hybridwebui.wrapConsoleEvalResult
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.wx.R
 import org.json.JSONObject
@@ -66,7 +66,7 @@ import org.json.JSONObject
 private sealed class LogEntry {
     abstract val timestamp: Long
 
-    data class WebMessage(val entry: RichLogEntry) : LogEntry() {
+    data class WebMessage(val entry: ConsoleEntry) : LogEntry() {
         override val timestamp get() = entry.timestamp
     }
 
@@ -96,7 +96,7 @@ private sealed class FlatRow {
 
 @Composable
 fun ConsoleTab(webview: WXView) {
-    val richLogs = webview.richLogs
+    val richLogs = webview.consoleLogs
     val evalEntries = remember { mutableStateListOf<LogEntry>() }
     val listState = rememberLazyListState()
 
@@ -105,7 +105,7 @@ fun ConsoleTab(webview: WXView) {
     var jsInput by remember { mutableStateOf("") }
 
     val allEntries: List<LogEntry> = remember(richLogs.size, evalEntries.size) {
-        (richLogs.map { LogEntry.WebMessage(it) } + evalEntries)
+        (richLogs.all.map { LogEntry.WebMessage(it) } + evalEntries)
             .sortedBy { it.timestamp }
     }
 
@@ -132,10 +132,10 @@ fun ConsoleTab(webview: WXView) {
     }
 
     val errorCount = remember(richLogs.size) {
-        richLogs.count { it.level == ConsoleMessage.MessageLevel.ERROR }
+        richLogs.all.count { it.level == ConsoleMessage.MessageLevel.ERROR }
     }
     val warnCount = remember(richLogs.size) {
-        richLogs.count { it.level == ConsoleMessage.MessageLevel.WARNING }
+        richLogs.all.count { it.level == ConsoleMessage.MessageLevel.WARNING }
     }
 
     LaunchedEffect(filtered.size) {
@@ -209,7 +209,7 @@ private fun submitJs(code: String, webview: WXView, evalEntries: MutableList<Log
     val inputTime = System.currentTimeMillis()
     evalEntries.add(LogEntry.EvalInput(code, timestamp = inputTime))
 
-    webview.evaluateJavascript(wrappedResult((code))) { raw ->
+    webview.evaluateJavascript(wrapConsoleEvalResult((code))) { raw ->
         val resultTime = System.currentTimeMillis()
         if (raw == null || raw == "null") {
             evalEntries.add(
@@ -256,7 +256,7 @@ private fun escapeJsString(code: String): String {
 }
 
 @Composable
-private fun ConsoleRow(entry: RichLogEntry) {
+private fun ConsoleRow(entry: ConsoleEntry) {
     val colors = consoleColors()
     val rowStyle = when (entry.level) {
         ConsoleMessage.MessageLevel.ERROR -> ConsoleRowStyle(

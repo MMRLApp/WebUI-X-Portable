@@ -5,7 +5,6 @@ import androidx.annotation.UiThread
 import androidx.webkit.WebMessageCompat
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIEvent
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.onSaveFileRequest
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -23,12 +22,11 @@ internal class SaveFileLauncherEvent : HybridWebUI.EventListener() {
     @UiThread
     @SuppressLint("RequiresFeature")
     override fun listen(view: HybridWebUI, event: HybridWebUIEvent) = with(event) {
+        val store = view.store
+
         when (message.type) {
             WebMessageCompat.TYPE_ARRAY_BUFFER -> {
-                val bytes = message.arrayBuffer ?: run {
-                    reply.postMessage("FAIL_NO_ARRAYBUFFER")
-                    return
-                }
+                val bytes = message.arrayBuffer
 
                 try {
                     if (!metadataDecoded) {
@@ -69,7 +67,8 @@ internal class SaveFileLauncherEvent : HybridWebUI.EventListener() {
                 if (message.data == "CLOSE") {
                     try {
                         if (buffer != null && currentPath != null && mimeType != null) {
-                            onSaveFileRequest?.invoke(
+                            store.onSaveFileRequest?.invoke(
+                                view,
                                 buffer!!.toByteArray(),
                                 currentPath!!,
                                 mimeType!!

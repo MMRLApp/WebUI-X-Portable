@@ -7,8 +7,10 @@ import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup.LayoutParams
+import android.webkit.ValueCallback
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.RelativeLayout
@@ -21,15 +23,14 @@ import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.filePathCallback
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pathMatchers
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pendingSaveData
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.saveFileLauncher
 import com.dergoogler.mmrl.hybridwebui.event.SaveFileLauncherEvent
+import com.dergoogler.mmrl.hybridwebui.event.WebConsoleEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
@@ -39,9 +40,9 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-@SuppressLint("SetJavaScriptEnabled", "ViewConstructor")
 open class HybridWebUI : WebView {
     var uri: Uri
+    private lateinit var _store: HybridWebUIStore
 
     constructor(context: Context, uri: Uri) : super(context) {
         this.uri = uri
@@ -50,10 +51,42 @@ open class HybridWebUI : WebView {
 
     constructor(context: Context, url: String) : this(
         context, url.toUri()
-    ) {
+    )
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
+        uri = attrs.getAttributeValue(null, "uri").toUri()
         setup()
     }
 
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        uri = attrs.getAttributeValue(null, "uri").toUri()
+        setup()
+    }
+
+    private fun initStore() {
+        val owner = findViewTreeViewModelStoreOwner()
+        if (owner != null) {
+            _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
+            onStoreReady(_store)
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        initStore()
+    }
+
+    val store get() = _store
+
+    protected open fun onStoreReady(store: HybridWebUIStore) {
+        Log.d("HybridWebUI", "Store is ready and implanted.")
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
     @CallSuper
     protected open fun setup() {
         overScrollMode = OVER_SCROLL_NEVER
@@ -70,32 +103,37 @@ open class HybridWebUI : WebView {
         settings.allowFileAccess = false
         settings.blockNetworkLoads = false
 
-        webViewClient = HybridWebUIClient()
-        webChromeClient = HybridWebUIChromeClient()
+        webViewClient = HybridWebUIClient(this)
+        webChromeClient = HybridWebUIChromeClient(this)
 
         addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
+        addEventListener("__hw_web_console_internal__", WebConsoleEvent())
     }
 
     fun interface OnFileSaveRequest {
-        operator fun invoke(bytes: ByteArray, fileName: String, mimeType: String)
+        operator fun invoke(view: HybridWebUI, bytes: ByteArray, fileName: String, mimeType: String)
 
         companion object {
-            val DefaultSaveFileLauncher: (ByteArray, String, String) -> Unit
-                get() = def@{ data, fileName, mimeType ->
-                    if (saveFileLauncher == null) {
+            val DefaultSaveFileLauncher: (HybridWebUI, ByteArray, String, String) -> Unit
+                get() = def@{ view, data, fileName, mimeType ->
+                    if (!view.isStoreInitialized) {
                         return@def
                     }
 
-                    pendingSaveData = data
+                    if (view.store.saveFileLauncher == null) {
+                        return@def
+                    }
+
+                    view.store.pendingSaveData = data
                     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
                         type = mimeType
                         putExtra(Intent.EXTRA_TITLE, fileName)
                     }
                     try {
-                        saveFileLauncher!!.launch(intent)
+                        view.store.saveFileLauncher!!.launch(intent)
                     } catch (e: Exception) {
-                        pendingSaveData = null
+                        view.store.pendingSaveData = null
                         e.printStackTrace()
                     }
                 }
@@ -115,15 +153,15 @@ open class HybridWebUI : WebView {
     val areInsetsAvailable get() = _insets != null
     val insets get() = _insets ?: HybridWebUIInsets.Empty
 
-    fun loadPage() {
-        super.loadUrl(uri.toString())
+    fun loadPage(path: String = "") {
+        super.loadUrl("$uri$path")
     }
 
     @UiThread
-    open fun runJs(script: String) {
+    open fun runJs(script: String, callback: ValueCallback<String>? = null) {
         post {
             try {
-                evaluateJavascript(script, null)
+                evaluateJavascript(script, callback)
             } catch (t: Throwable) {
                 Log.e(TAG, "Exception evaluating JS", t)
             }
@@ -271,12 +309,18 @@ open class HybridWebUI : WebView {
             )
     }
 
+    val isStoreInitialized get() = ::_store.isInitialized
+
     fun addPathHandler(
         path: String,
         handler: PathHandler,
         authority: Uri = "${uri.scheme}://${uri.authority}".toUri(),
     ) {
-        pathMatchers.add(PathMatcher(authority, path, false, handler))
+        if (!isStoreInitialized) {
+            Log.e(TAG, "Store not initialized")
+            return
+        }
+        _store.pathMatchers.add(PathMatcher(authority, path, false, handler))
     }
 
     fun addEventListener(objectName: String, event: EventListener) {
@@ -487,8 +531,8 @@ open class HybridWebUI : WebView {
         const val TAG = "HybridWebUI"
 
 
-        fun ComponentActivity.setDefaultFileChooserLauncher() {
-            HybridWebUIState.fileChooserLauncher = registerForActivityResult(
+        fun ComponentActivity.setDefaultFileChooserLauncher(store: HybridWebUIStore) {
+            store.fileChooserLauncher = registerForActivityResult(
                 ActivityResultContracts.StartActivityForResult()
             ) { result ->
                 val uris: Array<Uri>? = when (result.resultCode) {
@@ -510,17 +554,17 @@ open class HybridWebUI : WebView {
                     else -> null
                 }
 
-                filePathCallback?.onReceiveValue(uris)
-                filePathCallback = null
+                store.filePathCallback?.onReceiveValue(uris)
+                store.filePathCallback = null
             }
         }
 
-        fun ComponentActivity.setDefaultSaveFileLauncher() {
-            saveFileLauncher = registerForActivityResult(
+        fun ComponentActivity.setDefaultSaveFileLauncher(store: HybridWebUIStore) {
+            store.saveFileLauncher = registerForActivityResult(
                 ActivityResultContracts.StartActivityForResult()
             ) { result ->
                 val uri = if (result.resultCode == RESULT_OK) result.data?.data else null
-                val data = pendingSaveData
+                val data = store.pendingSaveData
                 if (uri != null && data != null) {
                     lifecycleScope.launch(Dispatchers.IO) {
                         try {
@@ -528,18 +572,22 @@ open class HybridWebUI : WebView {
                         } catch (e: Exception) {
                             e.printStackTrace()
                         } finally {
-                            pendingSaveData = null
+                            store.pendingSaveData = null
                         }
                     }
                 } else {
-                    pendingSaveData = null
+                    store.pendingSaveData = null
                 }
             }
         }
     }
 
+    open fun clearState() {
+        _store.clear()
+    }
+
     override fun destroy() {
-        pathMatchers.clear()
+        clearState()
         super.destroy()
     }
 }

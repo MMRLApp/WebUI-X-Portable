@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup.LayoutParams
+import android.webkit.ValueCallback
 import android.webkit.WebMessage
 import android.widget.FrameLayout
 import androidx.activity.result.ActivityResult
@@ -193,11 +194,11 @@ open class WebUIView : HybridWebUI {
     }
 
     @UiThread
-    override fun runJs(script: String) {
+    override fun runJs(script: String, callback: ValueCallback<String>?) {
         if (!isReadyForWebOps()) {
             Log.w(TAG, "runJs skipped, not ready"); return
         }
-        super.runJs(script)
+        super.runJs(script, callback)
     }
 
     override fun onDetachedFromWindow() {

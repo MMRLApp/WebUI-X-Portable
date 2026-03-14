@@ -9,7 +9,6 @@ import android.view.WindowInsetsController
 import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.client.WXChromeClient
@@ -23,7 +22,6 @@ import com.dergoogler.mmrl.webui.interfaces.IntentInterface
 import com.dergoogler.mmrl.webui.interfaces.ModuleInterface
 import com.dergoogler.mmrl.webui.interfaces.PackageManagerInterface
 import com.dergoogler.mmrl.webui.interfaces.UserManagerInterface
-import com.dergoogler.mmrl.webui.interfaces.WXConsoleInterface
 import com.dergoogler.mmrl.webui.model.WXEvent
 import com.dergoogler.mmrl.webui.model.WXInsetsEventData.Companion.toEventData
 import com.dergoogler.mmrl.webui.pathHandler.InternalPathHandler
@@ -76,7 +74,6 @@ open class WXView : WebUIView {
                     windowInsetsController?.systemBarsBehavior =
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
-                webChromeClient = WXChromeClient(options)
             }
         } else {
             Log.e(TAG, "WXActivity not found")
@@ -107,9 +104,10 @@ open class WXView : WebUIView {
             addPathHandler("/__root__/", SuPathHandler("/".toSuFile()))
         }
 
-        val client = WXClient(options)
+        val client = WXClient(this, options)
         client.mSwipeView = mSwipeView
         super.webViewClient = client
+        super.webChromeClient = WXChromeClient(this, options)
 
         addJavascriptInterfaces()
 
@@ -133,7 +131,6 @@ open class WXView : WebUIView {
         addJavascriptInterface<UserManagerInterface>()
         addJavascriptInterface<PackageManagerInterface>()
         addJavascriptInterface<IntentInterface>()
-        addJavascriptInterface<WXConsoleInterface>()
 
         if (options.pluginsEnabled && options.config.dexFiles.isNotEmpty()) {
             for (dexFile in options.config.dexFiles) {
@@ -145,10 +142,8 @@ open class WXView : WebUIView {
         }
     }
 
-    val richLogs get() = WXChromeClient.richLogs
-    @Deprecated("Use richLogs instead")
-    val consoleLogs get() = WXChromeClient.richLogs
-    val networkRequests get() = WXClient.networkRequests
+    val consoleLogs get() = store.consoleStore
+    val networkRequests get() = store.networkStore
 
     override fun destroy() {
         try {
@@ -163,13 +158,6 @@ open class WXView : WebUIView {
         Log.d(TAG, "WebUI X cleaned up")
     }
 
-    fun clearState() {
-        WXClient.networkRequests.clear() 
-        WXChromeClient.richLogs.clear()
-        HybridWebUIState.pathMatchers.clear()
-        Log.d(TAG, "WebUI X state cleaned up")
-    }
-    
     override fun loadDomain() {
         options {
             if (requireNewAppVersion?.required == true) {

@@ -1,8 +1,8 @@
-package com.dergoogler.mmrl.webui.devtools
+package com.dergoogler.mmrl.hybridwebui
 
 import android.webkit.ConsoleMessage
 
-data class RichLogEntry(
+data class ConsoleEntry(
     val level: ConsoleMessage.MessageLevel,
     val args: List<ResultNode>,
     val source: String,
@@ -10,8 +10,8 @@ data class RichLogEntry(
     val timestamp: Long = System.currentTimeMillis(),
 ) {
     companion object {
-        fun ConsoleMessage.toRichLogEntry(): RichLogEntry {
-            return RichLogEntry(
+        fun ConsoleMessage.toConsoleEntry(): ConsoleEntry {
+            return ConsoleEntry(
                 level = messageLevel(),
                 args = listOf(
                     ResultNode.Primitive(

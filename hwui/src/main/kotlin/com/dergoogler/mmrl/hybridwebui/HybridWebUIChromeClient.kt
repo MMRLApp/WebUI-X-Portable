@@ -3,11 +3,19 @@ package com.dergoogler.mmrl.hybridwebui
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.webkit.ConsoleMessage
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
+import com.dergoogler.mmrl.hybridwebui.ConsoleEntry.Companion.toConsoleEntry
 
-open class HybridWebUIChromeClient : WebChromeClient() {
+open class HybridWebUIChromeClient(
+    protected val view: HybridWebUI,
+) : WebChromeClient() {
+    protected val store get() = view.store
+    protected val console get() = store.consoleStore
+    protected val network get() = store.networkStore
+
     override fun onShowFileChooser(
         view: WebView?,
         filePathCallback: ValueCallback<Array<Uri>>?,
@@ -17,8 +25,8 @@ open class HybridWebUIChromeClient : WebChromeClient() {
             return false
         }
 
-        HybridWebUIState.filePathCallback?.onReceiveValue(null)
-        HybridWebUIState.filePathCallback = filePathCallback
+        store.filePathCallback?.onReceiveValue(null)
+        store.filePathCallback = filePathCallback
         val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
             type = "*/*"
         }
@@ -26,13 +34,18 @@ open class HybridWebUIChromeClient : WebChromeClient() {
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
         try {
-            HybridWebUIState.fileChooserLauncher?.launch(intent)
+            store.fileChooserLauncher?.launch(intent)
         } catch (_: ActivityNotFoundException) {
-            HybridWebUIState.filePathCallback?.onReceiveValue(null)
-            HybridWebUIState.filePathCallback = null
+            store.filePathCallback?.onReceiveValue(null)
+            store.filePathCallback = null
             return false
         }
 
         return true
+    }
+
+    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+        console.add(consoleMessage.toConsoleEntry())
+        return super.onConsoleMessage(consoleMessage)
     }
 }

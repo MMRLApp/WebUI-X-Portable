@@ -1,22 +1,36 @@
 package com.dergoogler.mmrl.hybridwebui
 
+import android.graphics.Bitmap
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIState.pathMatchers
 import java.io.ByteArrayInputStream
 
-open class HybridWebUIClient() : WebViewClient() {
+open class HybridWebUIClient(
+    protected val view: HybridWebUI,
+) : WebViewClient() {
+    protected val store get() = view.store
+    protected val console get() = store.consoleStore
+    protected val network get() = store.networkStore
+    protected val pathMatchers get() = store.pathMatchers
+
+    override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+        view.evaluateJavascript(CONSOLE_OVERRIDE_JS, null)
+        super.onPageStarted(view, url, favicon)
+    }
+
     @WorkerThread
     override fun shouldInterceptRequest(
         view: WebView,
         request: WebResourceRequest,
     ): WebResourceResponse? {
+        network.add(request)
+
         val url = request.url
 
-        for (matcher in pathMatchers) {
+        for (matcher in pathMatchers.all) {
             val handler = matcher.match(url) ?: continue
             val suffixPath = matcher.getSuffixPath(url.path!!)
 

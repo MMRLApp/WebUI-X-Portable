@@ -13,8 +13,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIClient
-import com.dergoogler.mmrl.webui.devtools.CONSOLE_OVERRIDE_JS
 import com.dergoogler.mmrl.webui.model.invoke
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WXSwipeRefresh
@@ -24,8 +24,9 @@ open class WXClient : HybridWebUIClient {
     internal var mSwipeView: WXSwipeRefresh? = null
 
     constructor(
+        view: HybridWebUI,
         options: WebUIOptions,
-    ) : super() {
+    ) : super(view) {
         mOptions = options
     }
 
@@ -47,7 +48,6 @@ open class WXClient : HybridWebUIClient {
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-        view.evaluateJavascript(CONSOLE_OVERRIDE_JS, null)
         mSwipeView.nullply {
             isRefreshing = true
         }
@@ -106,14 +106,6 @@ open class WXClient : HybridWebUIClient {
 //            }
 //        }
 //    }
-
-    override fun shouldInterceptRequest(
-        view: WebView,
-        request: WebResourceRequest,
-    ): WebResourceResponse? {
-        networkRequests.add(request)
-        return super.shouldInterceptRequest(view, request)
-    }
 
     // Inside your WebViewClient class
     override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
@@ -178,7 +170,5 @@ open class WXClient : HybridWebUIClient {
 
     companion object {
         private const val TAG = "WXClient"
-
-        internal val networkRequests = mutableListOf<WebResourceRequest>()
     }
 }
