@@ -30,15 +30,12 @@ import com.dergoogler.mmrl.webui.pathHandler.WebrootPathHandler
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.util.WebUIOptions.Companion.defaultWebUiOptions
 import com.dergoogler.mmrl.webui.util.errorPages.requireNewVersionErrorPage
-import com.dergoogler.mmrl.webui.util.lua.LuaEngine
 
 @SuppressLint("SetJavaScriptEnabled")
 open class WXView : WebUIView {
-    private lateinit var luaEngine: LuaEngine
 
     constructor(options: WebUIOptions) : super(options) {
         this.options = options
-        this.luaEngine = LuaEngine(options)
     }
 
     constructor(context: Context) : this(context.defaultWebUiOptions) {

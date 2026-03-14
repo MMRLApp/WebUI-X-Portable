@@ -48,7 +48,6 @@ dependencies {
     compileOnly(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
     implementation(projects.jna)
-    implementation(projects.lua)
     implementation(projects.hwui)
     implementation(kotlin("reflect"))
     implementation(libs.libsu.core)
