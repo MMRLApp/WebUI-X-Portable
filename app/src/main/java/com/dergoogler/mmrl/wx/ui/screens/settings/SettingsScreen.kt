@@ -27,7 +27,6 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.component.toolbar.Toolbar
 import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.FeaturedManager
 import com.dergoogler.mmrl.wx.ui.component.LinkButton
@@ -101,7 +100,7 @@ fun SettingsScreen() {
                     }
                 }
 
-                RadioDialogItem(
+                /* RadioDialogItem(
                     selection = userPreferences.webuiEngine,
                     options = listOf(
                         RadioDialogItem(
@@ -126,7 +125,7 @@ fun SettingsScreen() {
                     )
                     Title(R.string.settings_webui_engine)
                     Description(R.string.settings_webui_engine_desc)
-                }
+                } */
 
                 TextEditDialogItem(
                     value = userPreferences.datePattern,

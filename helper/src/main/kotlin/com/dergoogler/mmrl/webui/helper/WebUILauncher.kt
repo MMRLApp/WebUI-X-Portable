@@ -55,6 +55,7 @@ class WebUILauncher(
         }
     }
 
+    @Deprecated("Legacy WebUI is not supported anymore")
     @RequiresPermission(anyOf = [PERMISSION_WEBUI_LEGACY, PERMISSION_WEBUI_LEGACY_DEBUG])
     fun launchLegacy(
         context: Context,
@@ -62,7 +63,9 @@ class WebUILauncher(
         platform: Platform,
         transformer: (Intent.() -> Intent)? = null,
     ) {
-        try {
+        throw IllegalStateException("Legacy WebUI is not supported anymore")
+
+        /*try {
             val intent = Intent().apply {
                 component = ComponentName(packageName, LEGACY)
 
@@ -78,7 +81,7 @@ class WebUILauncher(
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "launchWX: ${e.message}")
-        }
+        }*/
     }
 
     val permissions = WebUIPermissions(debugPostFix)

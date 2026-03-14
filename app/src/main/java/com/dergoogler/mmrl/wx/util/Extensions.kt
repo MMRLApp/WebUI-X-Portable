@@ -4,7 +4,6 @@ package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -20,15 +19,11 @@ import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
-import com.dergoogler.mmrl.platform.model.toModuleConfig
 import com.dergoogler.mmrl.platform.stub.IServiceManager
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUI
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
-import com.dergoogler.mmrl.wx.ui.activity.webui.KsuWebUIActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import kotlinx.coroutines.CoroutineScope
 import java.io.BufferedInputStream
@@ -160,44 +155,8 @@ fun UserPreferences.launchModConf(context: Context, modId: ModId) {
 }
 
 fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
-    val config = modId.toModuleConfig()
-
     val baseDir = context.getBaseDir().path
-
-    val applyIntent: Intent.() -> Unit = {
-        putBaseDir(baseDir)
-    }
-
-    if (webuiEngine == WebUIEngine.PREFER_MODULE) {
-        val configEngine = config.getWebuiEngine(context)
-
-        if (configEngine == null) {
-            context.launchWebUIX<WebUIActivity>(modId)
-            return
-        }
-
-        when (configEngine) {
-            "wx" -> context.launchWebUIX<WebUIActivity>(modId, baseDir)
-            "ksu" -> context.launchWebUI<KsuWebUIActivity>(modId.id, applyIntent)
-            else -> Toast.makeText(context, "Unknown WebUI engine", Toast.LENGTH_SHORT).show()
-        }
-
-        return
-    }
-
-
-    if (webuiEngine == WebUIEngine.WX) {
-        context.launchWebUIX<WebUIActivity>(modId, baseDir)
-        return
-
-    }
-
-    if (webuiEngine == WebUIEngine.KSU) {
-        context.launchWebUI<KsuWebUIActivity>(modId.id, applyIntent)
-        return
-    }
-
-    Toast.makeText(context, "Unknown WebUI engine", Toast.LENGTH_SHORT).show()
+    context.launchWebUIX<WebUIActivity>(modId, baseDir)
 }
 
 fun Map<String, Any?>?.getBoolProp(key: String, def: Boolean = false): Boolean {
