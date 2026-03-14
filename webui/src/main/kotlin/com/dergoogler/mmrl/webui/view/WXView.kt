@@ -9,6 +9,7 @@ import android.view.WindowInsetsController
 import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIStore
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.client.WXChromeClient
@@ -89,6 +90,16 @@ open class WXView : WebUIView {
             }
         }
 
+
+        postWXEvent(
+            type = WXEvent.WX_ON_INSETS,
+            data = insets.toEventData()
+        )
+    }
+
+    override fun onReady(store: HybridWebUIStore) {
+        super.onReady(store)
+
         addPathHandler(
             "/.${options.modId}/",
             SuPathHandler("/data/adb/modules/${options.modId}".toSuFile())
@@ -111,12 +122,6 @@ open class WXView : WebUIView {
         addPathHandler("/mmrl/", InternalPathHandler(options, insets))
         addPathHandler("/internal/", InternalPathHandler(options, insets))
         addPathHandler("/", WebrootPathHandler(options, insets))
-
-        postWXEvent(
-            type = WXEvent.WX_ON_INSETS,
-            data = insets.toEventData()
-        )
-
     }
 
     private fun addJavascriptInterfaces() {

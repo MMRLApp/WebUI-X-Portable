@@ -23,6 +23,7 @@ import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnAttach
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
@@ -67,23 +68,31 @@ open class HybridWebUI : WebView {
         setup()
     }
 
-    private fun initStore() {
-        val owner = findViewTreeViewModelStoreOwner()
-        if (owner != null) {
-            _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
-            onStoreReady(_store)
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        doOnAttach {
+            val owner = findViewTreeViewModelStoreOwner() ?: run {
+                Log.e(TAG, "No ViewModelStoreOwner found in view tree")
+                return@doOnAttach
+            }
+            if (!isStoreInitialized) {
+                _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
+                onReady(_store)
+            }
         }
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        initStore()
-    }
+    val store: HybridWebUIStore
+        get() = if (isStoreInitialized) _store
+        else throw IllegalStateException("Store accessed before onStoreReady()")
 
-    val store get() = _store
+    @CallSuper
+    protected open fun onReady(store: HybridWebUIStore) {
+        webViewClient = HybridWebUIClient(this)
+        webChromeClient = HybridWebUIChromeClient(this)
 
-    protected open fun onStoreReady(store: HybridWebUIStore) {
-        Log.d("HybridWebUI", "Store is ready and implanted.")
+        addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
+        addEventListener("__hw_web_console_internal__", WebConsoleEvent())
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -102,12 +111,6 @@ open class HybridWebUI : WebView {
         settings.domStorageEnabled = true
         settings.allowFileAccess = false
         settings.blockNetworkLoads = false
-
-        webViewClient = HybridWebUIClient(this)
-        webChromeClient = HybridWebUIChromeClient(this)
-
-        addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
-        addEventListener("__hw_web_console_internal__", WebConsoleEvent())
     }
 
     fun interface OnFileSaveRequest {
@@ -583,7 +586,7 @@ open class HybridWebUI : WebView {
     }
 
     open fun clearState() {
-        _store.clear()
+        if (isStoreInitialized) _store.clear()
     }
 
     override fun destroy() {
