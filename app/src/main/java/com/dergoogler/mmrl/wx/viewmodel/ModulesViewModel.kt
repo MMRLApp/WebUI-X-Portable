@@ -8,17 +8,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.datastore.model.Option
-import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasAction
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
-import com.dergoogler.mmrl.wx.service.PlatformService
+import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -53,6 +61,9 @@ class ModulesViewModel @Inject constructor(
     private val keyFlow = MutableStateFlow("")
     val query get() = keyFlow.asStateFlow()
 
+    private val isLoadingFlow = MutableStateFlow(false)
+    val isLoading get() = isLoadingFlow.asStateFlow()
+
     init {
         providerObserver()
         dataObserver()
@@ -60,8 +71,6 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun providerObserver() {
-        if (PlatformService.isActive) return
-
         viewModelScope.launch {
             with(PlatformManager) {
                 if (platform.isNonRoot) {
@@ -176,9 +185,6 @@ class ModulesViewModel @Inject constructor(
             userPreferencesRepository.setModulesMenu(value)
         }
     }
-
-    private val isLoadingFlow = MutableStateFlow(false)
-    val isLoading get() = isLoadingFlow.asStateFlow()
 
     private inline fun <T> T.refreshing(callback: T.() -> Unit) {
         isLoadingFlow.update { true }
