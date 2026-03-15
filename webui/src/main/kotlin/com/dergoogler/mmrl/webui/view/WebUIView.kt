@@ -20,10 +20,12 @@ import androidx.core.view.doOnAttach
 import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import com.dergoogler.mmrl.ext.createNewWX
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.moshi.moshi
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
@@ -257,71 +259,21 @@ open class WebUIView : HybridWebUI {
         }
     }
 
-    @SuppressLint("JavascriptInterface")
-    override fun addJavascriptInterface(obj: Any, name: String) {
-        if (obj !is WXInterface) {
-            Log.d("WebUIView", "$obj is not a WXInterface")
-            return
-        }
-        if (interfaces.any { it.name == name }) {
-            Log.w(TAG, "Interface ${obj.name} already exists")
-            return
-        }
+    override fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation<out com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface>) {
         try {
-            super.addJavascriptInterface(obj, name)
-            interfaces += JavaScriptInterface.Instance(obj)
-            Log.d("WebUIView", "Added interface $name")
-        } catch (t: Throwable) {
-            Log.e(TAG, "addJavascriptInterface failed", t)
-        }
-    }
-
-    @CallSuper
-    @Throws(BrickException::class)
-    @SuppressLint("JavascriptInterface")
-    open fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
-        try {
-            val js = obj.createNew(createDefaultWxOptions(options))
-            val assetHandlers = js.instance.assetHandlers
-            if (assetHandlers.isNotEmpty()) {
-                Log.d(TAG, "Adding ${assetHandlers.size} asset handlers")
-                this.assetHandlers.addAll(assetHandlers)
+            val js = obj.createNewWX(createDefaultWxOptions(options))
+            if (js == null) {
+                Log.e(TAG, "Couldn't create new JavaScript interface. Interface was null.")
+                return
             }
-            addJavascriptInterface(js.instance, js.name)
+
+            super.addJavascriptInterface(js)
         } catch (e: Exception) {
             throw BrickException(
                 message = "Couldn't add a new JavaScript interface.",
                 cause = e,
             )
         }
-    }
-
-    @CallSuper
-    @Throws(BrickException::class)
-    @SuppressLint("JavascriptInterface")
-    inline fun <reified T : WXInterface> addJavascriptInterface(
-        initargs: Array<Any>? = null,
-        parameterTypes: Array<Class<*>>? = null,
-    ) {
-        try {
-            val interfaceObject: JavaScriptInterface<out WXInterface> = JavaScriptInterface(
-                T::class.java,
-                initargs,
-                parameterTypes,
-            )
-            addJavascriptInterface(interfaceObject)
-        } catch (e: Exception) {
-            throw BrickException(
-                message = "Couldn't add a new JavaScript interface.",
-                cause = e,
-            )
-        }
-    }
-
-    @CallSuper
-    @Throws(BrickException::class)
-    open fun addJavascriptInterface(vararg obj: JavaScriptInterface<out WXInterface>) {
-        obj.forEach { addJavascriptInterface(it) }
     }
 
     companion object {

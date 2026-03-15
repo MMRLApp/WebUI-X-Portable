@@ -24,15 +24,15 @@ open class WXChromeClient(
     }
 
     override fun onJsAlert(
-        view: WebView?,
+        view: WebView,
         url: String,
-        message: String,
+        message: String?,
         result: JsResult,
     ): Boolean = options {
         context.confirm(
             confirmData = ConfirmData(
                 title = context.getString(R.string.says, modId.id),
-                description = message,
+                description = message ?: "(empty)",
                 onConfirm = { result.confirm() },
                 onClose = { result.cancel() }
             ),
@@ -45,13 +45,13 @@ open class WXChromeClient(
     override fun onJsConfirm(
         view: WebView,
         url: String,
-        message: String,
+        message: String?,
         result: JsResult,
     ): Boolean = options {
         context.confirm(
             confirmData = ConfirmData(
                 title = context.getString(R.string.says, modId.id),
-                description = message,
+                description = message ?: "(empty)",
                 onConfirm = { result.confirm() },
                 onClose = { result.cancel() }
             ),
@@ -63,7 +63,7 @@ open class WXChromeClient(
 
     override fun onJsPrompt(
         view: WebView,
-        url: String?,
+        url: String,
         message: String?,
         defaultValue: String?,
         result: JsPromptResult,

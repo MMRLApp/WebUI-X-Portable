@@ -4,7 +4,7 @@ import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import java.util.Collections
 import java.util.LinkedList
 
-class PathMatchersStore(private val maxHistory: Int = 100) {
+class PathMatchersStore() {
     // Synchronized wrapper around a LinkedList for O(1) additions
     private val _matchers = Collections.synchronizedList(LinkedList<HybridWebUI.PathMatcher>())
 
@@ -15,11 +15,6 @@ class PathMatchersStore(private val maxHistory: Int = 100) {
     fun add(request: HybridWebUI.PathMatcher) {
         synchronized(_matchers) {
             _matchers.add(request)
-
-            // Automated Cleanup: Keep the list from growing infinitely
-            while (_matchers.size > maxHistory) {
-                _matchers.removeAt(0)
-            }
         }
     }
 

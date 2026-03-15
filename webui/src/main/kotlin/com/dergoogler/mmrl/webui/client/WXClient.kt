@@ -39,7 +39,7 @@ open class WXClient : HybridWebUIClient {
         }
     }
 
-    override fun onPageFinished(view: WebView?, url: String?) {
+    override fun onPageFinished(view: WebView, url: String) {
         super.onPageFinished(view, url)
         mSwipeView.nullply {
             isRefreshing = false
@@ -121,9 +121,9 @@ open class WXClient : HybridWebUIClient {
     }
 
     override fun onReceivedHttpError(
-        view: WebView?,
-        request: WebResourceRequest?,
-        errorResponse: WebResourceResponse?,
+        view: WebView,
+        request: WebResourceRequest,
+        errorResponse: WebResourceResponse,
     ) {
         super.onReceivedHttpError(view, request, errorResponse)
         mSwipeView.nullply {

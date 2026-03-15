@@ -1,11 +1,18 @@
 package com.dergoogler.mmrl.hybridwebui
 
+import android.R.attr.tag
 import android.graphics.Bitmap
+import android.os.Message
+import android.util.Log
+import android.webkit.ClientCertRequest
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import java.io.ByteArrayInputStream
 
 open class HybridWebUIClient(
@@ -16,9 +23,74 @@ open class HybridWebUIClient(
     protected val network get() = store.networkStore
     protected val pathMatchers get() = store.pathMatchers
 
+    private fun loopInterfaces(methodName: String, caller: JavaScriptInterface.() -> Unit) {
+        if (!view.isStoreInitialized) {
+            Log.w(TAG, "$methodName called before store initialization")
+            return
+        }
+
+        try {
+            store.jsInterfaceStore.loop(caller)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error calling $methodName", e)
+        }
+    }
+
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+        loopInterfaces("onPageStarted") {
+            onPageStarted(view as HybridWebUI, url, favicon)
+        }
+
         view.evaluateJavascript(CONSOLE_OVERRIDE_JS, null)
         super.onPageStarted(view, url, favicon)
+    }
+
+    override fun onPageFinished(view: WebView, url: String) {
+        loopInterfaces("onPageFinished") {
+            onPageFinished(view as HybridWebUI, url)
+        }
+
+        super.onPageFinished(view, url)
+    }
+
+    override fun onFormResubmission(view: WebView, dontResend: Message, resend: Message) {
+        loopInterfaces("onFormResubmission") {
+            onFormResubmission(view as HybridWebUI, dontResend, resend)
+        }
+
+        super.onFormResubmission(view, dontResend, resend)
+    }
+
+    override fun onReceivedHttpError(
+        view: WebView,
+        request: WebResourceRequest,
+        errorResponse: WebResourceResponse,
+    ) {
+        loopInterfaces("onReceivedHttpError") {
+            onReceivedHttpError(view as HybridWebUI, request, errorResponse)
+        }
+
+        super.onReceivedHttpError(view, request, errorResponse)
+    }
+
+    override fun onReceivedClientCertRequest(view: WebView, request: ClientCertRequest) {
+        loopInterfaces("onReceivedClientCertRequest") {
+            onReceivedClientCertRequest(view as HybridWebUI, request)
+        }
+
+        super.onReceivedClientCertRequest(view, request)
+    }
+
+    override fun onReceivedError(
+        view: WebView?,
+        request: WebResourceRequest,
+        error: WebResourceError
+    ) {
+        loopInterfaces("onReceivedError") {
+            onReceivedError(view as HybridWebUI, request, error)
+        }
+
+        super.onReceivedError(view, request, error)
     }
 
     @WorkerThread
@@ -68,5 +140,9 @@ open class HybridWebUIClient(
             null,
             ByteArrayInputStream("Message: ${throwable.message}\n\nStacktrace: ${throwable.stackTraceToString()}".toByteArray())
         )
+    }
+
+    private companion object {
+        const val TAG = "HybridWebUIClient"
     }
 }

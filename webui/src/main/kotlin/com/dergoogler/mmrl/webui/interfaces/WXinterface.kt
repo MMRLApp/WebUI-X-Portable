@@ -11,6 +11,7 @@ import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
@@ -46,32 +47,13 @@ data class WXOptions(
 @Keep
 open class WXInterface(
     val wxOptions: WXOptions,
-) : ContextWrapper(wxOptions.options.context) {
+) : JavaScriptInterface(wxOptions.options.context, wxOptions.webView) {
     val scope = CoroutineScope(Dispatchers.Main)
     val webView: WebUIView = wxOptions.webView
     val options: WebUIOptions = wxOptions.options
-    val context: Context = wxOptions.options.context
     val modId: ModId = options.modId
     val config: WebUIConfig = options.config
     val activity: Activity? = context.findActivity()
-
-    /**
-     * The name of the entity.
-     *
-     * This property holds the name associated with this object.
-     * It is declared as `lateinit` which means it must be initialized before being accessed.
-     * Attempting to access it before initialization will result in a [kotlin.UninitializedPropertyAccessException].
-     */
-    open lateinit var name: String
-
-    /**
-     * A string tag used for logging and identification purposes.
-     *
-     * This tag helps in categorizing log messages and can be useful for debugging.
-     * By default, it is initialized to "WXInterface", but it can be overridden
-     * in subclasses to provide more specific identification.
-     */
-    open var tag: String = "WXInterface"
 
     open val assetHandlers: List<Pair<String, HybridWebUI.PathHandler>> = emptyList()
 
@@ -298,7 +280,4 @@ open class WXInterface(
             return false
         }
     }
-
-    val consoleLogs get() = webView.store.consoleStore
-    val networkRequests get() = webView.store.networkStore
 }

@@ -14,6 +14,7 @@ import android.widget.Toast
 import com.dergoogler.mmrl.ext.toBooleanOrNull
 import com.dergoogler.mmrl.ext.toIntOrNull
 import com.dergoogler.mmrl.ext.toStringOrNull
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFileInputStream
@@ -115,7 +116,8 @@ enum class DexSourceType {
     APK
 }
 
-private val interfaceCache = ConcurrentHashMap<String, JavaScriptInterface<out WXInterface>>()
+private val interfaceCache =
+    ConcurrentHashMap<String, JavaScriptInterfaceImplementation<out WXInterface>>()
 
 @JsonClass(generateAdapter = true)
 data class WebUIConfigDexFile(
@@ -143,7 +145,7 @@ data class WebUIConfigDexFile(
     fun getInterface(
         context: Context,
         modId: ModId,
-    ): JavaScriptInterface<out WXInterface>? {
+    ): JavaScriptInterfaceImplementation<out WXInterface>? {
         // Use guard clauses for cleaner validation at the start.
         val currentClassName = className ?: return null
         val currentPath = path ?: return null
@@ -169,7 +171,7 @@ data class WebUIConfigDexFile(
 
             @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
 
-            val instance = JavaScriptInterface(clazz, dexConfig = this)
+            val instance = JavaScriptInterfaceImplementation(clazz)
 
             // 4. Cache the new instance and return it.
             interfaceCache.putIfAbsent(currentClassName, instance)

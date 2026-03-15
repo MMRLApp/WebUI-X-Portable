@@ -32,6 +32,8 @@ import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
 import com.dergoogler.mmrl.hybridwebui.event.SaveFileLauncherEvent
 import com.dergoogler.mmrl.hybridwebui.event.WebConsoleEvent
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
@@ -44,6 +46,7 @@ import java.util.Locale
 open class HybridWebUI : WebView {
     var uri: Uri
     private lateinit var _store: HybridWebUIStore
+    private var onReadyCallback: OnReady? = null
 
     constructor(context: Context, uri: Uri) : super(context) {
         this.uri = uri
@@ -78,6 +81,7 @@ open class HybridWebUI : WebView {
             if (!isStoreInitialized) {
                 _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
                 onReady(_store)
+                onReadyCallback?.invoke(_store)
             }
         }
     }
@@ -93,6 +97,10 @@ open class HybridWebUI : WebView {
 
         addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
         addEventListener("__hw_web_console_internal__", WebConsoleEvent())
+    }
+
+    fun onReady(callback: OnReady) {
+        onReadyCallback = callback
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -366,6 +374,79 @@ open class HybridWebUI : WebView {
         }
     }
 
+    @SuppressLint("JavascriptInterface")
+    override fun addJavascriptInterface(obj: Any, name: String) {
+        if (!isStoreInitialized) {
+            Log.e(TAG, "Store not initialized")
+            return
+        }
+
+        if (obj !is JavaScriptInterface) {
+            Log.d(TAG, "$obj is not a WXInterface")
+            return
+        }
+
+        if (store.jsInterfaceStore.has(name)) {
+            Log.w(TAG, "Interface ${obj.name} already exists")
+            return
+        }
+        try {
+            super.addJavascriptInterface(obj, name)
+            store.jsInterfaceStore += JavaScriptInterfaceImplementation.Instance(obj)
+            Log.d(TAG, "Added interface $name")
+        } catch (t: Throwable) {
+            Log.e(TAG, "addJavascriptInterface failed", t)
+        }
+    }
+
+    @Throws(IllegalStateException::class)
+    @SuppressLint("JavascriptInterface")
+    open fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation<out JavaScriptInterface>) {
+        try {
+            val js = obj.createNew(context, this)
+
+            if (js == null) {
+                Log.e(TAG, "Couldn't create new JavaScript interface. Interface was null.")
+                return
+            }
+
+            if (!js.name.isBlank()) {
+                addJavascriptInterface(js.instance, js.name)
+            }
+        } catch (e: Exception) {
+            throw IllegalStateException("Couldn't add a new JavaScript interface.")
+        }
+    }
+
+    @Throws(IllegalStateException::class)
+    @SuppressLint("JavascriptInterface")
+    open fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation.Instance) {
+        try {
+            addJavascriptInterface(obj.instance, obj.name)
+        } catch (e: Exception) {
+            throw IllegalStateException("Couldn't add a new JavaScript interface.")
+        }
+    }
+
+    @Throws(IllegalStateException::class)
+    @SuppressLint("JavascriptInterface")
+    inline fun <reified T : JavaScriptInterface> addJavascriptInterface(
+        initArgs: Array<Any>? = null,
+        parameterTypes: Array<Class<*>>? = null,
+    ) {
+        try {
+            val implementation = JavaScriptInterface(T::class.java, initArgs, parameterTypes)
+            addJavascriptInterface(implementation)
+        } catch (e: Exception) {
+            throw IllegalStateException("Couldn't add a new JavaScript interface.")
+        }
+    }
+
+    @Throws(IllegalStateException::class)
+    open fun addJavascriptInterface(vararg obj: JavaScriptInterfaceImplementation<out JavaScriptInterface>) {
+        obj.forEach { addJavascriptInterface(it) }
+    }
+
     class PathMatcher(
         val mUri: Uri,
         val mPath: String,
@@ -528,6 +609,10 @@ open class HybridWebUI : WebView {
         )
         open fun listen(view: HybridWebUI, event: HybridWebUIEvent) {
         }
+    }
+
+    fun interface OnReady {
+        operator fun invoke(store: HybridWebUIStore)
     }
 
     companion object {

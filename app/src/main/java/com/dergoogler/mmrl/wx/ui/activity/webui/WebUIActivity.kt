@@ -135,10 +135,11 @@ class WebUIActivity : WXActivity() {
 
         this@WebUIActivity.view = WebUIXView(options).apply {
             with(wx) {
-                addJavascriptInterface<KernelSUInterface>()
+                onReady {
+                    addJavascriptInterface<KernelSUInterface>()
+                }
 
                 val ready = scope.getReady()
-                Log.d("GAY", ready.toString())
                 if (ready.await()) {
                     wx.loadDomain()
                 }
