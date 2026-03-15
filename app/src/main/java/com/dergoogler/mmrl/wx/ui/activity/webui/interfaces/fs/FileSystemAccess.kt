@@ -7,10 +7,10 @@ import android.system.OsConstants.F_OK
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIEvent
+import com.dergoogler.mmrl.hybridwebui.iife
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.wx.util.iife
 import com.dergoogler.mmrl.wx.util.scrambleClassName
 import com.topjohnwu.superuser.internal.UiThreadHandler.handler
 import com.topjohnwu.superuser.nio.FileSystemManager
@@ -68,7 +68,7 @@ window.fs.X_OK = 4 // File is executable
 
 const interfaceRef = window["$objectName"]
 delete window["$objectName"]
-delete window["__wx--$objectName"]
+delete window["$name"]
 
 window.fs.access = async function(path, mode = F_OK) {
   const result = await window.fs.accessInfo(path)

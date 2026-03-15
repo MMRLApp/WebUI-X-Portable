@@ -249,5 +249,3 @@ inline fun <reified T : WXInterface> WXInterface.scrambleClassName(): String {
     val className = T::class.simpleName ?: name
     return className.toList().shuffled().joinToString("")
 }
-
-val String.iife get() = "(function () {$this})();"

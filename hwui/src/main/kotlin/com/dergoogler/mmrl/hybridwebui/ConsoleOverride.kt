@@ -86,3 +86,7 @@ fun wrapConsoleEvalResult(code: String) = """(function() {
         return JSON.stringify({ ok:false, value:e.toString() });
     }
 })();""".trimIndent()
+
+
+val String.iife get() = "(function () {$this})();"
+val String.asyncIife get() = "(async function () {$this})();"

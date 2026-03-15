@@ -7,10 +7,10 @@ import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIEvent
+import com.dergoogler.mmrl.hybridwebui.iife
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.wx.util.iife
 import com.dergoogler.mmrl.wx.util.scrambleClassName
 
 class FileSystemInputStream(wxOptions: WXOptions) : WXInterface(wxOptions) {
@@ -68,7 +68,7 @@ class FileSystemInputStream(wxOptions: WXOptions) : WXInterface(wxOptions) {
 let inputStreamQueue = Promise.resolve()
 const interfaceRef = window["$objectName"]
 delete window["$objectName"]
-delete window["__wx--$objectName"]
+delete window["$name"]
 
 function enqueueInputStreamRequest(task) {
   const run = inputStreamQueue.then(task, task)

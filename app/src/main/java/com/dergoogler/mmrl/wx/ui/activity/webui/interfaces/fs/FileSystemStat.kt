@@ -5,10 +5,10 @@ import android.graphics.Bitmap
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIEvent
+import com.dergoogler.mmrl.hybridwebui.iife
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.wx.util.iife
 import com.dergoogler.mmrl.wx.util.scrambleClassName
 import org.json.JSONObject
 
@@ -65,7 +65,7 @@ class FileSystemStat(wxOptions: WXOptions) : WXInterface(wxOptions) {
 
 const interfaceRef = window["$objectName"]
 delete window["$objectName"]
-delete window["__wx--$objectName"]
+delete window["$name"]
             
 window.fs.stat = async function(path) {
   if (typeof path !== "string") {

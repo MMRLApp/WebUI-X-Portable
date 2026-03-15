@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.wx.ui.activity.webui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +31,6 @@ import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemReadDire
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemStat
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.component.devtools.DevTools
-import com.dergoogler.mmrl.wx.util.iife
 import com.dergoogler.mmrl.wx.util.initPlatform
 import com.dergoogler.mmrl.wx.util.setMyCrashHandler
 import dagger.hilt.android.AndroidEntryPoint
