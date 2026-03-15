@@ -113,10 +113,11 @@ open class HybridWebUIChromeClient(
         super.onProgressChanged(view, newProgress)
     }
 
-    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+    // TODO: Implement this
+/*    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
         console.add(consoleMessage.toConsoleEntry())
         return super.onConsoleMessage(consoleMessage)
-    }
+    }*/
 
     override fun onReceivedIcon(view: WebView, icon: Bitmap?) {
         notifyInterfaces("onReceivedIcon") {

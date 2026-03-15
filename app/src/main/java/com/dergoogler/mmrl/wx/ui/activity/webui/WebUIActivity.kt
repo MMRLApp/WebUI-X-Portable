@@ -25,8 +25,14 @@ import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
+import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemAccess
+import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemInputStream
+import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemOutputStream
+import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemReadDirectory
+import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.fs.FileSystemStat
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.component.devtools.DevTools
+import com.dergoogler.mmrl.wx.util.iife
 import com.dergoogler.mmrl.wx.util.initPlatform
 import com.dergoogler.mmrl.wx.util.setMyCrashHandler
 import dagger.hilt.android.AndroidEntryPoint
@@ -140,6 +146,13 @@ class WebUIActivity : WXActivity() {
                     addJavascriptInterface<KernelSUInterface>()
                     // only adds file chooser and file save event
                     addJavascriptInterface<FileChooserInterface>()
+
+                    // not real interfaces, just keep it organized
+                    addJavascriptInterface<FileSystemAccess>()
+                    addJavascriptInterface<FileSystemInputStream>()
+                    addJavascriptInterface<FileSystemOutputStream>()
+                    addJavascriptInterface<FileSystemReadDirectory>()
+                    addJavascriptInterface<FileSystemStat>()
                 }
 
                 val ready = scope.getReady()

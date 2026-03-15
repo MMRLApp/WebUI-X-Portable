@@ -33,6 +33,8 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -96,7 +98,7 @@ private sealed class FlatRow {
 
 @Composable
 fun ConsoleTab(webview: WXView) {
-    val richLogs = webview.consoleLogs
+    val richLogs by webview.consoleLogs.flow.collectAsState()
     val evalEntries = remember { mutableStateListOf<LogEntry>() }
     val listState = rememberLazyListState()
 
@@ -105,7 +107,7 @@ fun ConsoleTab(webview: WXView) {
     var jsInput by remember { mutableStateOf("") }
 
     val allEntries: List<LogEntry> = remember(richLogs.size, evalEntries.size) {
-        (richLogs.all.map { LogEntry.WebMessage(it) } + evalEntries)
+        (richLogs.map { LogEntry.WebMessage(it) } + evalEntries)
             .sortedBy { it.timestamp }
     }
 
@@ -132,10 +134,10 @@ fun ConsoleTab(webview: WXView) {
     }
 
     val errorCount = remember(richLogs.size) {
-        richLogs.all.count { it.level == ConsoleMessage.MessageLevel.ERROR }
+        richLogs.count { it.level == ConsoleMessage.MessageLevel.ERROR }
     }
     val warnCount = remember(richLogs.size) {
-        richLogs.all.count { it.level == ConsoleMessage.MessageLevel.WARNING }
+        richLogs.count { it.level == ConsoleMessage.MessageLevel.WARNING }
     }
 
     LaunchedEffect(filtered.size) {
@@ -151,7 +153,7 @@ fun ConsoleTab(webview: WXView) {
             errorCount = errorCount,
             warnCount = warnCount,
             onClear = {
-                richLogs.clear()
+                webview.consoleLogs.clear()
                 evalEntries.clear()
             }
         )

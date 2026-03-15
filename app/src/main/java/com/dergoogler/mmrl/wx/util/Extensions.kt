@@ -21,6 +21,7 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.stub.IServiceManager
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
+import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
@@ -243,3 +244,10 @@ inline fun <reified T : Any> Map<String, Any?>.toDataClass(): T {
 
     return ctor.callBy(args)
 }
+
+inline fun <reified T : WXInterface> WXInterface.scrambleClassName(): String {
+    val className = T::class.simpleName ?: name
+    return className.toList().shuffled().joinToString("")
+}
+
+val String.iife get() = "(function () {$this})();"

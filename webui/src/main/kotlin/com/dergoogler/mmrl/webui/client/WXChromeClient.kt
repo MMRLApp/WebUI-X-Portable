@@ -103,25 +103,5 @@ open class WXChromeClient(
             colorScheme = colorScheme
         )
     }
-
-    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-        super.onConsoleMessage(consoleMessage)
-
-        val message = """
-            ${consoleMessage.message()}
-            Source: ${consoleMessage.sourceId()}
-            Line: ${consoleMessage.lineNumber()}
-            Level: ${consoleMessage.messageLevel()}
-        """.trimIndent()
-
-        when (consoleMessage.messageLevel()) {
-            ConsoleMessage.MessageLevel.TIP -> Log.i(TAG, message)
-            ConsoleMessage.MessageLevel.LOG -> Log.d(TAG, message)
-            ConsoleMessage.MessageLevel.WARNING -> Log.w(TAG, message)
-            ConsoleMessage.MessageLevel.ERROR -> Log.e(TAG, message)
-            else -> Log.v(TAG, message)
-        }
-        return true
-    }
 }
 

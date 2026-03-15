@@ -1,41 +1,35 @@
 package com.dergoogler.mmrl.hybridwebui.store
 
 import com.dergoogler.mmrl.hybridwebui.ConsoleEntry
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.util.Collections
 import java.util.LinkedList
 
 class WebConsoleStore(private val maxHistory: Int = 100) {
-    // Synchronized wrapper around a LinkedList for O(1) additions
     private val _console = Collections.synchronizedList(LinkedList<ConsoleEntry>())
 
-    /**
-     * Thread-safe addition with automated cleanup.
-     * Called from WebView background threads.
-     */
+    private val _flow = MutableStateFlow<List<ConsoleEntry>>(emptyList())
+    val flow: StateFlow<List<ConsoleEntry>> = _flow.asStateFlow()
+
     fun add(request: ConsoleEntry) {
         synchronized(_console) {
             _console.add(request)
-
-            // Automated Cleanup: Keep the list from growing infinitely
             while (_console.size > maxHistory) {
                 _console.removeAt(0)
             }
-        }
-    }
-
-    val size get(): Int {
-        synchronized(_console) {
-            return _console.toList().size // Return a snapshot
-        }
-    }
-
-    val all get(): List<ConsoleEntry> {
-        synchronized(_console) {
-            return _console.toList() // Return a snapshot
+            // Emit a fresh snapshot to the Flow
+            _flow.value = _console.toList()
         }
     }
 
     fun clear() {
-        _console.clear()
+        synchronized(_console) {
+            _console.clear()
+            _flow.value = emptyList()
+        }
     }
+
+    val all: List<ConsoleEntry> get() = synchronized(_console) { _console.toList() }
 }

@@ -36,8 +36,6 @@ import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
 import com.dergoogler.mmrl.hybridwebui.event.WebConsoleEvent
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URLConnection
@@ -76,21 +74,10 @@ open class HybridWebUI : WebView {
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        doOnAttach {
-            setupDependencies()
-        }
+        setupDependencies()
     }
 
     private fun setupDependencies() {
-        val owner = findViewTreeViewModelStoreOwner() ?: run {
-            Log.e(TAG, "No ViewModelStoreOwner found. Ensure View is hosted in a ComponentActivity/Fragment.")
-            return
-        }
-
-        if (!isStoreInitialized) {
-            _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
-        }
-
         if (!isActivityInitialized) {
             val discoveredActivity = findActivity()
             if (discoveredActivity != null) {
@@ -101,9 +88,30 @@ open class HybridWebUI : WebView {
             }
         }
 
+        val owner = findViewTreeViewModelStoreOwner()
+            ?: _activity as? androidx.lifecycle.ViewModelStoreOwner
+
+        if (owner == null) {
+            Log.e(TAG, "No ViewModelStoreOwner found.")
+            return
+        }
+
+        if (!isStoreInitialized) {
+            _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
+        }
+
         if (isStoreInitialized && isActivityInitialized) {
-            onReady(_store)
-            onReadyCallback?.invoke(_store)
+            if (_activity.window != null) {
+                onReady(_store)
+                onReadyCallback?.invoke(_store)
+            } else {
+                post {
+                    if (isActivityInitialized && _activity.window != null) {
+                        onReady(_store)
+                        onReadyCallback?.invoke(_store)
+                    }
+                }
+            }
         }
     }
 
@@ -419,9 +427,7 @@ open class HybridWebUI : WebView {
                 return
             }
 
-            if (!js.name.isBlank()) {
-                addJavascriptInterface(js.instance, js.name)
-            }
+            addJavascriptInterface(js.instance, js.name)
         } catch (e: Exception) {
             throw IllegalStateException("Couldn't add a new JavaScript interface.")
         }

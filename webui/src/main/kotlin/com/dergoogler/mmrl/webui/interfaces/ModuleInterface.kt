@@ -6,8 +6,10 @@ import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
 import androidx.core.app.ShareCompat
 import androidx.core.content.pm.PackageInfoCompat
+import androidx.core.view.ViewCompat.getWindowInsetsController
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.webui.moshi
@@ -28,19 +30,17 @@ class ModuleInterface(
     override var name: String = "$${modId.sanitizedId}"
     override var tag: String = "ModuleInterface"
 
-    private fun getWindowInsetsController(activity: Activity): WindowInsetsControllerCompat =
+/*    private fun getWindowInsetsController(activity: Activity): WindowInsetsControllerCompat =
         WindowCompat.getInsetsController(
             activity.window,
             webView
-        )
+        )*/
 
     init {
-        withActivity<Unit> {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
+      /*  with(activity) {
             getWindowInsetsController(this).systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-
+        }*/
     }
 
     private var managerAdapter: JsonAdapter<Manager> = moshi.adapter(Manager::class.java)
@@ -137,9 +137,9 @@ class ModuleInterface(
 
     @get:JavascriptInterface
     val isLightNavigationBars: Boolean?
-        get() = withActivity<Boolean> {
+        get() = false /*withActivity<Boolean> {
             getWindowInsetsController(this).isAppearanceLightNavigationBars
-        }
+        }*/
 
     @get:JavascriptInterface
     val isDarkMode: Boolean
@@ -147,22 +147,22 @@ class ModuleInterface(
 
     @JavascriptInterface
     fun setLightNavigationBars(isLight: Boolean) = post {
-        withActivity {
+      /*  withActivity {
             getWindowInsetsController(this).isAppearanceLightNavigationBars = isLight
-        }
+        }*/
     }
 
     @get:JavascriptInterface
     val isLightStatusBars: Boolean?
-        get() = withActivity {
+        get() =false /* withActivity {
             getWindowInsetsController(this).isAppearanceLightStatusBars
-        }
+        }*/
 
     @JavascriptInterface
     fun setLightStatusBars(isLight: Boolean) = post {
-        withActivity {
+       /* withActivity {
             getWindowInsetsController(this).isAppearanceLightStatusBars = isLight
-        }
+        }*/
     }
 
     @get:JavascriptInterface
