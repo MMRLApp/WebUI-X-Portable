@@ -70,22 +70,22 @@ const interfaceRef = window["$objectName"]
 delete window["$objectName"]
 delete window["$name"]
 
-window.fs.access = async function(path, mode = F_OK) {
+window.fs.access = async function(path, mode = window.fs.F_OK) {
   const result = await window.fs.accessInfo(path)
 
-  if (mode === F_OK && !result.exists) {
+  if (mode === window.fs.F_OK && !result.exists) {
     throw new Error(`ENOENT: no such file or directory, access '${'$'}{path}'`)
   }
 
-  if ((mode & R_OK) !== 0 && !result.canRead) {
+  if ((mode & window.fs.R_OK) !== 0 && !result.canRead) {
     throw new Error(`EACCES: permission denied (read), access '${'$'}{path}'`)
   }
 
-  if ((mode & W_OK) !== 0 && !result.canWrite) {
+  if ((mode & window.fs.W_OK) !== 0 && !result.canWrite) {
     throw new Error(`EACCES: permission denied (write), access '${'$'}{path}'`)
   }
 
-  if ((mode & X_OK) !== 0 && !result.canExecute) {
+  if ((mode & window.fs.X_OK) !== 0 && !result.canExecute) {
     throw new Error(`EACCES: permission denied (execute), access '${'$'}{path}'`)
   }
 }
