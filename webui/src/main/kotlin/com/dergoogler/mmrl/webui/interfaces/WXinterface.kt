@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Handler
 import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Runnable
 
 
 data class WXOptions(
+    val activity: ComponentActivity,
     val webView: WebUIView,
     val options: WebUIOptions,
 )
@@ -47,13 +49,12 @@ data class WXOptions(
 @Keep
 open class WXInterface(
     val wxOptions: WXOptions,
-) : JavaScriptInterface(wxOptions.options.context, wxOptions.webView) {
+) : JavaScriptInterface(wxOptions.activity, wxOptions.webView) {
     val scope = CoroutineScope(Dispatchers.Main)
     val webView: WebUIView = wxOptions.webView
     val options: WebUIOptions = wxOptions.options
     val modId: ModId = options.modId
     val config: WebUIConfig = options.config
-    val activity: Activity? = context.findActivity()
 
     open val assetHandlers: List<Pair<String, HybridWebUI.PathHandler>> = emptyList()
 

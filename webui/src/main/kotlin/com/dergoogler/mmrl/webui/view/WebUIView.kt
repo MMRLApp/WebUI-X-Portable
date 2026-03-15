@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.webui.view
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
@@ -9,6 +10,7 @@ import android.view.ViewGroup.LayoutParams
 import android.webkit.ValueCallback
 import android.webkit.WebMessage
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.annotation.CallSuper
 import androidx.annotation.Keep
@@ -77,7 +79,8 @@ open class WebUIView : HybridWebUI {
 
     protected fun createDefaultWxOptions(options: WebUIOptions): WXOptions = WXOptions(
         webView = this,
-        options = options
+        options = options,
+        activity = ComponentActivity()
     )
 
     protected val interfaces: HashSet<JavaScriptInterface.Instance> = hashSetOf()
@@ -261,7 +264,7 @@ open class WebUIView : HybridWebUI {
 
     override fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation<out com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface>) {
         try {
-            val js = obj.createNewWX(createDefaultWxOptions(options))
+            val js = obj.createNewWX(createDefaultWxOptions(options)) ?: obj.createNew(activity, this)
             if (js == null) {
                 Log.e(TAG, "Couldn't create new JavaScript interface. Interface was null.")
                 return

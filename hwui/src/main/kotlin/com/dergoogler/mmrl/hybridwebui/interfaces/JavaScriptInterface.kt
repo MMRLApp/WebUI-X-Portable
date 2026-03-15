@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Message
+import android.util.Log
 import android.webkit.ClientCertRequest
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
@@ -18,21 +19,23 @@ import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
-import android.webkit.WebView
+import androidx.activity.ComponentActivity
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.store.NetworkRequestStore
 import com.dergoogler.mmrl.hybridwebui.store.WebConsoleStore
 
 open class JavaScriptInterface(
-    protected val context: Context,
+    protected val activity: ComponentActivity,
     protected val view: HybridWebUI
-) : ContextWrapper(context) {
+) : ContextWrapper(activity) {
+    protected val context: Context get() = activity.baseContext
+
     /**
      * The name of the entity.
      *
      * This property holds the name associated with this object.
      * It is declared as `lateinit` which means it must be initialized before being accessed.
-     * Attempting to access it before initialization will result in a [kotlin.UninitializedPropertyAccessException].
+     * Attempting to access it before initialization will result in a [UninitializedPropertyAccessException].
      */
     open lateinit var name: String
 
@@ -84,23 +87,26 @@ open class JavaScriptInterface(
     open fun onReceivedSslError(view: HybridWebUI, handler: SslErrorHandler, error: SslError) {}
 
 
-    open fun onJsAlert(view: HybridWebUI, url: String, message: String, result: JsResult): Boolean =
-        false
+    open fun onJsAlert(
+        view: HybridWebUI,
+        url: String,
+        message: String?,
+        result: JsResult
+    ): Boolean=false
 
     open fun onJsBeforeUnload(
         view: HybridWebUI,
         url: String,
         message: String?,
         result: JsResult
-    ): Boolean = false
+    ): Boolean=false
 
     open fun onJsConfirm(
         view: HybridWebUI,
         url: String,
         message: String?,
         result: JsResult
-    ): Boolean =
-        false
+    ): Boolean=false
 
     open fun onJsPrompt(
         view: HybridWebUI,
@@ -108,7 +114,7 @@ open class JavaScriptInterface(
         message: String?,
         defaultValue: String?,
         result: JsPromptResult
-    ): Boolean = false
+    ): Boolean=false
 
     open fun onPermissionRequest(request: PermissionRequest) {}
 
@@ -122,11 +128,16 @@ open class JavaScriptInterface(
 
     open fun onReceivedTouchIconUrl(view: HybridWebUI, url: String, precomposed: Boolean) {}
 
+    /**
+     * Called when the WebUI is destroyed
+     */
+    open fun onDestroy() {}
+
     open fun onShowFileChooser(
         webView: HybridWebUI,
         filePathCallback: ValueCallback<Array<Uri>>,
         fileChooserParams: WebChromeClient.FileChooserParams
-    ): Boolean = false
+    ): Boolean=false
 
     companion object {
         operator fun <T : JavaScriptInterface> invoke(

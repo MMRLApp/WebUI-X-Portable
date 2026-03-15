@@ -26,9 +26,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.nullply
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI.Companion.setDefaultFileChooserLauncher
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI.Companion.setDefaultSaveFileLauncher
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI.OnFileSaveRequest.Companion.DefaultSaveFileLauncher
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
@@ -139,14 +136,6 @@ open class WXActivity : ComponentActivity() {
      */
     open suspend fun onRender(scope: CoroutineScope) {
         rootView = findViewById(android.R.id.content)
-
-        view.nullply {
-            setDefaultSaveFileLauncher(wx.store)
-            setDefaultFileChooserLauncher(wx.store)
-            wx.store.onSaveFileRequest { view, bytes, fileName, mimeType ->
-                DefaultSaveFileLauncher(view, bytes, fileName, mimeType)
-            }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

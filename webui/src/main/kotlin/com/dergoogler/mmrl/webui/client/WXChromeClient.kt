@@ -105,6 +105,8 @@ open class WXChromeClient(
     }
 
     override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+        super.onConsoleMessage(consoleMessage)
+
         val message = """
             ${consoleMessage.message()}
             Source: ${consoleMessage.sourceId()}

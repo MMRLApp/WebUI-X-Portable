@@ -20,14 +20,41 @@ class JavaScriptInterfaceStore() {
         }
     }
 
-    fun <T> loop(caller: JavaScriptInterface.() -> T): T? {
+    /**
+     * Executes a block on EVERY registered interface.
+     * Used for events like onProgressChanged or onReceivedTitle.
+     */
+    fun forEach(action: JavaScriptInterface.() -> Unit) {
         synchronized(_interfaces) {
-            for (jsInterface in _interfaces.toList()) {
-                return@synchronized jsInterface.instance.caller()
+            for (wrapper in _interfaces) {
+                wrapper.instance.action()
             }
         }
+    }
 
+    /**
+     * Finds the first interface that returns a non-null result (usually Boolean).
+     * Used for events like onShowFileChooser or onJsAlert.
+     */
+    fun <T> findFirst(caller: JavaScriptInterface.() -> T?): T? {
+        synchronized(_interfaces) {
+            for (wrapper in _interfaces) {
+                val result = wrapper.instance.caller()
+               return result
+            }
+        }
         return null
+    }
+
+    fun dispatchBoolean(caller: JavaScriptInterface.() -> Boolean): Boolean {
+        var anyHandled = false
+        synchronized(_interfaces) {
+            for (wrapper in _interfaces) {
+                val result = wrapper.instance.caller()
+                if (result) anyHandled = true
+            }
+        }
+        return anyHandled
     }
 
     operator fun plus(jsObj: JavaScriptInterfaceImplementation.Instance) {

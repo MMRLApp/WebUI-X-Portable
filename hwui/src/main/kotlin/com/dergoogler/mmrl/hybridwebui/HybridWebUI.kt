@@ -3,12 +3,15 @@
 package com.dergoogler.mmrl.hybridwebui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
+import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.webkit.ValueCallback
 import android.webkit.WebResourceResponse
@@ -30,7 +33,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
-import com.dergoogler.mmrl.hybridwebui.event.SaveFileLauncherEvent
 import com.dergoogler.mmrl.hybridwebui.event.WebConsoleEvent
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
@@ -46,6 +48,7 @@ import java.util.Locale
 open class HybridWebUI : WebView {
     var uri: Uri
     private lateinit var _store: HybridWebUIStore
+    private lateinit var _activity: ComponentActivity
     private var onReadyCallback: OnReady? = null
 
     constructor(context: Context, uri: Uri) : super(context) {
@@ -74,28 +77,63 @@ open class HybridWebUI : WebView {
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         doOnAttach {
-            val owner = findViewTreeViewModelStoreOwner() ?: run {
-                Log.e(TAG, "No ViewModelStoreOwner found in view tree")
-                return@doOnAttach
-            }
-            if (!isStoreInitialized) {
-                _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
-                onReady(_store)
-                onReadyCallback?.invoke(_store)
+            setupDependencies()
+        }
+    }
+
+    private fun setupDependencies() {
+        val owner = findViewTreeViewModelStoreOwner() ?: run {
+            Log.e(TAG, "No ViewModelStoreOwner found. Ensure View is hosted in a ComponentActivity/Fragment.")
+            return
+        }
+
+        if (!isStoreInitialized) {
+            _store = ViewModelProvider(owner)[HybridWebUIStore::class.java]
+        }
+
+        if (!isActivityInitialized) {
+            val discoveredActivity = findActivity()
+            if (discoveredActivity != null) {
+                _activity = discoveredActivity
+            } else {
+                Log.e(TAG, "Could not find ComponentActivity in the view context hierarchy")
+                return
             }
         }
+
+        if (isStoreInitialized && isActivityInitialized) {
+            onReady(_store)
+            onReadyCallback?.invoke(_store)
+        }
+    }
+
+    /**
+     * Optimized Activity discovery helper.
+     * Fixed: Added 'return' to stop the loop once the Activity is found.
+     */
+    private fun findActivity(): ComponentActivity? {
+        var context = this.context
+        while (context is ContextWrapper) {
+            if (context is ComponentActivity) return context
+            context = context.baseContext
+        }
+        return null
     }
 
     val store: HybridWebUIStore
         get() = if (isStoreInitialized) _store
         else throw IllegalStateException("Store accessed before onStoreReady()")
 
+    val activity: ComponentActivity
+        get() = if (isActivityInitialized) _activity
+        else throw IllegalStateException("Activity accessed before onStoreReady()")
+
     @CallSuper
     protected open fun onReady(store: HybridWebUIStore) {
         webViewClient = HybridWebUIClient(this)
         webChromeClient = HybridWebUIChromeClient(this)
 
-        addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
+        // addEventListener("SaveFileLauncher", SaveFileLauncherEvent())
         addEventListener("__hw_web_console_internal__", WebConsoleEvent())
     }
 
@@ -119,36 +157,6 @@ open class HybridWebUI : WebView {
         settings.domStorageEnabled = true
         settings.allowFileAccess = false
         settings.blockNetworkLoads = false
-    }
-
-    fun interface OnFileSaveRequest {
-        operator fun invoke(view: HybridWebUI, bytes: ByteArray, fileName: String, mimeType: String)
-
-        companion object {
-            val DefaultSaveFileLauncher: (HybridWebUI, ByteArray, String, String) -> Unit
-                get() = def@{ view, data, fileName, mimeType ->
-                    if (!view.isStoreInitialized) {
-                        return@def
-                    }
-
-                    if (view.store.saveFileLauncher == null) {
-                        return@def
-                    }
-
-                    view.store.pendingSaveData = data
-                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = mimeType
-                        putExtra(Intent.EXTRA_TITLE, fileName)
-                    }
-                    try {
-                        view.store.saveFileLauncher!!.launch(intent)
-                    } catch (e: Exception) {
-                        view.store.pendingSaveData = null
-                        e.printStackTrace()
-                    }
-                }
-        }
     }
 
     private var _insets: HybridWebUIInsets? = null
@@ -321,6 +329,7 @@ open class HybridWebUI : WebView {
     }
 
     val isStoreInitialized get() = ::_store.isInitialized
+    val isActivityInitialized get() = ::_activity.isInitialized
 
     fun addPathHandler(
         path: String,
@@ -403,7 +412,7 @@ open class HybridWebUI : WebView {
     @SuppressLint("JavascriptInterface")
     open fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation<out JavaScriptInterface>) {
         try {
-            val js = obj.createNew(context, this)
+            val js = obj.createNew(activity, this)
 
             if (js == null) {
                 Log.e(TAG, "Couldn't create new JavaScript interface. Interface was null.")
@@ -617,61 +626,15 @@ open class HybridWebUI : WebView {
 
     companion object {
         const val TAG = "HybridWebUI"
-
-
-        fun ComponentActivity.setDefaultFileChooserLauncher(store: HybridWebUIStore) {
-            store.fileChooserLauncher = registerForActivityResult(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result ->
-                val uris: Array<Uri>? = when (result.resultCode) {
-                    RESULT_OK -> result.data?.let { data ->
-                        when {
-                            data.clipData != null -> {
-                                Array(data.clipData!!.itemCount) { i ->
-                                    data.clipData!!.getItemAt(i).uri // Multiple files
-                                }
-                            }
-
-                            data.data != null -> {
-                                arrayOf(data.data!!)
-                            } // Single file
-                            else -> null
-                        }
-                    }
-
-                    else -> null
-                }
-
-                store.filePathCallback?.onReceiveValue(uris)
-                store.filePathCallback = null
-            }
-        }
-
-        fun ComponentActivity.setDefaultSaveFileLauncher(store: HybridWebUIStore) {
-            store.saveFileLauncher = registerForActivityResult(
-                ActivityResultContracts.StartActivityForResult()
-            ) { result ->
-                val uri = if (result.resultCode == RESULT_OK) result.data?.data else null
-                val data = store.pendingSaveData
-                if (uri != null && data != null) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                            contentResolver.openOutputStream(uri)?.use { it.write(data) }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        } finally {
-                            store.pendingSaveData = null
-                        }
-                    }
-                } else {
-                    store.pendingSaveData = null
-                }
-            }
-        }
     }
 
     open fun clearState() {
-        if (isStoreInitialized) _store.clear()
+        if (isStoreInitialized) {
+            _store.clear()
+            _store.jsInterfaceStore.forEach {
+                onDestroy()
+            }
+        }
     }
 
     override fun destroy() {

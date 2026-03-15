@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.managerVersion
+import com.dergoogler.mmrl.hybridwebui.interfaces.prebuilt.FileChooserInterface
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
@@ -137,6 +138,8 @@ class WebUIActivity : WXActivity() {
             with(wx) {
                 onReady {
                     addJavascriptInterface<KernelSUInterface>()
+                    // only adds file chooser and file save event
+                    addJavascriptInterface<FileChooserInterface>()
                 }
 
                 val ready = scope.getReady()

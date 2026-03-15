@@ -2,9 +2,11 @@ package com.dergoogler.mmrl.hybridwebui.interfaces
 
 import android.content.Context
 import android.util.Log
+import androidx.activity.ComponentActivity
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.store.NetworkRequestStore
 import com.dergoogler.mmrl.hybridwebui.store.WebConsoleStore
+import kotlin.jvm.java
 
 data class JavaScriptInterfaceImplementation<T : JavaScriptInterface>(
     val clazz: Class<T>,
@@ -19,12 +21,12 @@ data class JavaScriptInterfaceImplementation<T : JavaScriptInterface>(
     }
 
     fun createNew(
-        context: Context,
+        activity: ComponentActivity,
         view: HybridWebUI
     ): Instance? {
         return runCatching {
-            val types = arrayOf(Context::class.java, HybridWebUI::class.java, *(parameterTypes ?: emptyArray()))
-            val args = arrayOf(context, view, *(initArgs ?: emptyArray()))
+            val types = arrayOf(ComponentActivity::class.java, HybridWebUI::class.java, *(parameterTypes ?: emptyArray()))
+            val args = arrayOf(activity, view, *(initArgs ?: emptyArray()))
 
             val constructor = clazz.getDeclaredConstructor(*types)
             val instance = constructor.newInstance(*args)

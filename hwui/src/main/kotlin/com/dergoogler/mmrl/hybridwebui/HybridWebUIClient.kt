@@ -23,21 +23,22 @@ open class HybridWebUIClient(
     protected val network get() = store.networkStore
     protected val pathMatchers get() = store.pathMatchers
 
-    private fun loopInterfaces(methodName: String, caller: JavaScriptInterface.() -> Unit) {
-        if (!view.isStoreInitialized) {
-            Log.w(TAG, "$methodName called before store initialization")
-            return
-        }
+    private fun <T> queryInterfaces(methodName: String, caller: JavaScriptInterface.() -> T): T? {
+        if (!view.isStoreInitialized) return null
+        return runCatching {
+            store.jsInterfaceStore.findFirst(caller)
+        }.onFailure { Log.e(TAG, "Error in $methodName", it) }.getOrNull()
+    }
 
-        try {
-            store.jsInterfaceStore.loop(caller)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error calling $methodName", e)
-        }
+    private fun notifyInterfaces(methodName: String, action: JavaScriptInterface.() -> Unit) {
+        if (!view.isStoreInitialized) return
+        runCatching {
+            store.jsInterfaceStore.forEach(action)
+        }.onFailure { Log.e(TAG, "Error in $methodName", it) }
     }
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
-        loopInterfaces("onPageStarted") {
+        notifyInterfaces("onPageStarted") {
             onPageStarted(view as HybridWebUI, url, favicon)
         }
 
@@ -46,7 +47,7 @@ open class HybridWebUIClient(
     }
 
     override fun onPageFinished(view: WebView, url: String) {
-        loopInterfaces("onPageFinished") {
+        notifyInterfaces("onPageFinished") {
             onPageFinished(view as HybridWebUI, url)
         }
 
@@ -54,7 +55,7 @@ open class HybridWebUIClient(
     }
 
     override fun onFormResubmission(view: WebView, dontResend: Message, resend: Message) {
-        loopInterfaces("onFormResubmission") {
+        notifyInterfaces("onFormResubmission") {
             onFormResubmission(view as HybridWebUI, dontResend, resend)
         }
 
@@ -66,7 +67,7 @@ open class HybridWebUIClient(
         request: WebResourceRequest,
         errorResponse: WebResourceResponse,
     ) {
-        loopInterfaces("onReceivedHttpError") {
+        notifyInterfaces("onReceivedHttpError") {
             onReceivedHttpError(view as HybridWebUI, request, errorResponse)
         }
 
@@ -74,7 +75,7 @@ open class HybridWebUIClient(
     }
 
     override fun onReceivedClientCertRequest(view: WebView, request: ClientCertRequest) {
-        loopInterfaces("onReceivedClientCertRequest") {
+        notifyInterfaces("onReceivedClientCertRequest") {
             onReceivedClientCertRequest(view as HybridWebUI, request)
         }
 
@@ -86,7 +87,7 @@ open class HybridWebUIClient(
         request: WebResourceRequest,
         error: WebResourceError
     ) {
-        loopInterfaces("onReceivedError") {
+        notifyInterfaces("onReceivedError") {
             onReceivedError(view as HybridWebUI, request, error)
         }
 

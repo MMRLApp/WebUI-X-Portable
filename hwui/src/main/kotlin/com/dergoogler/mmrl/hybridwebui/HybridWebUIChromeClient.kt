@@ -20,50 +20,36 @@ open class HybridWebUIChromeClient(
     protected val console get() = store.consoleStore
     protected val network get() = store.networkStore
 
-    private fun <T> loopInterfaces(methodName: String, caller: JavaScriptInterface.() -> T): T? {
-        if (!view.isStoreInitialized) {
-            Log.w(TAG, "$methodName called before store initialization")
-            return null
-        }
+    private fun <T> queryInterfaces(methodName: String, caller: JavaScriptInterface.() -> T): T? {
+        if (!view.isStoreInitialized) return null
+        return runCatching {
+            store.jsInterfaceStore.findFirst(caller)
+        }.onFailure { Log.e(TAG, "Error in $methodName", it) }.getOrNull()
+    }
 
-        try {
-            return store.jsInterfaceStore.loop(caller)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error calling $methodName", e)
-            return null
-        }
+    private fun queryBoolean(
+        methodName: String,
+        caller: JavaScriptInterface.() -> Boolean
+    ): Boolean {
+        if (!view.isStoreInitialized) return false
+        return runCatching {
+            store.jsInterfaceStore.dispatchBoolean(caller)
+        }.onFailure { Log.e(TAG, "Error in $methodName", it) }.getOrElse { false }
+    }
+
+    private fun notifyInterfaces(methodName: String, action: JavaScriptInterface.() -> Unit) {
+        if (!view.isStoreInitialized) return
+        runCatching {
+            store.jsInterfaceStore.forEach(action)
+        }.onFailure { Log.e(TAG, "Error in $methodName", it) }
     }
 
     override fun onShowFileChooser(
         view: WebView,
         filePathCallback: ValueCallback<Array<Uri>>,
         fileChooserParams: FileChooserParams,
-    ): Boolean {
-        return loopInterfaces("onShowFileChooser") {
-            onShowFileChooser(view as HybridWebUI, filePathCallback, fileChooserParams)
-        } == true
-
-        /*if (view !is HybridWebUI) {
-            return false
-        }
-
-        store.filePathCallback?.onReceiveValue(null)
-        store.filePathCallback = filePathCallback
-        val intent = fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = ""
-        }
-        if (fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE) {
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-        }
-        try {
-            store.fileChooserLauncher?.launch(intent)
-        } catch (_: ActivityNotFoundException) {
-            store.filePathCallback?.onReceiveValue(null)
-            store.filePathCallback = null
-            return false
-        }
-
-        return true*/
+    ): Boolean = queryBoolean("onShowFileChooser") {
+        onShowFileChooser(view as HybridWebUI, filePathCallback, fileChooserParams)
     }
 
     override fun onJsAlert(
@@ -71,27 +57,27 @@ open class HybridWebUIChromeClient(
         url: String,
         message: String?,
         result: JsResult
-    ): Boolean = loopInterfaces("onJsAlert") {
+    ): Boolean = queryBoolean("onJsAlert") {
         onJsAlert(view as HybridWebUI, url, message, result)
-    } == true
+    }
 
     override fun onJsBeforeUnload(
         view: WebView,
         url: String,
         message: String?,
         result: JsResult
-    ): Boolean = loopInterfaces("onJsBeforeUnload") {
+    ): Boolean = queryBoolean("onJsBeforeUnload") {
         onJsBeforeUnload(view as HybridWebUI, url, message, result)
-    } == true
+    }
 
     override fun onJsConfirm(
         view: WebView,
         url: String,
         message: String?,
         result: JsResult
-    ): Boolean = loopInterfaces("onJsConfirm") {
+    ): Boolean = queryBoolean("onJsConfirm") {
         onJsConfirm(view as HybridWebUI, url, message, result)
-    } == true
+    }
 
     override fun onJsPrompt(
         view: WebView,
@@ -99,12 +85,12 @@ open class HybridWebUIChromeClient(
         message: String?,
         defaultValue: String?,
         result: JsPromptResult
-    ): Boolean = loopInterfaces("onJsPrompt") {
+    ): Boolean = queryBoolean("onJsPrompt") {
         onJsPrompt(view as HybridWebUI, url, message, defaultValue, result)
-    } == true
+    }
 
     override fun onPermissionRequest(request: PermissionRequest) {
-        loopInterfaces("onPermissionRequest") {
+        notifyInterfaces("onPermissionRequest") {
             onPermissionRequest(request)
         }
 
@@ -112,7 +98,7 @@ open class HybridWebUIChromeClient(
     }
 
     override fun onPermissionRequestCanceled(request: PermissionRequest) {
-        loopInterfaces("onPermissionRequestCanceled") {
+        notifyInterfaces("onPermissionRequestCanceled") {
             onPermissionRequestCanceled(request)
         }
 
@@ -120,7 +106,7 @@ open class HybridWebUIChromeClient(
     }
 
     override fun onProgressChanged(view: WebView, newProgress: Int) {
-        loopInterfaces("onProgressChanged") {
+        notifyInterfaces("onProgressChanged") {
             onProgressChanged(view as HybridWebUI, newProgress)
         }
 
@@ -133,7 +119,7 @@ open class HybridWebUIChromeClient(
     }
 
     override fun onReceivedIcon(view: WebView, icon: Bitmap?) {
-        loopInterfaces("onReceivedIcon") {
+        notifyInterfaces("onReceivedIcon") {
             onReceivedIcon(view as HybridWebUI, icon)
         }
 
@@ -141,7 +127,7 @@ open class HybridWebUIChromeClient(
     }
 
     override fun onReceivedTitle(view: WebView, title: String?) {
-        loopInterfaces("onReceivedTitle") {
+        notifyInterfaces("onReceivedTitle") {
             onReceivedTitle(view as HybridWebUI, title)
         }
 
@@ -149,7 +135,7 @@ open class HybridWebUIChromeClient(
     }
 
     override fun onReceivedTouchIconUrl(view: WebView, url: String, precomposed: Boolean) {
-        loopInterfaces("onReceivedTouchIconUrl") {
+        notifyInterfaces("onReceivedTouchIconUrl") {
             onReceivedTouchIconUrl(view as HybridWebUI, url, precomposed)
         }
         super.onReceivedTouchIconUrl(view, url, precomposed)
