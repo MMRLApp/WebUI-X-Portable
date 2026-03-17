@@ -123,7 +123,7 @@
     <string name="build_tools_version">Wersja narzędzi budowania</string>
     <string name="compile_sdk">Kompilacja SDK</string>
     <string name="settings_force_kill_webui_process">Wymuś zamknięcie procesu WebUI</string>
-    <string name="settings_force_kill_webui_process_desc">Natychmiastowo zatrzymuje aktualnie działający proces WebUI X. [bold]Nie ma to wpływu na KSU WebUI.[/bold]</string>
+    <string name="settings_force_kill_webui_process_desc">Natychmiast kończy działanie aktualnie uruchomionego procesu WebUI X. Zaleca się pozostawienie tego ustawienia włączonego.</string>
     <string name="webui_additional_config">Dodatkowa konfiguracja</string>
     <string name="webui_additional_config_desc">Opcjonalne konfiguracje zdefiniowane przez twórcę modułu.</string>
     <string name="settings_webui_engine_undefined">Niezdefiniowano</string>
@@ -140,4 +140,5 @@
     <string name="settings_security_enable_devtools">DevTools</string>
     <string name="settings_security_enable_devtools_desc">W przeciwieństwie do Erudy, ta konsola debugowania może być używana nawet ze zdalnymi hostami.</string>
     <string name="beta">Beta</string>
+    <string name="stack_trace_truncated">%s\\n... %d więcej</string>
 </resources>
