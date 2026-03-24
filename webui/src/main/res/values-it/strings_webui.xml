@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
     <string name="requireNewVersion_cannot_load_webui">Impossibile caricare WebUI X</string>
     <string name="requireNewVersion_require_text">versione minima richiesta: %1$s &gt;=</string>
-    <string name="requireNewVersion_try_the_following">Possibili soluzioni:</string>
+    <string name="requireNewVersion_try_the_following">Prova quanto segue:</string>
     <string name="requireNewVersion_try_the_following_one">Aggiorna %1$s all\'ultima versione da Google Play o GitHub.</string>
-    <string name="requireNewVersion_try_the_following_two">Contatta lo svilupatore per una possibile alternativa.</string>
+    <string name="requireNewVersion_try_the_following_two">Rivolgiti allo sviluppatore del modulo per una possibile soluzione alternativa.</string>
     <string name="requireNewVersion_refresh">Aggiorna</string>
-
-    <string name="confirm">Conferma</string>
+    <string name="confirm">Corferma</string>
     <string name="cancel">Annulla</string>
     <string name="says">%1$s dice</string>
     <string name="title_or_icon_not_found">Titolo o icona non trovata</string>
@@ -19,7 +17,6 @@
     <string name="unknown_error">Errore sconosciuto</string>
     <string name="missing_mod_id">ID Modulo mancante</string>
     <string name="class_not_found">Cannot find defined activity class</string>
-
     <!-- Shortcut -->
     <string name="shortcut_already_exists">Collegamento già esistente.</string>
     <string name="shortcut_creation_requirements_not_met">Impossibile aggiungere il collegamento: Manca il titolo o il file icona.</string>
@@ -42,5 +39,4 @@
     <string name="failed_to_open_ssl_desc">Impossibile caricare [b]%1$s[/b] a causa di un errore SSL</string>
     <string name="please_try_the_following">Prova quanto segue:</string>
     <string name="proceed">Procedere</string>
-    
 </resources>
