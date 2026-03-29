@@ -1,3 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="missing_mod_id">ID del modulo non presente</string>
+    <string name="empty">Vuoto</string>
+    <string name="author">%1$s di %2$s</string>
+    <string name="update_on">Aggiornato su %s</string>
+    <string name="modules">Moduli</string>
+    <string name="search_placeholder">Ricerca…</string>
+    <string name="settings">Impostazioni</string>
+    <string name="app_theme_palette">Tavolozza dei temi</string>
+    <string name="app_theme_dark_theme">Tema Scuro</string>
+    <string name="app_theme_dark_theme_auto">Automatico</string>
+    <string name="app_theme_dark_theme_light">Luce</string>
+    <string name="app_theme_dark_theme_dark">Scuro</string>
+    <string name="settings_app_theme">Tema dell\'app</string>
+    <string name="settings_app_theme_desc">Cambia lo schema di colore e la modalità notturna</string>
+    <string name="webui">WebUI</string>
+    <string name="settings_developer_mode">Modalità sviluppatore</string>
 </resources>

@@ -124,7 +124,7 @@
     <string name="latest_commit_id">ID del último commit</string>
     <string name="webui_additional_config_desc">Configuraciones opcionales definidas por el desarrollador del módulo.</string>
     <string name="webui_additional_config">Configuración adicional</string>
-    <string name="settings_force_kill_webui_process_desc">Finaliza inmediatamente el proceso de WebUI X que se esté ejecutando. [bold]Esto no afecta a la WebUI de KSU. [/bold]</string>
+    <string name="settings_force_kill_webui_process_desc">Finaliza inmediatamente el proceso de WebUI X que se esté ejecutando. Se recomienda dejar esta opción activada.</string>
     <string name="settings_force_kill_webui_process">Forzar cierre del proceso de WebUI</string>
     <string name="settings_webui_engine_undefined">Indefinido</string>
     <string name="webui_config_pull_to_refresh_helper_title">Ayudante de tirar par actualizar</string>
@@ -134,4 +134,11 @@
     <string name="globally_disabled">Deshabilitado globalmente</string>
     <string name="settings_global_exit_confirm_desc">Deshabilita el cuadro de diálogo de confirmación al salir de la WebUI.</string>
     <string name="settings_global_exit_confirm">Deshabilitar confirmación de salida</string>
+    <string name="stack_trace_truncated">%s\\n… %d más</string>
+    <string name="beta">Beta</string>
+    <string name="settings_security_enable_devtools_desc">Esta consola de depuración, a diferencia de Eruda, puede usarse incluso con hosts remotos.</string>
+    <string name="settings_security_enable_devtools">Herramientas de desarrollo</string>
+    <string name="network">Red</string>
+    <string name="console">Consola</string>
+    <string name="dom">DOM</string>
 </resources>
