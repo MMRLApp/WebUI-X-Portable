@@ -39,7 +39,7 @@
     <string name="mh_seems_like_root_isn_t_authorized">هممم... يبدو أن صلاحيات الروت غير مفعّلة</string>
     <string name="modules_empty">لا توجد وحدات</string>
     <string name="search_empty">القائمة فارغة</string>
-    <string name="search_placeholder">بحث…</string>
+    <string name="search_placeholder">البحث…</string>
     <string name="menu_advanced_menu">القائمة المتقدمة</string>
     <string name="menu_sort_mode">وضع الفرز</string>
     <string name="menu_sort_option_name">الاسم</string>
