@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -45,10 +44,7 @@ class ModulesViewModel @Inject constructor(
     private val application: Application,
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : AndroidViewModel(application) {
-
     val context: Context get() = application.applicationContext
-
-    val isProviderAlive get() = PlatformManager.isAlive
 
     val platform get() = PlatformManager.get(Platform.Unknown) { platform }
 
@@ -76,19 +72,8 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun observePlatform() {
-        viewModelScope.launch {
-            with(PlatformManager) {
-                // Eagerly load non-root modules on start
-                if (platform.isNonRoot) {
-                    runCatching { getLocalAll() }
-                        .onFailure { Log.e(TAG, "Initial non-root load failed", it) }
-                }
-
-                isAliveFlow
-                    .onEach { if (it) getLocalAll() }
-                    .launchIn(viewModelScope)
-            }
-        }
+        runCatching { getLocalAll() }
+            .onFailure { Log.e(TAG, "Initial non-root load failed", it) }
     }
 
     private fun observeSourceAndMenu() {
@@ -137,7 +122,6 @@ class ModulesViewModel @Inject constructor(
             Option.UpdatedTime -> compareBy { it.lastUpdated }
             Option.Size -> compareBy { it.size }
         }.let { if (descending) reverseOrder<Module>().then(it).reversed() else it }
-            // Simpler, correct way:
             .let { base -> if (descending) Comparator { a, b -> base.compare(b, a) } else base }
 
     fun setModulesMenu(value: ModulesMenu) {
@@ -154,7 +138,6 @@ class ModulesViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching modules", e)
         } finally {
-            // Always clear loading, even on exception
             isLoadingFlow.update { false }
         }
     }

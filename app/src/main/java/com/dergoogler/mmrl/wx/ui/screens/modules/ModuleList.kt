@@ -27,8 +27,6 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
-import com.dergoogler.mmrl.platform.content.State
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
@@ -39,14 +37,12 @@ import com.dergoogler.mmrl.wx.model.module.ModuleState
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 import java.io.File
 
 @Composable
 fun ModulesList(
     list: List<Module>,
     state: LazyListState,
-    isProviderAlive: Boolean,
     platform: Platform,
 ) = Box(
     modifier = Modifier.fillMaxSize()
@@ -62,7 +58,6 @@ fun ModulesList(
             key = { it.id }
         ) { module ->
             ModuleItem(
-                isProviderAlive = isProviderAlive,
                 platform = platform,
                 module = module,
             )
@@ -79,7 +74,6 @@ fun ModulesList(
 fun ModuleItem(
     module: Module,
     platform: Platform,
-    isProviderAlive: Boolean,
 ) {
     val context = LocalContext.current
     val navigator = LocalDestinationsNavigator.current
@@ -109,7 +103,7 @@ fun ModuleItem(
 
             if (platform.isNonRoot) {
                 val colorScheme = MaterialTheme.colorScheme
-                RemoveButton(isProviderAlive) {
+                RemoveButton {
                     context.confirm(
                         ConfirmData(
                             title = "Remove ${module.name}?",
@@ -204,7 +198,7 @@ private fun ConfigButton(
 
 @Composable
 private fun RemoveButton(
-    enabled: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) = FilledTonalButton(
     onClick = onClick,

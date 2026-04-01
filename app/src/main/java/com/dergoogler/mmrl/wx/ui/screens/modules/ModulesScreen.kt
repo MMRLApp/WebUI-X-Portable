@@ -94,7 +94,6 @@ fun ModulesScreen(
             ) {
                 ModulesList(
                     list = list,
-                    isProviderAlive = viewModel.isProviderAlive,
                     platform = viewModel.platform,
                     state = listState,
                 )

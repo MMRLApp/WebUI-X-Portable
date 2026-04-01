@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.util.Log
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -42,6 +41,7 @@ import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
+import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
 import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.LocalCover
@@ -49,10 +49,12 @@ import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.card.component.Absolute
 import com.dergoogler.mmrl.ui.component.text.TextWithIcon
 import com.dergoogler.mmrl.ui.component.text.TextWithIconDefaults
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.model.module.ModuleState
+import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
@@ -91,10 +93,11 @@ fun ModuleItem(
         PlatformManager.isAlive && (module.hasWebUI) && module.state != ModuleState.Remove
 
     val clicker: (() -> Unit)? = canWenUIAccessed nullable jump@{
-//        if (module.hasWebUI) {
-//            userPreferences.launchWebUI(context, module.id)
-//            return@jump
-//        }
+        if (module.hasWebUI) {
+            val baseDir = module.paths.adbDir
+            context.launchWebUIX<WebUIActivity>(module.id.toModId(baseDir), baseDir)
+            return@jump
+        }
 
         Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
     }
@@ -116,8 +119,6 @@ fun ModuleItem(
             )
         )
     }
-
-    Log.d("", "Bitmap: $bannerByteArray")
 
     Card(
         onClick = clicker,
