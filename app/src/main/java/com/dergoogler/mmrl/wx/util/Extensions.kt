@@ -182,6 +182,10 @@ inline fun <reified T> Map<String, Any?>?.getProp(key: String, def: T): T {
 
 inline fun <reified T> Map<String, Any?>?.getPropOrNull(key: String): T? = getProp(key, null)
 
+@Throws(BrickException::class)
+fun Context.getNonRootBaseDir(): File =
+    getExternalFilesDir(null) ?: throw BrickException("Failed to get filesDir")
+
 fun Context.getBaseDir(
     platform: Platform = PlatformManager.platform,
 ): SuFile {

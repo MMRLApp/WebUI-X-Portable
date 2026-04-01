@@ -26,6 +26,7 @@ import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
+import dev.mmrlx.thread.ktx.addRootThread
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -34,6 +35,7 @@ open class BaseActivity : ComponentActivity() {
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        addRootThread(this)
         super.onCreate(savedInstanceState)
         setMyCrashHandler()
         enableEdgeToEdge()

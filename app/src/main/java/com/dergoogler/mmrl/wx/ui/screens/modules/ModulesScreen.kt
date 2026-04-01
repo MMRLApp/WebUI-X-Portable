@@ -39,6 +39,8 @@ import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import dev.mmrlx.thread.RootCallable
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
 @Destination<RootGraph>(start = true)
@@ -49,7 +51,7 @@ fun ModulesScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
     val state by viewModel.screenState.collectAsStateWithLifecycle()
-    val list by viewModel.local.collectAsStateWithLifecycle()
+    val list by viewModel.modules.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
@@ -87,7 +89,7 @@ fun ModulesScreen(
             }
 
             PullToRefreshBox(
-                isRefreshing = state.isRefreshing,
+                isRefreshing = state.isLoading,
                 onRefresh = viewModel::getLocalAll
             ) {
                 ModulesList(

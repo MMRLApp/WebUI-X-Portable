@@ -34,14 +34,17 @@ import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.model.module.ModuleState
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
+import java.io.File
 
 @Composable
 fun ModulesList(
-    list: List<LocalModule>,
+    list: List<Module>,
     state: LazyListState,
     isProviderAlive: Boolean,
     platform: Platform,
@@ -55,7 +58,7 @@ fun ModulesList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(
-            items = list.filter { it.hasWebUI || it.hasModConf },
+            items = list.filter { it.hasWebUI },
             key = { it.id }
         ) { module ->
             ModuleItem(
@@ -74,7 +77,7 @@ fun ModulesList(
 
 @Composable
 fun ModuleItem(
-    module: LocalModule,
+    module: Module,
     platform: Platform,
     isProviderAlive: Boolean,
 ) {
@@ -85,24 +88,24 @@ fun ModuleItem(
         module = module,
         indicator = {
             when (module.state) {
-                State.REMOVE -> StateIndicator(R.drawable.trash)
-                State.UPDATE -> StateIndicator(R.drawable.device_mobile_down)
+                ModuleState.Remove -> StateIndicator(R.drawable.trash)
+                ModuleState.Update -> StateIndicator(R.drawable.device_mobile_down)
                 else -> {}
             }
         },
         leadingButton = {
             ConfigButton(
                 onClick = {
-                    navigator.navigate(ConfigEditorScreenDestination(module))
+//                    navigator.navigate(ConfigEditorScreenDestination(module))
                 },
-                enabled = module.state != State.REMOVE
+                enabled = module.state != ModuleState.Remove
             )
         },
         trailingButton = {
-            ShortcutAdd(
-                module = module,
-                enabled = isProviderAlive
-            )
+//            ShortcutAdd(
+//                module = module,
+//                enabled = isProviderAlive
+//            )
 
             if (platform.isNonRoot) {
                 val colorScheme = MaterialTheme.colorScheme
@@ -112,7 +115,7 @@ fun ModuleItem(
                             title = "Remove ${module.name}?",
                             description = "Are you sure that you want to remove this module?",
                             onConfirm = {
-                                val file = module.id.moduleDir.toExtFile()
+                                val file = File(module.paths.moduleDir)
 
                                 if (file.deleteRecursively()) {
                                     Toast.makeText(

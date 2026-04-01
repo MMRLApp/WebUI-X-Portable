@@ -1,5 +1,6 @@
+
 import app.cash.licensee.ViolationAction
-import com.android.build.gradle.internal.api.ApkVariantOutputImpl
+import com.android.build.api.variant.impl.VariantOutputImpl
 
 plugins {
     alias(libs.plugins.self.application)
@@ -126,6 +127,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        resValues = true
     }
 
     compileOptions {
@@ -147,18 +149,26 @@ android {
         includeInApk = false
         includeInBundle = false
     }
-
-    applicationVariants.configureEach {
-        outputs.configureEach {
-            (this as? ApkVariantOutputImpl)?.outputFileName =
-                "WebUI-X-$versionName-$flavorName.apk"
-        }
-    }
 }
 
 licensee {
     bundleAndroidAsset.set(true)
     violationAction(ViolationAction.IGNORE)
+}
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.filterIsInstance<VariantOutputImpl>().forEach { output ->
+            output.outputFileName.set(
+                output.versionName.map { vName ->
+                    "WebUI-X-${vName}-${variant.buildType ?: variant.name}.apk"
+                }
+            )
+        }
+    }
+    onVariants(selector().withBuildType("release")) {
+        it.packaging.resources.excludes.add("META-INF/**")
+    }
 }
 
 dependencies {
@@ -247,4 +257,6 @@ dependencies {
 
     implementation(libs.composedestinations.core)
     ksp(libs.composedestinations.ksp)
+
+    implementation("com.github.MMRLApp.RootThread:thread:0.0.3")
 }
