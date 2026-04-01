@@ -52,16 +52,10 @@ class ModulesViewModel @Inject constructor(
 
     val platform get() = PlatformManager.get(Platform.Unknown) { platform }
 
-    // Source of truth: raw modules from root/non-root loader
     private val sourceFlow = MutableStateFlow<List<Module>>(emptyList())
-
-    // Sorted + pinned result of sourceFlow × modulesMenu
     private val sortedFlow = MutableStateFlow<List<Module>>(emptyList())
-
-    // Final displayed list: sortedFlow filtered by keyFlow
     private val filteredFlow = MutableStateFlow<List<Module>>(emptyList())
 
-    // Exposed as immutable StateFlow for the UI
     val modules: StateFlow<List<Module>> = filteredFlow
 
     private val modulesMenu = userPreferencesRepository.data.map { it.modulesMenu }
@@ -80,8 +74,6 @@ class ModulesViewModel @Inject constructor(
         observeSourceAndMenu()
         observeKeyAndSorted()
     }
-
-    // ─── Observers ────────────────────────────────────────────────────────────
 
     private fun observePlatform() {
         viewModelScope.launch {
@@ -126,8 +118,6 @@ class ModulesViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    // ─── Search ───────────────────────────────────────────────────────────────
-
     fun search(key: String) {
         keyFlow.value = key
     }
@@ -141,15 +131,6 @@ class ModulesViewModel @Inject constructor(
         keyFlow.value = ""
     }
 
-    // ─── Sorting ──────────────────────────────────────────────────────────────
-
-    /**
-     * Fixed: original logic had ascending/descending inverted for all options.
-     * "Descending" should mean largest/latest first:
-     *   - Name descending  → Z before A → compareByDescending
-     *   - UpdatedTime desc → newest first → compareByDescending
-     *   - Size descending  → biggest first → compareByDescending
-     */
     private fun comparator(option: Option, descending: Boolean): Comparator<Module> =
         when (option) {
             Option.Name -> compareBy<Module> { it.name?.lowercase() }
@@ -162,8 +143,6 @@ class ModulesViewModel @Inject constructor(
     fun setModulesMenu(value: ModulesMenu) {
         viewModelScope.launch { userPreferencesRepository.setModulesMenu(value) }
     }
-
-    // ─── Module loading ───────────────────────────────────────────────────────
 
     fun getLocalAll(scope: CoroutineScope = viewModelScope) = scope.launch {
         isLoadingFlow.update { true }
@@ -180,8 +159,6 @@ class ModulesViewModel @Inject constructor(
         }
     }
 
-    // ─── Screen state ─────────────────────────────────────────────────────────
-
     val screenState: StateFlow<ModulesScreenState> =
         filteredFlow.combine(isLoadingFlow) { items, loading ->
             ModulesScreenState(items = items, isLoading = loading)
@@ -191,13 +168,9 @@ class ModulesViewModel @Inject constructor(
             initialValue = ModulesScreenState(),
         )
 
-    // ─── Companion ────────────────────────────────────────────────────────────
-
     companion object {
         @PublishedApi
         internal const val TAG = "ModulesViewModel"
-
-        // ── Search matching ───────────────────────────────────────────────────
 
         private fun Module.matchesQuery(raw: String): Boolean {
             val (prefix, term) = raw.parseSearchQuery()
@@ -217,12 +190,6 @@ class ModulesViewModel @Inject constructor(
             return prefix to removePrefix(prefix).trim()
         }
 
-        // ── Property helpers ──────────────────────────────────────────────────
-
-        /**
-         * Reads a typed value from a module.prop map, checking [key] then each [alias].
-         * Returns [default] if the key is absent or the value cannot be parsed.
-         */
         inline fun <reified T> Map<String, String?>?.prop(
             key: String,
             vararg alias: String,
@@ -249,8 +216,6 @@ class ModulesViewModel @Inject constructor(
             }
         }
 
-        // ── Root / non-root loaders ───────────────────────────────────────────
-
         val loadRootModules: RootCallable<List<Module>> = RootCallable {
             listModules(File("/data/adb"))
         }
@@ -258,8 +223,6 @@ class ModulesViewModel @Inject constructor(
         val loadNonRootModules: (Context) -> List<Module> = { context ->
             listModules(context.getNonRootBaseDir())
         }
-
-        // ── Core scanner ──────────────────────────────────────────────────────
 
         fun listModules(baseDir: File): List<Module> {
             val modulesDir = File(baseDir, "modules")
