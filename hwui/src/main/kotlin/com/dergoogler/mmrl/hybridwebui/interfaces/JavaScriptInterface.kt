@@ -8,7 +8,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Message
-import android.util.Log
 import android.webkit.ClientCertRequest
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
@@ -28,7 +27,7 @@ open class JavaScriptInterface(
     protected val activity: ComponentActivity,
     protected val view: HybridWebUI
 ) : ContextWrapper(activity) {
-    protected val context: Context get() = activity.baseContext
+    protected val context: Context get() = view.safeApplicationContext
 
     /**
      * The name of the entity.

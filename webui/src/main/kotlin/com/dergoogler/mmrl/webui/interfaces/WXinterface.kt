@@ -1,16 +1,14 @@
 package com.dergoogler.mmrl.webui.interfaces
 
 import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Handler
+import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
-import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
 import com.dergoogler.mmrl.platform.model.ModId
@@ -179,6 +177,14 @@ open class WXInterface(
     open fun onActivityResult(
         result: ActivityResult,
     ) {
+    }
+
+    fun mainThread(callback: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            callback()
+        } else {
+            Handler(Looper.getMainLooper()).post { callback() }
+        }
     }
 
     @UiThread

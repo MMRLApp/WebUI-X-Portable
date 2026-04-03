@@ -5,7 +5,9 @@ import android.content.Intent
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
 import androidx.core.content.pm.PackageInfoCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
+import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.exit
 import com.dergoogler.mmrl.webui.model.App
@@ -150,6 +152,17 @@ class ApplicationInterface(
             withActivity {
                 startActivity(i.intent)
             }
+        }
+    }
+
+    @JavascriptInterface
+    fun updateStatusBarIconTint(isLightBackground: Boolean) {
+        val act = context.findActivity() ?: return
+        mainThread {
+            val window = act.window
+            // Use WindowInsetsControllerCompat to toggle icon tinting
+            val controller = WindowInsetsControllerCompat(window, window.decorView)
+            controller.isAppearanceLightStatusBars = isLightBackground
         }
     }
 

@@ -121,9 +121,7 @@ class WebrootPathHandler(
 
                 if (options.config.autoStatusBarsStyle) {
                     addInjection {
-                        appendLine("<script data-internal-configurable type=\"module\">")
-                        appendLine("$${options.modId.sanitizedId}.setLightStatusBars(!$${options.modId.sanitizedId}.isDarkMode())")
-                        appendLine("</script>")
+                        appendLine("<script src\"https://mui.kernelsu.org/internal/assets/ext/statusbar.js\"></script>")
                     }
                 }
 

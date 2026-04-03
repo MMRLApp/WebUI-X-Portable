@@ -3,22 +3,17 @@
 package com.dergoogler.mmrl.hybridwebui
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.ContextWrapper
-import android.content.Intent
 import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.webkit.ValueCallback
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.RelativeLayout
 import androidx.activity.ComponentActivity
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
 import androidx.annotation.RequiresFeature
 import androidx.annotation.UiThread
@@ -26,10 +21,8 @@ import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.doOnAttach
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
-import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets.Companion.toWebUIInsets
@@ -47,6 +40,7 @@ open class HybridWebUI : WebView {
     var uri: Uri
     private lateinit var _store: HybridWebUIStore
     private lateinit var _activity: ComponentActivity
+    private var _applicationContext: Context? = null
     private var onReadyCallback: OnReady? = null
 
     constructor(context: Context, uri: Uri) : super(context) {
@@ -81,7 +75,20 @@ open class HybridWebUI : WebView {
         if (!isActivityInitialized) {
             val discoveredActivity = findActivity()
             if (discoveredActivity != null) {
-                _activity = discoveredActivity
+                // Validate the activity is not finishing or destroyed
+                if (!discoveredActivity.isFinishing && !discoveredActivity.isDestroyed) {
+                    _activity = discoveredActivity
+                    // Cache application context early to avoid null issues later
+                    _applicationContext = try {
+                        discoveredActivity.applicationContext
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to get application context from activity", e)
+                        context.applicationContext
+                    }
+                } else {
+                    Log.e(TAG, "Found ComponentActivity but it's finishing or destroyed")
+                    return
+                }
             } else {
                 Log.e(TAG, "Could not find ComponentActivity in the view context hierarchy")
                 return
@@ -118,13 +125,41 @@ open class HybridWebUI : WebView {
     /**
      * Optimized Activity discovery helper.
      * Fixed: Added 'return' to stop the loop once the Activity is found.
+     * Enhanced: Added null checks and validation to prevent crashes.
      */
     private fun findActivity(): ComponentActivity? {
         var context = this.context
-        while (context is ContextWrapper) {
-            if (context is ComponentActivity) return context
-            context = context.baseContext
+        var depth = 0
+        val maxDepth = 10 // Prevent infinite loops
+        
+        while (context is ContextWrapper && depth < maxDepth) {
+            if (context is ComponentActivity) {
+                return try {
+                    // Validate the activity before returning
+                    if (!context.isFinishing && !context.isDestroyed) {
+                        context
+                    } else {
+                        Log.w(TAG, "Found ComponentActivity but it's finishing or destroyed")
+                        null
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Exception while validating ComponentActivity", e)
+                    null
+                }
+            }
+            context = try {
+                context.baseContext
+            } catch (e: Exception) {
+                Log.w(TAG, "Exception while getting baseContext", e)
+                break
+            }
+            depth++
         }
+        
+        if (depth >= maxDepth) {
+            Log.w(TAG, "Reached maximum depth while searching for ComponentActivity")
+        }
+        
         return null
     }
 
@@ -135,6 +170,37 @@ open class HybridWebUI : WebView {
     val activity: ComponentActivity
         get() = if (isActivityInitialized) _activity
         else throw IllegalStateException("Activity accessed before onStoreReady()")
+
+    /**
+     * Safe application context getter that provides fallbacks to prevent null crashes.
+     */
+    val safeApplicationContext: Context
+        get() = _applicationContext 
+            ?: try {
+                if (isActivityInitialized && !_activity.isFinishing && !_activity.isDestroyed) {
+                    _activity.applicationContext
+                } else {
+                    context.applicationContext
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to get application context, using view context", e)
+                context
+            }
+
+    /**
+     * Safe base context getter with proper validation.
+     */
+    val safeBaseContext: Context?
+        get() = try {
+            if (isActivityInitialized && !_activity.isFinishing && !_activity.isDestroyed) {
+                _activity.baseContext
+            } else {
+                (context as? ContextWrapper)?.baseContext
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to get base context", e)
+            null
+        }
 
     @CallSuper
     protected open fun onReady(store: HybridWebUIStore) {
@@ -338,6 +404,17 @@ open class HybridWebUI : WebView {
 
     val isStoreInitialized get() = ::_store.isInitialized
     val isActivityInitialized get() = ::_activity.isInitialized
+
+    /**
+     * Check if the activity is in a safe state to use.
+     */
+    val isActivitySafe: Boolean
+        get() = try {
+            isActivityInitialized && !_activity.isFinishing && !_activity.isDestroyed
+        } catch (e: Exception) {
+            Log.w(TAG, "Exception checking activity state", e)
+            false
+        }
 
     fun addPathHandler(
         path: String,
@@ -641,6 +718,7 @@ open class HybridWebUI : WebView {
                 onDestroy()
             }
         }
+        _applicationContext = null
     }
 
     override fun destroy() {
