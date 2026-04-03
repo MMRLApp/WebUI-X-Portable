@@ -4,11 +4,11 @@ import java.io.Serializable
 
 data class Module(
     val id: String,
-    val name: String?,
-    val version: String?,
-    val versionCode: Int?,
-    val author: String?,
-    val description: String?,
+    val name: String,
+    val version: String,
+    val versionCode: Int,
+    val author: String,
+    val description: String,
     val state: ModuleState,
     val path: String,
     val metaModule: Boolean,

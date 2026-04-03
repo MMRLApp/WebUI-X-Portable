@@ -2,10 +2,8 @@ package com.dergoogler.mmrl.wx.ui.screens.modules
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -29,7 +26,6 @@ import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
-import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.module.Module
@@ -37,21 +33,29 @@ import com.dergoogler.mmrl.wx.model.module.ModuleState
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.scaffold.LocalScaffoldScope
+import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
 import java.io.File
 
 @Composable
-fun ModulesList(
+fun ScaffoldScope.ModulesList(
     list: List<Module>,
     state: LazyListState,
     platform: Platform,
-) = Box(
-    modifier = Modifier.fillMaxSize()
 ) {
+    val mainScreenScaffoldScope = LocalScaffoldScope.current
+
     LazyColumn(
         state = state,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.with(this@ModulesList) { it.scaffoldHazeSource() },
+        contentPadding = PaddingValues(
+            top = this@ModulesList.scaffoldTopPadding + 8.dp,
+            start = 8.dp,
+            end = 8.dp,
+            bottom = this@ModulesList.scaffoldBottomPadding + mainScreenScaffoldScope.scaffoldBottomPadding + 8.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
             items = list.filter { it.hasWebUI },
@@ -63,11 +67,11 @@ fun ModulesList(
             )
         }
     }
-
-    VerticalFastScrollbar(
-        state = state,
-        modifier = Modifier.align(Alignment.CenterEnd)
-    )
+//
+//    VerticalFastScrollbar(
+//        state = state,
+//        modifier = Modifier.align(Alignment.CenterEnd)
+//    )
 }
 
 @Composable

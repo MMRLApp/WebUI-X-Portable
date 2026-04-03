@@ -1,19 +1,14 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeApi
@@ -28,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
@@ -39,8 +33,8 @@ import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import dev.mmrlx.thread.RootCallable
-import java.io.File
+import dev.mmrlx.compose.ui.Toolbar
+import dev.mmrlx.compose.ui.scaffold.Scaffold
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
 @Destination<RootGraph>(start = true)
@@ -56,49 +50,48 @@ fun ModulesScreen(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = {
-            TopBar(
-                isSearch = viewModel.isSearch,
-                query = query,
-                onQueryChange = viewModel::search,
-                onOpenSearch = viewModel::openSearch,
-                onCloseSearch = viewModel::closeSearch,
-                setMenu = viewModel::setModulesMenu,
-                scrollBehavior = scrollBehavior
+        toolbar = {
+            Toolbar(
+                title = "WebUI X",
             )
+//
+//            TopBar(
+//                isSearch = viewModel.isSearch,
+//                query = query,
+//                onQueryChange = viewModel::search,
+//                onOpenSearch = viewModel::openSearch,
+//                onCloseSearch = viewModel::closeSearch,
+//                setMenu = viewModel::setModulesMenu,
+//                scrollBehavior = scrollBehavior
+//            )
         },
         floatingActionButton = {
             if (viewModel.platform != Platform.NonRoot) return@Scaffold
 
             ModuleImporter()
         },
-        contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            if (isLoading) {
-                Loading()
-            }
-
-            if (list.isEmpty() && !isLoading) {
-                PageIndicator(
-                    icon = if (viewModel.isSearch) R.drawable.mood_search else R.drawable.mood_cry,
-                    text = if (viewModel.isSearch) R.string.search_empty else R.string.modules_empty,
-                )
-            }
-
-            PullToRefreshBox(
-                isRefreshing = state.isLoading,
-                onRefresh = viewModel::getLocalAll
-            ) {
-                ModulesList(
-                    list = list,
-                    platform = viewModel.platform,
-                    state = listState,
-                )
-            }
+    ) {
+        if (isLoading) {
+            Loading()
         }
+
+        if (list.isEmpty() && !isLoading) {
+            PageIndicator(
+                icon = if (viewModel.isSearch) R.drawable.mood_search else R.drawable.mood_cry,
+                text = if (viewModel.isSearch) R.string.search_empty else R.string.modules_empty,
+            )
+        }
+
+//        PullToRefreshBox(
+//            isRefreshing = state.isLoading,
+//            onRefresh = viewModel::getLocalAll
+//        ) {
+            this@Scaffold.ModulesList(
+                list = list,
+                platform = viewModel.platform,
+                state = listState,
+            )
+//        }
     }
 }
 

@@ -26,6 +26,7 @@ import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.ktx.addRootThread
 import javax.inject.Inject
 
@@ -81,18 +82,22 @@ fun BaseActivity.setBaseContent(
         checkNotNull(userPreferences)
     }
 
-    MMRLAppTheme(
-        darkMode = preferences.isDarkMode(),
-        navController = navController,
-        themeColor = preferences.themeColor,
-        providerValues = arrayOf(
-            LocalUserPreferences provides preferences,
-            LocalNavController provides navController,
-            LocalSettings provides settings,
-            LocalDestinationsNavigator provides navigator
-        ),
-        content = content
-    )
+    MMRLXTheme(
+        darkTheme = preferences.isDarkMode()
+    ) {
+        MMRLAppTheme(
+            darkMode = preferences.isDarkMode(),
+            navController = navController,
+            themeColor = preferences.themeColor,
+            providerValues = arrayOf(
+                LocalUserPreferences provides preferences,
+                LocalNavController provides navController,
+                LocalSettings provides settings,
+                LocalDestinationsNavigator provides navigator
+            ),
+            content = content
+        )
+    }
 }
 
 fun ComponentActivity.initPlatform(userPreferences: UserPreferences) {
