@@ -7,11 +7,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.Collections
 import java.util.LinkedList
 
-class WebConsoleStore(private val maxHistory: Int = 100) {
+class WebConsoleStore(
+    private val maxHistory: Int = 100,
+    internal val source: String,
+) {
     private val _console = Collections.synchronizedList(LinkedList<ConsoleEntry>())
 
     private val _flow = MutableStateFlow<List<ConsoleEntry>>(emptyList())
     val flow: StateFlow<List<ConsoleEntry>> = _flow.asStateFlow()
+
 
     fun add(request: ConsoleEntry) {
         synchronized(_console) {
@@ -32,4 +36,29 @@ class WebConsoleStore(private val maxHistory: Int = 100) {
     }
 
     val all: List<ConsoleEntry> get() = synchronized(_console) { _console.toList() }
+}
+
+fun WebConsoleStore?.info(vararg args: Any?, line: Int = -1) {
+    if (this == null) return
+    add(ConsoleEntry.info(args, source = source, line = line))
+}
+
+fun WebConsoleStore?.warn(vararg args: Any?, line: Int = -1) {
+    if (this == null) return
+    add(ConsoleEntry.warn(args, source = source, line = line))
+}
+
+fun WebConsoleStore?.error(vararg args: Any?, line: Int = -1) {
+    if (this == null) return
+    add(ConsoleEntry.error(args, source = source, line = line))
+}
+
+fun WebConsoleStore?.debug(vararg args: Any?, line: Int = -1) {
+    if (this == null) return
+    add(ConsoleEntry.debug(args, source = source, line = line))
+}
+
+fun WebConsoleStore?.trace(vararg args: Any?, line: Int = -1) {
+    if (this == null) return
+    add(ConsoleEntry.trace(args, source = source, line = line))
 }

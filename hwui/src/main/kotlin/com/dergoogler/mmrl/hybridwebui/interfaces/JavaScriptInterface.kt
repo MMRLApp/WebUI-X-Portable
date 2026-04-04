@@ -19,13 +19,14 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.activity.ComponentActivity
+import androidx.annotation.CallSuper
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.store.NetworkRequestStore
 import com.dergoogler.mmrl.hybridwebui.store.WebConsoleStore
 
 open class JavaScriptInterface(
     protected val activity: ComponentActivity,
-    protected val view: HybridWebUI
+    protected val view: HybridWebUI,
 ) : ContextWrapper(activity) {
     protected val context: Context get() = view.safeApplicationContext
 
@@ -53,7 +54,7 @@ open class JavaScriptInterface(
                 return null
             }
 
-            return view.store.consoleStore
+            return view.store.buildConsoleStore(tag)
         }
 
     protected val networkRequests: NetworkRequestStore?
@@ -71,7 +72,7 @@ open class JavaScriptInterface(
     open fun onReceivedHttpError(
         view: HybridWebUI,
         request: WebResourceRequest,
-        errorResponse: WebResourceResponse
+        errorResponse: WebResourceResponse,
     ) {
     }
 
@@ -79,7 +80,7 @@ open class JavaScriptInterface(
     open fun onReceivedError(
         view: HybridWebUI,
         request: WebResourceRequest,
-        error: WebResourceError
+        error: WebResourceError,
     ) {
     }
 
@@ -90,30 +91,30 @@ open class JavaScriptInterface(
         view: HybridWebUI,
         url: String,
         message: String?,
-        result: JsResult
-    ): Boolean=false
+        result: JsResult,
+    ): Boolean = false
 
     open fun onJsBeforeUnload(
         view: HybridWebUI,
         url: String,
         message: String?,
-        result: JsResult
-    ): Boolean=false
+        result: JsResult,
+    ): Boolean = false
 
     open fun onJsConfirm(
         view: HybridWebUI,
         url: String,
         message: String?,
-        result: JsResult
-    ): Boolean=false
+        result: JsResult,
+    ): Boolean = false
 
     open fun onJsPrompt(
         view: HybridWebUI,
         url: String,
         message: String?,
         defaultValue: String?,
-        result: JsPromptResult
-    ): Boolean=false
+        result: JsPromptResult,
+    ): Boolean = false
 
     open fun onPermissionRequest(request: PermissionRequest) {}
 
@@ -128,15 +129,24 @@ open class JavaScriptInterface(
     open fun onReceivedTouchIconUrl(view: HybridWebUI, url: String, precomposed: Boolean) {}
 
     /**
-     * Called when the WebUI is destroyed
+     * Called when the [HybridWebUI] is being destroyed.
+     *
+     * Use this method to perform any necessary cleanup, such as unregistering
+     * listeners or releasing resources associated with the JavaScript interface.
+     *
+     * **Note:** Implementation must call `super.onDestroy()` to ensure
+     * proper lifecycle management.
      */
-    open fun onDestroy() {}
+    @CallSuper
+    open fun onDestroy() {
+        consoleLogs?.clear()
+    }
 
     open fun onShowFileChooser(
         webView: HybridWebUI,
         filePathCallback: ValueCallback<Array<Uri>>,
-        fileChooserParams: WebChromeClient.FileChooserParams
-    ): Boolean=false
+        fileChooserParams: WebChromeClient.FileChooserParams,
+    ): Boolean = false
 
     companion object {
         operator fun <T : JavaScriptInterface> invoke(

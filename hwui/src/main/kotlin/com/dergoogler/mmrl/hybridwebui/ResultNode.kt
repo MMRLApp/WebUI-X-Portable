@@ -35,7 +35,8 @@ sealed class ResultNode {
                     if (childArray != null) {
                         for (i in 0 until childArray.length()) {
                             val childObj = childArray.getJSONObject(i)
-                            val childKey = if (childObj.has("key")) childObj.getString("key") else null
+                            val childKey =
+                                if (childObj.has("key")) childObj.getString("key") else null
                             children.add(parse(childObj, childKey, depth + 1))
                         }
                     }
@@ -48,6 +49,7 @@ sealed class ResultNode {
                         id = "node_${_nodeIdCounter++}"
                     )
                 }
+
                 else -> {
                     val kind = when (obj.optString("kind")) {
                         "string" -> PrimitiveKind.STRING
@@ -61,9 +63,27 @@ sealed class ResultNode {
                 }
             }
         }
+
     }
 }
 
 enum class PrimitiveKind {
-    STRING, NUMBER, BOOLEAN, NULL_UNDEFINED, FUNCTION, OTHER
+    STRING, NUMBER, BOOLEAN, NULL_UNDEFINED, FUNCTION, OTHER;
+
+    companion object {
+        /**
+         * Parses a Kotlin object into a [PrimitiveKind].
+         *
+         * [PrimitiveKind.FUNCTION] is not supported.
+         *
+         * @param obj The Kotlin object to be parsed.
+         */
+        inline fun <reified T> parse(obj: T?): PrimitiveKind = when (obj) {
+            is String -> PrimitiveKind.STRING
+            is Number -> PrimitiveKind.NUMBER
+            is Boolean -> PrimitiveKind.BOOLEAN
+            null -> PrimitiveKind.NULL_UNDEFINED
+            else -> PrimitiveKind.OTHER
+        }
+    }
 }

@@ -9,12 +9,11 @@ import com.dergoogler.mmrl.hybridwebui.store.WebConsoleStore
 class HybridWebUIStore : ViewModel() {
     internal val jsInterfaceStore = JavaScriptInterfaceStore()
     val networkStore = NetworkRequestStore(maxHistory = 200)
-    val consoleStore = WebConsoleStore(maxHistory = 200)
+    fun buildConsoleStore(source: String) = WebConsoleStore(maxHistory = 200, source = source)
     val pathMatchers = PathMatchersStore()
 
     fun clear() {
         networkStore.clear()
-        consoleStore.clear()
         pathMatchers.clear()
     }
 
