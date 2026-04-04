@@ -3,21 +3,19 @@ package com.dergoogler.mmrl.hybridwebui
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import android.webkit.ConsoleMessage
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
-import com.dergoogler.mmrl.hybridwebui.ConsoleEntry.Companion.toConsoleEntry
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
 
 open class HybridWebUIChromeClient(
     protected val view: HybridWebUI,
 ) : WebChromeClient() {
     protected val store get() = view.store
-    protected val console get() = store.consoleStore
+    protected val console get() = store.buildConsoleStore(TAG)
     protected val network get() = store.networkStore
 
     private fun <T> queryInterfaces(methodName: String, caller: JavaScriptInterface.() -> T): T? {

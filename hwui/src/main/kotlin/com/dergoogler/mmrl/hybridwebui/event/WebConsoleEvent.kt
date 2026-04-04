@@ -4,8 +4,8 @@ import android.webkit.ConsoleMessage
 import com.dergoogler.mmrl.hybridwebui.ConsoleEntry
 import com.dergoogler.mmrl.hybridwebui.HybridWebUI
 import com.dergoogler.mmrl.hybridwebui.HybridWebUIEvent
-import com.dergoogler.mmrl.hybridwebui.PrimitiveKind
 import com.dergoogler.mmrl.hybridwebui.ResultNode
+import com.dergoogler.mmrl.hybridwebui.store.error
 import org.json.JSONObject
 
 class WebConsoleEvent : HybridWebUI.EventListener() {
@@ -21,11 +21,11 @@ class WebConsoleEvent : HybridWebUI.EventListener() {
     }
 
     override fun listen(view: HybridWebUI, event: HybridWebUIEvent) {
-        val store = view.store
+        val console = view.consoleLogs
         val data = event.message.data ?: return
 
         try {
-            // json arrives as the raw string passed from JS — e.g. '{"v":[...]}'
+            // JSON arrives as the raw string passed from JS — e.g. '{"v":[...]}'
             // No extra JSONObject wrapping needed here unlike evaluateJavascript callbacks
             val outer = JSONObject(data)
 
@@ -37,22 +37,11 @@ class WebConsoleEvent : HybridWebUI.EventListener() {
 
             val level = getParsedLevel(rawLevel)
 
-            store.consoleStore.add(
+            console.add(
                 ConsoleEntry(level = level, args = args, source = "", line = 0)
             )
         } catch (e: Exception) {
-            store.consoleStore.add(
-                ConsoleEntry(
-                    level = ConsoleMessage.MessageLevel.ERROR,
-                    args = listOf(
-                        ResultNode.Primitive(null, data, PrimitiveKind.OTHER, 0)
-                    ),
-                    source = "",
-                    line = 0
-                )
-            )
+            console.error(e)
         }
-
-
     }
 }

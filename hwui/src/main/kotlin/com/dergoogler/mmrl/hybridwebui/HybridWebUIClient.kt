@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.hybridwebui
 
-import android.R.attr.tag
 import android.graphics.Bitmap
 import android.os.Message
 import android.util.Log
@@ -12,14 +11,13 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.WorkerThread
 import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import java.io.ByteArrayInputStream
 
 open class HybridWebUIClient(
     protected val view: HybridWebUI,
 ) : WebViewClient() {
     protected val store get() = view.store
-    protected val console get() = store.consoleStore
+    protected val console get() = store.buildConsoleStore(TAG)
     protected val network get() = store.networkStore
     protected val pathMatchers get() = store.pathMatchers
 

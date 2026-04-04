@@ -131,7 +131,7 @@ open class HybridWebUI : WebView {
         var context = this.context
         var depth = 0
         val maxDepth = 10 // Prevent infinite loops
-        
+
         while (context is ContextWrapper && depth < maxDepth) {
             if (context is ComponentActivity) {
                 return try {
@@ -155,11 +155,11 @@ open class HybridWebUI : WebView {
             }
             depth++
         }
-        
+
         if (depth >= maxDepth) {
             Log.w(TAG, "Reached maximum depth while searching for ComponentActivity")
         }
-        
+
         return null
     }
 
@@ -171,11 +171,13 @@ open class HybridWebUI : WebView {
         get() = if (isActivityInitialized) _activity
         else throw IllegalStateException("Activity accessed before onStoreReady()")
 
+    open val consoleLogs get() = store.buildConsoleStore(TAG)
+
     /**
      * Safe application context getter that provides fallbacks to prevent null crashes.
      */
     val safeApplicationContext: Context
-        get() = _applicationContext 
+        get() = _applicationContext
             ?: try {
                 if (isActivityInitialized && !_activity.isFinishing && !_activity.isDestroyed) {
                     _activity.applicationContext

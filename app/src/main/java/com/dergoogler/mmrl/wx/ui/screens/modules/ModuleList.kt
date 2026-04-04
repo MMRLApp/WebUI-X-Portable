@@ -34,7 +34,6 @@ import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import dev.mmrlx.compose.ui.ext.with
-import dev.mmrlx.compose.ui.scaffold.LocalScaffoldScope
 import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
 import java.io.File
 
@@ -44,8 +43,6 @@ fun ScaffoldScope.ModulesList(
     state: LazyListState,
     platform: Platform,
 ) {
-    val mainScreenScaffoldScope = LocalScaffoldScope.current
-
     LazyColumn(
         state = state,
         modifier = Modifier.with(this@ModulesList) { it.scaffoldHazeSource() },
@@ -53,7 +50,7 @@ fun ScaffoldScope.ModulesList(
             top = this@ModulesList.scaffoldTopPadding + 8.dp,
             start = 8.dp,
             end = 8.dp,
-            bottom = this@ModulesList.scaffoldBottomPadding + mainScreenScaffoldScope.scaffoldBottomPadding + 8.dp
+            bottom = this@ModulesList.scaffoldBottomPadding + 8.dp
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

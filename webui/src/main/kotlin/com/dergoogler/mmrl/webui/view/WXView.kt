@@ -144,7 +144,7 @@ open class WXView : WebUIView {
         }
     }
 
-    val consoleLogs get() = store.consoleStore
+    override val consoleLogs get() = store.buildConsoleStore(TAG)
     val networkRequests get() = store.networkStore
 
     override fun destroy() {

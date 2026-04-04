@@ -1,5 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.screens
 
+/* remove */
+/* remove */
 import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -8,8 +10,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.WindowInsets
-/* remove */ import androidx.compose.material3.SnackbarHost
-/* remove */import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,8 +33,8 @@ import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationSty
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 import dev.mmrlx.compose.ui.Icon
-import dev.mmrlx.compose.ui.bottomnavigation.BottomNavigation
-import dev.mmrlx.compose.ui.bottomnavigation.TabButton
+import dev.mmrlx.compose.ui.navigationbar.NavigationBar
+import dev.mmrlx.compose.ui.navigationbar.NavigationBarItem
 import dev.mmrlx.compose.ui.scaffold.ProvideLocalScaffoldScope
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 
@@ -57,58 +60,19 @@ fun MainScreen() {
     }
 
     Scaffold(
-        bottomBar = {
-            BottomNav()
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         contentWindowInsets = WindowInsets.none
     ) {
-        ProvideLocalScaffoldScope(this) {
-            DestinationsNavHost(
-                modifier = Modifier.scaffoldHazeSource("mainScreen"),
-                navGraph = NavGraphs.root,
-                navController = navController,
-                defaultTransitions = object : NavHostAnimatedDestinationStyle() {
-                    override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition
-                        get() = { fadeIn(animationSpec = tween(340)) }
-                    override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition
-                        get() = { fadeOut(animationSpec = tween(340)) }
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun BottomNav() {
-    val navController = LocalNavController.current
-    val navigator = LocalDestinationsNavigator.current
-
-    BottomNavigation {
-        MainDestination.entries.forEach { screen ->
-            val isSelected by navController.isRouteOnBackStackAsState(screen.direction)
-
-            TabButton(
-                selected = isSelected,
-                onClick = {
-                    if (isSelected) {
-                        navigator.popBackStack(screen.direction, false)
-                    }
-
-                    navigator.navigate(screen.direction) {
-                        popUpTo(NavGraphs.root) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-            ) {
-                Icon(
-                    painter = painterResource(if (isSelected) screen.iconFilled else screen.icon),
-                    contentDescription = null
-                )
+        DestinationsNavHost(
+            modifier = Modifier.scaffoldHazeSource("mainScreen"),
+            navGraph = NavGraphs.root,
+            navController = navController,
+            defaultTransitions = object : NavHostAnimatedDestinationStyle() {
+                override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition
+                    get() = { fadeIn(animationSpec = tween(340)) }
+                override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition
+                    get() = { fadeOut(animationSpec = tween(340)) }
             }
-        }
+        )
     }
 }

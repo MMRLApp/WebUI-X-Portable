@@ -6,7 +6,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
@@ -29,12 +28,14 @@ import com.dergoogler.mmrl.ui.component.PageIndicator
 import com.dergoogler.mmrl.ui.component.SearchTopBar
 import com.dergoogler.mmrl.ui.component.text.TextRow
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import dev.mmrlx.compose.ui.Toolbar
+import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.toolbar.Toolbar
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
 @Destination<RootGraph>(start = true)
@@ -51,8 +52,11 @@ fun ModulesScreen(
 
     Scaffold(
         toolbar = {
+
             Toolbar(
-                title = "WebUI X",
+                title = {
+                    Text("WebUI X")
+                },
             )
 //
 //            TopBar(
@@ -64,6 +68,9 @@ fun ModulesScreen(
 //                setMenu = viewModel::setModulesMenu,
 //                scrollBehavior = scrollBehavior
 //            )
+        },
+        bottomBar = {
+            BottomNavigation()
         },
         floatingActionButton = {
             if (viewModel.platform != Platform.NonRoot) return@Scaffold

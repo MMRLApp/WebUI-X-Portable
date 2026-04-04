@@ -1,4 +1,3 @@
-
 import app.cash.licensee.ViolationAction
 import com.android.build.api.variant.impl.VariantOutputImpl
 
@@ -258,7 +257,7 @@ dependencies {
     implementation(libs.composedestinations.core)
     ksp(libs.composedestinations.ksp)
 
-    implementation("dev.mmrlx:ui:1.0.4")
+    implementation("dev.mmrlx:ui:1.0.8")
     implementation("dev.mmrlx:nio:1.0.0")
 
     implementation("com.github.MMRLApp.RootThread:thread:0.0.3")
