@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
@@ -35,10 +34,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
-    kotlinOptions {
-        jvmTarget = "21"
-    }
 }
 
 dependencies {
@@ -48,7 +43,6 @@ dependencies {
     compileOnly(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
     implementation(projects.jna)
-    implementation(projects.hwui)
     implementation(kotlin("reflect"))
     implementation(libs.libsu.core)
     implementation(libs.androidx.core.ktx)
@@ -83,4 +77,5 @@ dependencies {
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.dexlib2)
     ksp(libs.square.moshi.kotlin)
+    api("dev.mmrlx:hwui:1.0.5")
 }

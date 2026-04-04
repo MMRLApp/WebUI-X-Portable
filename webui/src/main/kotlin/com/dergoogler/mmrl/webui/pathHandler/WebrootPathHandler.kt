@@ -3,9 +3,6 @@ package com.dergoogler.mmrl.webui.pathHandler
 import android.util.Log
 import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIResourceRequest
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
@@ -14,6 +11,9 @@ import com.dergoogler.mmrl.webui.InjectionType
 import com.dergoogler.mmrl.webui.addInjection
 import com.dergoogler.mmrl.webui.asResponse
 import com.dergoogler.mmrl.webui.util.WebUIOptions
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.HybridWebUIInsets
+import dev.mmrlx.hybridwebui.HybridWebUIResourceRequest
 import java.io.IOException
 
 
@@ -121,9 +121,7 @@ class WebrootPathHandler(
 
                 if (options.config.autoStatusBarsStyle) {
                     addInjection {
-                        appendLine("<script data-internal-configurable type=\"module\">")
-                        appendLine("$${options.modId.sanitizedId}.setLightStatusBars(!$${options.modId.sanitizedId}.isDarkMode())")
-                        appendLine("</script>")
+                        appendLine("<script src=\"https://mui.kernelsu.org/internal/assets/ext/statusbar.js\"></script>")
                     }
                 }
 

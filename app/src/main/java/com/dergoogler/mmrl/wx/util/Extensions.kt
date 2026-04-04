@@ -26,10 +26,15 @@ import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
+import dev.mmrlx.thread.RootArgs
+import dev.mmrlx.thread.RootCallable
+import dev.mmrlx.thread.RootThread
 import kotlinx.coroutines.CoroutineScope
 import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import kotlin.reflect.full.memberProperties
@@ -182,6 +187,10 @@ inline fun <reified T> Map<String, Any?>?.getProp(key: String, def: T): T {
 
 inline fun <reified T> Map<String, Any?>?.getPropOrNull(key: String): T? = getProp(key, null)
 
+@Throws(BrickException::class)
+fun Context.getNonRootBaseDir(): File =
+    getExternalFilesDir(null) ?: throw BrickException("Failed to get filesDir")
+
 fun Context.getBaseDir(
     platform: Platform = PlatformManager.platform,
 ): SuFile {
@@ -249,3 +258,14 @@ inline fun <reified T : WXInterface> WXInterface.scrambleClassName(): String {
     val className = T::class.simpleName ?: name
     return className.toList().shuffled().joinToString("")
 }
+
+fun <T> rootSync(args: Map<String, Any?>? = null, block: RootCallable<T>): T {
+    if (args == null) return RootThread.submit(block).get()
+    val mArgs = RootArgs.of(args)
+    return RootThread.submit(block, mArgs).get()
+}
+
+fun <T> RootCallable<T>.sync(args: Map<String, Any?>? = null): T = rootSync(args, this)
+
+fun File.inputStream0(): InputStream =
+    rootSync { FileInputStream(this).use { readBytes() } }.inputStream()

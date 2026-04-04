@@ -26,8 +26,8 @@ import com.dergoogler.mmrl.ext.createNewWX
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.moshi.moshi
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
@@ -262,7 +262,7 @@ open class WebUIView : HybridWebUI {
         }
     }
 
-    override fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation<out com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface>) {
+    override fun addJavascriptInterface(obj: JavaScriptInterfaceImplementation<out dev.mmrlx.hybridwebui.interfaces.JavaScriptInterface>) {
         try {
             val js = obj.createNewWX(createDefaultWxOptions(options)) ?: obj.createNew(activity, this)
             if (js == null) {

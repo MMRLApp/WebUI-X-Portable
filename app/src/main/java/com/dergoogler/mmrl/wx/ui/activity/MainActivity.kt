@@ -2,10 +2,10 @@ package com.dergoogler.mmrl.wx.ui.activity
 
 import android.os.Bundle
 import androidx.compose.animation.Crossfade
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +15,7 @@ import com.dergoogler.mmrl.wx.ui.screens.MainScreen
 import com.dergoogler.mmrl.wx.util.BaseActivity
 import com.dergoogler.mmrl.wx.util.setBaseContent
 import dagger.hilt.android.AndroidEntryPoint
+import dev.mmrlx.thread.ktx.addRootThread
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint

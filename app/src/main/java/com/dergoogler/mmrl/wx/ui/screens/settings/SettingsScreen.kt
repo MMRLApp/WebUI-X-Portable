@@ -29,6 +29,7 @@ import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.FeaturedManager
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavButton
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
@@ -55,6 +56,9 @@ fun SettingsScreen() {
                     ToolbarTitle(title = stringResource(id = R.string.settings))
                 },
             )
+        },
+        bottomBar = {
+            BottomNavigation()
         },
         contentWindowInsets = WindowInsets.none
     ) { innerPadding ->

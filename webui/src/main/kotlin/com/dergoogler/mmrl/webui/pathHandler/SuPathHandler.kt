@@ -2,8 +2,8 @@ package com.dergoogler.mmrl.webui.pathHandler
 
 import android.util.Log
 import android.webkit.WebResourceResponse
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIResourceRequest
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.HybridWebUIResourceRequest
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.webui.asResponse
 import java.io.IOException

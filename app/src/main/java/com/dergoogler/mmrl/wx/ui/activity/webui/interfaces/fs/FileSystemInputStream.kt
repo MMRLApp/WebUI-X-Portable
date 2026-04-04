@@ -5,9 +5,9 @@ import android.graphics.Bitmap
 import androidx.annotation.UiThread
 import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewFeature
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIEvent
-import com.dergoogler.mmrl.hybridwebui.iife
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.HybridWebUIEvent
+import dev.mmrlx.hybridwebui.iife
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFileInputStream
 import com.dergoogler.mmrl.webui.interfaces.WXInterface

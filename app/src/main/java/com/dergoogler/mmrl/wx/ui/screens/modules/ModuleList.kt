@@ -2,10 +2,8 @@ package com.dergoogler.mmrl.wx.ui.screens.modules
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +14,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -27,56 +24,57 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
-import com.dergoogler.mmrl.platform.content.State
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
-import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.model.module.ModuleState
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
+import java.io.File
 
 @Composable
-fun ModulesList(
-    list: List<LocalModule>,
+fun ScaffoldScope.ModulesList(
+    list: List<Module>,
     state: LazyListState,
-    isProviderAlive: Boolean,
     platform: Platform,
-) = Box(
-    modifier = Modifier.fillMaxSize()
 ) {
     LazyColumn(
         state = state,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.with(this@ModulesList) { it.scaffoldHazeSource() },
+        contentPadding = PaddingValues(
+            top = this@ModulesList.scaffoldTopPadding + 8.dp,
+            start = 8.dp,
+            end = 8.dp,
+            bottom = this@ModulesList.scaffoldBottomPadding + 8.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = list.filter { it.hasWebUI || it.hasModConf },
+            items = list.filter { it.hasWebUI },
             key = { it.id }
         ) { module ->
             ModuleItem(
-                isProviderAlive = isProviderAlive,
                 platform = platform,
                 module = module,
             )
         }
     }
-
-    VerticalFastScrollbar(
-        state = state,
-        modifier = Modifier.align(Alignment.CenterEnd)
-    )
+//
+//    VerticalFastScrollbar(
+//        state = state,
+//        modifier = Modifier.align(Alignment.CenterEnd)
+//    )
 }
 
 @Composable
 fun ModuleItem(
-    module: LocalModule,
+    module: Module,
     platform: Platform,
-    isProviderAlive: Boolean,
 ) {
     val context = LocalContext.current
     val navigator = LocalDestinationsNavigator.current
@@ -85,34 +83,34 @@ fun ModuleItem(
         module = module,
         indicator = {
             when (module.state) {
-                State.REMOVE -> StateIndicator(R.drawable.trash)
-                State.UPDATE -> StateIndicator(R.drawable.device_mobile_down)
+                ModuleState.Remove -> StateIndicator(R.drawable.trash)
+                ModuleState.Update -> StateIndicator(R.drawable.device_mobile_down)
                 else -> {}
             }
         },
         leadingButton = {
             ConfigButton(
                 onClick = {
-                    navigator.navigate(ConfigEditorScreenDestination(module))
+//                    navigator.navigate(ConfigEditorScreenDestination(module))
                 },
-                enabled = module.state != State.REMOVE
+                enabled = module.state != ModuleState.Remove
             )
         },
         trailingButton = {
-            ShortcutAdd(
-                module = module,
-                enabled = isProviderAlive
-            )
+//            ShortcutAdd(
+//                module = module,
+//                enabled = isProviderAlive
+//            )
 
             if (platform.isNonRoot) {
                 val colorScheme = MaterialTheme.colorScheme
-                RemoveButton(isProviderAlive) {
+                RemoveButton {
                     context.confirm(
                         ConfirmData(
                             title = "Remove ${module.name}?",
                             description = "Are you sure that you want to remove this module?",
                             onConfirm = {
-                                val file = module.id.moduleDir.toExtFile()
+                                val file = File(module.paths.moduleDir)
 
                                 if (file.deleteRecursively()) {
                                     Toast.makeText(
@@ -201,7 +199,7 @@ private fun ConfigButton(
 
 @Composable
 private fun RemoveButton(
-    enabled: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) = FilledTonalButton(
     onClick = onClick,
