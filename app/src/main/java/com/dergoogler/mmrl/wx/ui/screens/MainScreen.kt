@@ -32,7 +32,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
-import dev.mmrlx.compose.ui.Icon
+import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.navigationbar.NavigationBar
 import dev.mmrlx.compose.ui.navigationbar.NavigationBarItem
 import dev.mmrlx.compose.ui.scaffold.ProvideLocalScaffoldScope

@@ -14,7 +14,7 @@ import android.widget.Toast
 import com.dergoogler.mmrl.ext.toBooleanOrNull
 import com.dergoogler.mmrl.ext.toIntOrNull
 import com.dergoogler.mmrl.ext.toStringOrNull
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFileInputStream

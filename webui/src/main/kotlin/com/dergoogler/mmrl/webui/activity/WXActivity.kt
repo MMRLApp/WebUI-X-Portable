@@ -4,17 +4,14 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Bundle
 import android.os.Process
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.CallSuper
@@ -30,12 +27,7 @@ import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
-import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
-import com.dergoogler.mmrl.ui.component.dialog.confirm
-import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.model.WXEvent
-import com.dergoogler.mmrl.webui.model.WXEventHandler
-import com.dergoogler.mmrl.webui.model.WXKeyboardEventData
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
@@ -146,144 +138,8 @@ open class WXActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             onRender(this)
-            registerBackEvents()
-
-
-            config {
-                rootView.viewTreeObserver.addOnGlobalLayoutListener {
-                    val r = Rect()
-                    rootView.getWindowVisibleDisplayFrame(r)
-
-                    val screenHeight = rootView.rootView.height
-                    val keypadHeight = screenHeight - r.bottom
-                    val keyboardVisibleNow = keypadHeight > screenHeight * 0.15
-
-                    if (keyboardVisibleNow != isKeyboardShowing) {
-                        isKeyboardShowing = keyboardVisibleNow
-
-                        view?.wx?.postWXEvent(
-                            WXEventHandler(
-                                WXEvent.WX_ON_KEYBOARD,
-                                WXKeyboardEventData(
-                                    height = keypadHeight.asPx,
-                                    visible = keyboardVisibleNow
-                                )
-                            )
-                        )
-
-                        updateWebViewKeyboardMapping(
-                            keyboardVisibleNow,
-                            windowResize,
-                            keypadHeight
-                        )
-                    }
-                }
-            }
+//            registerBackEvents()
         }
-    }
-
-    private fun updateWebViewKeyboardMapping(
-        isVisible: Boolean,
-        isNativeResize: Boolean,
-        height: Int,
-    ) {
-        if (!isVisible) {
-            resetWebViewHeight()
-            removeCssKeyboardHeight()
-            return
-        }
-
-        if (isNativeResize) {
-            adjustWebViewHeight(height)
-        } else {
-            setCssKeyboardHeight(height)
-        }
-    }
-
-    private fun adjustWebViewHeight(keypadHeight: Int) {
-        val params = view?.layoutParams
-        params?.height = rootView.height - keypadHeight
-        view?.layoutParams = params
-    }
-
-    private fun resetWebViewHeight() {
-        val params = view?.layoutParams
-        params?.height = LinearLayout.LayoutParams.MATCH_PARENT
-        view?.layoutParams = params
-    }
-
-
-    fun setCssKeyboardHeight(keypadHeight: Int) {
-        val density = this.resources.displayMetrics.density
-        val cssPixel = (keypadHeight / density).toInt()
-        view?.wx?.runJs(
-            "document.documentElement.style.setProperty('--window-keyboard-height', '${cssPixel}px');",
-        )
-    }
-
-    private fun removeCssKeyboardHeight() {
-        view?.wx?.runJs(
-            "document.documentElement.style.removeProperty('--window-keyboard-height');",
-        )
-    }
-
-    private fun registerBackEvents() {
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val options = view?.options ?: return
-                val wx = view?.wx ?: return
-
-                val backHandler = options.config.backHandler
-                val interceptor = options.config.backInterceptor
-
-                if (backHandler != true) {
-                    handleNativeBack()
-                    return
-                }
-
-                when (interceptor) {
-                    "native" -> handleNativeBack()
-                    "javascript" -> wx.postWXEvent(
-                        WXEventHandler(WXEvent.WX_ON_BACK, null)
-                    )
-
-                    true -> handleNativeBack()
-                    null -> handleNativeBack()
-                    false -> exit(options)
-                    else -> exit(options)
-                }
-            }
-        })
-    }
-
-    private fun handleNativeBack() {
-        val options = view?.options ?: return
-        val wx = view?.wx ?: return
-
-        if (wx.canGoBack()) {
-            wx.goBack()
-            return
-        }
-
-        if (options.disableGlobalExitConfirm) {
-            exit(options)
-            return
-        }
-
-        if (options.config.exitConfirm) {
-            confirm(
-                confirmData = ConfirmData(
-                    title = getString(R.string.exit),
-                    description = getString(R.string.exit_desc),
-                    onConfirm = { exit(options) },
-                    onClose = {}
-                ),
-                colorScheme = options.colorScheme
-            )
-            return
-        }
-
-        exit(options)
     }
 
     @CallSuper

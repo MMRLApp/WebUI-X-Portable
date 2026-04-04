@@ -8,7 +8,7 @@ import com.dergoogler.mmrl.wx.ui.navigation.MainDestination
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 import com.ramcosta.composedestinations.generated.NavGraphs
-import dev.mmrlx.compose.ui.Icon
+import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.navigationbar.NavigationBar
 import dev.mmrlx.compose.ui.navigationbar.NavigationBarItem
 

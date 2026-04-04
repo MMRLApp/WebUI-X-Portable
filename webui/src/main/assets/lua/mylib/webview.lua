@@ -4,7 +4,7 @@ local str = require("mylib.str")
 
 local R                 = java.import("android.R")
 local WX_R              = java.import("com.dergoogler.mmrl.webui.R")
-local HWUI_R            = java.import("com.dergoogler.mmrl.hybridwebui.R")
+local HWUI_R            = java.import("dev.mmrlx.hybridwebui.R")
 local Uri               = java.import("android.net.Uri")
 
 _G.WebResourceResponse  = java.import("android.webkit.WebResourceResponse")
@@ -21,12 +21,12 @@ function M.registerPathHandler(path, handler, authority)
         authority = domain:toString()
     end
 
-    local handlerProxy = java.proxy("com.dergoogler.mmrl.hybridwebui.HybridWebUI$PathHandler", handler)
+    local handlerProxy = java.proxy("dev.mmrlx.hybridwebui.HybridWebUI$PathHandler", handler)
     wxView:addPathHandler(path, handlerProxy, Uri:parse(authority))
 end
 
 function M.registerEventListener(objectName, listener)
-    local listenerProxy = java.proxy("com.dergoogler.mmrl.hybridwebui.HybridWebUI$EventListener", listener)
+    local listenerProxy = java.proxy("dev.mmrlx.hybridwebui.HybridWebUI$EventListener", listener)
     wxView:addEventListener(objectName, listenerProxy)
 end
 

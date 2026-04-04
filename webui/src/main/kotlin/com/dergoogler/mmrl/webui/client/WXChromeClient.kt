@@ -6,8 +6,8 @@ import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
 import android.webkit.WebView
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIChromeClient
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.HybridWebUIChromeClient
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.PromptData
 import com.dergoogler.mmrl.ui.component.dialog.confirm

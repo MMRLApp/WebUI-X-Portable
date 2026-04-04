@@ -86,6 +86,7 @@
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:hardwareAccelerated="true"
+            android:enableOnBackInvokedCallback="true"
             android:exported="true"
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"

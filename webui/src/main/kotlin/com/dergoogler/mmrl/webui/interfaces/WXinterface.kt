@@ -10,11 +10,11 @@ import androidx.activity.result.ActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.ext.findActivity
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
-import com.dergoogler.mmrl.hybridwebui.store.error
-import com.dergoogler.mmrl.hybridwebui.store.trace
-import com.dergoogler.mmrl.hybridwebui.store.warn
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterface
+import dev.mmrlx.hybridwebui.store.error
+import dev.mmrlx.hybridwebui.store.trace
+import dev.mmrlx.hybridwebui.store.warn
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions

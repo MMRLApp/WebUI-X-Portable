@@ -43,7 +43,6 @@ dependencies {
     compileOnly(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
     implementation(projects.jna)
-    implementation(projects.hwui)
     implementation(kotlin("reflect"))
     implementation(libs.libsu.core)
     implementation(libs.androidx.core.ktx)
@@ -78,4 +77,5 @@ dependencies {
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.dexlib2)
     ksp(libs.square.moshi.kotlin)
+    api("dev.mmrlx:hwui:1.0.5")
 }

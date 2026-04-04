@@ -46,5 +46,4 @@ include(
     ":jna",
     ":modconf",
     ":lua",
-    ":hwui"
 )

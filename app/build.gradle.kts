@@ -174,7 +174,6 @@ dependencies {
     implementation(projects.webui)
     implementation(projects.modconf)
     implementation(projects.jna)
-    implementation(projects.hwui)
     implementation(libs.mmrl.ext)
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.platform)
@@ -257,7 +256,7 @@ dependencies {
     implementation(libs.composedestinations.core)
     ksp(libs.composedestinations.ksp)
 
-    implementation("dev.mmrlx:ui:1.0.8")
+    implementation("dev.mmrlx:ui:1.0.9")
     implementation("dev.mmrlx:nio:1.0.0")
 
     implementation("com.github.MMRLApp.RootThread:thread:0.0.3")
