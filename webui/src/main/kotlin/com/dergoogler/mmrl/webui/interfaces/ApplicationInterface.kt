@@ -14,6 +14,7 @@ import com.dergoogler.mmrl.webui.model.App
 import com.dergoogler.mmrl.webui.model.WebUIConfigAdditionalConfig.Companion.toValueMap
 import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.JsonClass
+import dev.mmrlx.hybridwebui.store.error
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,8 +27,10 @@ class ApplicationInterface(
 
     @JavascriptInterface
     fun exit() {
-        withActivity {
-            exit(options)
+        try {
+            activity.exit(options)
+        } catch (e: Exception) {
+            consoleLogs.error("Error while exiting", e)
         }
     }
 
