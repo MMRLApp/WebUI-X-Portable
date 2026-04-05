@@ -1,5 +1,6 @@
 [versions]
 dexlib2 = "2.5.2"
+mmrlx = "1.0.31"
 mmrl = "v34242"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "9.0.0"
@@ -124,6 +125,9 @@ lib-zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomableVe
 libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
 libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
 libsu-io = { module = "com.github.topjohnwu.libsu:io", version.ref = "libsu" }
+mmrlx-ui = { module = "dev.mmrlx:ui", version.ref = "mmrlx" }
+mmrlx-nio = { module = "dev.mmrlx:nio", version.ref = "mmrlx" }
+mmrlx-hwui = { module = "dev.mmrlx:hwui", version.ref = "mmrlx" }
 multiplatform-markdown-renderer-android = { module = "com.mikepenz:multiplatform-markdown-renderer-android", version.ref = "multiplatformMarkdownRenderer" }
 multiplatform-markdown-renderer-coil3 = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "multiplatformMarkdownRenderer" }
 multiplatform-markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "multiplatformMarkdownRenderer" }

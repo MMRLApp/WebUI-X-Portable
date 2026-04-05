@@ -77,5 +77,5 @@ dependencies {
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.dexlib2)
     ksp(libs.square.moshi.kotlin)
-    api("dev.mmrlx:hwui:1.0.5")
+    api(libs.mmrlx.hwui)
 }

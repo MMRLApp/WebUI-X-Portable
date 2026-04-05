@@ -256,8 +256,8 @@ dependencies {
     implementation(libs.composedestinations.core)
     ksp(libs.composedestinations.ksp)
 
-    implementation("dev.mmrlx:ui:1.0.9")
-    implementation("dev.mmrlx:nio:1.0.0")
+    implementation(libs.mmrlx.ui)
+    implementation(libs.mmrlx.nio)
 
     implementation("com.github.MMRLApp.RootThread:thread:0.0.3")
 }
