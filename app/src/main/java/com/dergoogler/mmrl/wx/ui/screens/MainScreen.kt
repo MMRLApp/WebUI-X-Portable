@@ -1,7 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens
 
-/* remove */
-/* remove */
 import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition

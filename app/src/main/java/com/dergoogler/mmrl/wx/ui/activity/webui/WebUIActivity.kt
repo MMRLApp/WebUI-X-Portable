@@ -3,8 +3,6 @@ package com.dergoogler.mmrl.wx.ui.activity.webui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
-import android.view.View
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme

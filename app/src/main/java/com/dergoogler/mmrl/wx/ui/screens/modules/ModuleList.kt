@@ -24,12 +24,12 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
+import com.dergoogler.mmrl.platform.content.State
+import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.model.module.Module
-import com.dergoogler.mmrl.wx.model.module.ModuleState
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
@@ -39,9 +39,10 @@ import java.io.File
 
 @Composable
 fun ScaffoldScope.ModulesList(
-    list: List<Module>,
+    list: List<LocalModule>,
     state: LazyListState,
     platform: Platform,
+    isProviderAlive: Boolean
 ) {
     LazyColumn(
         state = state,
@@ -61,6 +62,7 @@ fun ScaffoldScope.ModulesList(
             ModuleItem(
                 platform = platform,
                 module = module,
+                isProviderAlive = isProviderAlive
             )
         }
     }
@@ -73,8 +75,9 @@ fun ScaffoldScope.ModulesList(
 
 @Composable
 fun ModuleItem(
-    module: Module,
+    module: LocalModule,
     platform: Platform,
+    isProviderAlive: Boolean,
 ) {
     val context = LocalContext.current
     val navigator = LocalDestinationsNavigator.current
@@ -83,8 +86,9 @@ fun ModuleItem(
         module = module,
         indicator = {
             when (module.state) {
-                ModuleState.Remove -> StateIndicator(R.drawable.trash)
-                ModuleState.Update -> StateIndicator(R.drawable.device_mobile_down)
+                State.REMOVE
+                -> StateIndicator(R.drawable.trash)
+                State.UPDATE -> StateIndicator(R.drawable.device_mobile_down)
                 else -> {}
             }
         },
@@ -93,14 +97,14 @@ fun ModuleItem(
                 onClick = {
 //                    navigator.navigate(ConfigEditorScreenDestination(module))
                 },
-                enabled = module.state != ModuleState.Remove
+                enabled = module.state != State.REMOVE
             )
         },
         trailingButton = {
-//            ShortcutAdd(
-//                module = module,
-//                enabled = isProviderAlive
-//            )
+            ShortcutAdd(
+                module = module,
+                enabled = isProviderAlive
+            )
 
             if (platform.isNonRoot) {
                 val colorScheme = MaterialTheme.colorScheme
@@ -110,7 +114,7 @@ fun ModuleItem(
                             title = "Remove ${module.name}?",
                             description = "Are you sure that you want to remove this module?",
                             onConfirm = {
-                                val file = File(module.paths.moduleDir)
+                                val file = File(module.id.moduleDir.toString())
 
                                 if (file.deleteRecursively()) {
                                     Toast.makeText(

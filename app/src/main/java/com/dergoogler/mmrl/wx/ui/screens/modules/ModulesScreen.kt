@@ -6,6 +6,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
@@ -46,7 +47,7 @@ fun ModulesScreen(
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
     val state by viewModel.screenState.collectAsStateWithLifecycle()
-    val list by viewModel.modules.collectAsStateWithLifecycle()
+    val list by viewModel.local.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
@@ -83,16 +84,17 @@ fun ModulesScreen(
             )
         }
 
-//        PullToRefreshBox(
-//            isRefreshing = state.isLoading,
-//            onRefresh = viewModel::getLocalAll
-//        ) {
-        this@Scaffold.ModulesList(
-            list = list,
-            platform = viewModel.platform,
-            state = listState,
-        )
-//        }
+        PullToRefreshBox(
+            isRefreshing = state.isRefreshing,
+            onRefresh = viewModel::getLocalAll
+        ) {
+            this@Scaffold.ModulesList(
+                list = list,
+                platform = viewModel.platform,
+                state = listState,
+                isProviderAlive = viewModel.isProviderAlive
+            )
+        }
     }
 }
 

@@ -114,7 +114,7 @@ private suspend fun init(
     platform: Platform,
     context: Context,
     self: PlatformManager,
-): IServiceManager? {
+): IServiceManager {
     if (platform.isNonRoot) {
         return self.from(
             NonRootProvider(

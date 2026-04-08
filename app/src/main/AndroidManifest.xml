@@ -76,13 +76,30 @@
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
         <activity
             android:name="${__packageName__}.ui.activity.webui.WebUIActivity"
+            android:autoRemoveFromRecents="true"
+            android:documentLaunchMode="intoExisting"
+            android:hardwareAccelerated="true"
+            android:enableOnBackInvokedCallback="true"
+            android:exported="true"
+            android:label="WebUI X"
+            android:permission="${webuiPermissionId}.permission.WEBUI_X"
+            android:process="${webuiPermissionId}.process.webui"
+            android:taskAffinity="${applicationId}.WEBUI_X">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="${__packageName__}.ui.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:hardwareAccelerated="true"

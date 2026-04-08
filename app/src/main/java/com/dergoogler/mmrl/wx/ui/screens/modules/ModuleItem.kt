@@ -1,9 +1,11 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,8 +17,8 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,16 +34,19 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.fadingEdge
 import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
+import com.dergoogler.mmrl.platform.content.State
+import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
-import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
+import com.dergoogler.mmrl.platform.model.ModId.Companion.adbDir
+import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
+import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.ui.component.LocalCover
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.model.module.Module
-import com.dergoogler.mmrl.wx.model.module.ModuleState
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
+import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
 import dev.mmrlx.compose.ui.AppAvatar
 import dev.mmrlx.compose.ui.AppSeparator
 import dev.mmrlx.compose.ui.ProvideTextStyle
@@ -50,7 +55,7 @@ import dev.mmrlx.compose.ui.card
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
-import dev.mmrlx.thread.ktx.invoke
+import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -67,7 +72,7 @@ fun <T> produceRootCallableState(
 
 @Composable
 fun ModuleItem(
-    module: Module,
+    module: LocalModule,
     alpha: Float = 1f,
     decoration: TextDecoration = TextDecoration.None,
     indicator: @Composable() (() -> Unit?)? = null,
@@ -80,59 +85,61 @@ fun ModuleItem(
     val context = LocalContext.current
 
     val canWenUIAccessed =
-        PlatformManager.isAlive && (module.hasWebUI) && module.state != ModuleState.Remove
+        PlatformManager.isAlive && (module.hasWebUI) && module.state != State.REMOVE
 
-
-//    val config = remember(module) {
-//        module.config
-//    }
-
-    val bannerByteArray: ByteArray? by produceState(null) {
-        val bannerPath = module.banner
-        if (bannerPath == null) {
-            value = null
-            return@produceState
-        }
-
-        value = ModulesViewModel.loadModuleBanner(
-            mapOf<String, Any>(
-                "bannerPath" to bannerPath
-            )
-        )
+    val config = remember(module) {
+        module.config
     }
-
-
-
-
 
     Column(
         modifier = Modifier
             .card()
-            .clickable {
-                if (module.hasWebUI) {
-                    val baseDir = module.paths.adbDir
-                    context.launchWebUIX<WebUIActivity>(module.id.toModId(baseDir), baseDir)
-                    return@clickable
-                }
+            .combinedClickable(
+                onLongClick = {
+                    navigator.navigate(FileExplorerScreenDestination(module))
+                },
+                onClick = {
+                    if (module.hasWebUI) {
+                        val baseDir = module.id.adbDir.toString()
+                        //context.launchWebUIX<WebUIActivity>(module.id.toModId(baseDir), baseDir)
 
-                Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
-            }
+                        val intent = Intent(context, WebUIActivity::class.java)
+                            .apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                                putModId(module.id)
+                                putBaseDir(baseDir)
+                            }
+
+                        context.startActivity(intent)
+
+
+
+
+                        return@combinedClickable
+                    }
+
+                    Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
+                }
+            )
             .fillMaxWidth()
     ) {
-        bannerByteArray?.let {
-            LocalCover(
-                modifier = Modifier.fadingEdge(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            Color.Black,
+        config.cover?.let {
+            SuFile(it).exists { cover ->
+
+                LocalCover(
+                    modifier = Modifier.fadingEdge(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black,
+                            ),
+                            startY = Float.POSITIVE_INFINITY,
+                            endY = 0f
                         ),
-                        startY = Float.POSITIVE_INFINITY,
-                        endY = 0f
                     ),
-                ),
-                inputStream = it.inputStream(),
-            )
+                    inputStream = cover.inputStream(),
+                )
+            }
         }
 
         Column(

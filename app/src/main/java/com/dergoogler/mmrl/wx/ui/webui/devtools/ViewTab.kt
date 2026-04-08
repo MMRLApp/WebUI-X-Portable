@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.component.devtools
+package com.dergoogler.mmrl.wx.ui.webui.devtools
 
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.spring
@@ -96,7 +96,7 @@ fun ViewTab(
 
             IconButton(onClick = onDismissRequest) {
                 Icon(
-                    painter = painterResource(R.drawable.square_chevrons_left),
+                    painter = painterResource(R.drawable.x),
                     contentDescription = "Close DevTools",
                     modifier = Modifier.size(20.dp)
                 )
