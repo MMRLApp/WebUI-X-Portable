@@ -66,9 +66,9 @@ class WebUIActivity : BaseActivity() {
         authority: String = baseUri.toString(),
     ): WebUI {
         return this.registerPathHandler(SuPathHandler::class.java) {
-            put(String::class.java, path)
-            put(Uri::class.java, authority.toUri())
-            put(String::class.java, directory)
+            add(String::class.java to path)
+            add(Uri::class.java to authority.toUri())
+            add(String::class.java to directory)
         }
     }
 
@@ -79,7 +79,6 @@ class WebUIActivity : BaseActivity() {
         enableEdgeToEdge()
 
         val modId = intent.getModId() ?: throw BrickException("modId cannot be null or empty")
-
 
         setBaseContent {
             val prefs = LocalUserPreferences.current
@@ -125,7 +124,7 @@ class WebUIActivity : BaseActivity() {
                     .client { }
                     .chromeClient { }
                     .registerJavascriptInterface(ApplicationInterface::class.java) {
-                        put(ColorScheme::class.java, prefs.colorScheme(this@WebUIActivity))
+                        add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }
                     .registerSuPathHandler("/.${modId}/", "/data/adb/modules/${modId}")
                     .registerSuPathHandler("/.adb/", "/data/adb")
@@ -133,7 +132,7 @@ class WebUIActivity : BaseActivity() {
                     .registerSuPathHandler("/.local/", "/data/adb/.local")
 //                    .registerSuPathHandler("/", "/", "https://root.mmrl.dev")
                     .registerPathHandler(InternalPathHandler::class.java) {
-                        put(ColorScheme::class.java, prefs.colorScheme(this@WebUIActivity))
+                        add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }
                     .registerPathHandler(WebrootPathHandler::class.java)
             }

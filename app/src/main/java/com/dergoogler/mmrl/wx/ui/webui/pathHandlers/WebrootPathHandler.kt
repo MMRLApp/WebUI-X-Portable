@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 
 import android.util.Log
-import android.webkit.WebResourceError
 import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
 import com.dergoogler.mmrl.platform.file.SuFile
@@ -22,7 +21,6 @@ import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIInsets
 import dev.mmrlx.webui.WebUIResourceRequest
 import dev.mmrlx.webui.path.PathHandler
-import kotlinx.html.span
 import java.io.IOException
 
 private const val DefaultContentSecurityPolicy: String =
@@ -214,27 +212,6 @@ class WebrootPathHandler(
             )
         }
     }
-
-    override fun onReceivedError(
-        request: WebUIResourceRequest,
-        error: WebResourceError,
-    ): WebResourceResponse {
-        return errorResponse(
-            title = "Failed",
-            description = {
-                span {
-                    +"Failed to access ${request.url}"
-                }
-            },
-            tryFollowing = listOf(
-                "Check if root access is present",
-                "Check if the file exists",
-                "Check if you have internet"
-            ),
-            errorCode = error.description.toString(),
-        )
-    }
-
 }
 
 val WebUIInsets.cssInject

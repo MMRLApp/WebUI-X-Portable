@@ -1,21 +1,16 @@
+@file:Suppress("unused")
+
 package com.dergoogler.mmrl.wx.ui.webui.interfaces
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.ColorScheme
-import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
-import com.dergoogler.mmrl.ui.component.dialog.confirm
+import com.dergoogler.mmrl.wx.ui.webui.alerts.MXConfirm
+import com.dergoogler.mmrl.wx.ui.webui.alerts.MXPrompt
+import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Confirm
+import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Prompt
 import dev.mmrlx.compose.layout.addOverlayView
-import dev.mmrlx.compose.ui.Text
-import dev.mmrlx.compose.ui.button.Button
-import dev.mmrlx.compose.ui.button.ButtonVariant
-import dev.mmrlx.compose.ui.dialog.Content
-import dev.mmrlx.compose.ui.dialog.Footer
-import dev.mmrlx.compose.ui.dialog.Title
-import dev.mmrlx.compose.ui.dialog.rememberDialog
-import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.utilities.json.getByPathOrDefault
 import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.interfaces.ExportCallback
 import dev.mmrlx.webui.interfaces.ExportMethod
 import dev.mmrlx.webui.interfaces.prebuilt.WebUIApplicationInterface
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +20,72 @@ class ApplicationInterface(
     webui: WebUI,
     private val colorScheme: ColorScheme,
 ) : WebUIApplicationInterface(webui) {
+    @ExportMethod
+    suspend fun prompt(
+        options: JSONObject,
+        @ExportCallback onValid: ((String) -> Boolean)? = null,
+    ): Promise<String?> {
+        return Promise(Dispatchers.Main) {
+            val theme = options.optString("theme", "md3")
+            val title = options.optString("title", "Confirm")
+            val launchKeyboard = options.optBoolean("launchKeyboard", true)
+            val confirmText = options.getByPathOrDefault("buttons.confirmText", "Confirm")
+            val cancelText = options.getByPathOrDefault("buttons.cancelText", "Cancel")
+            val default = options.getByPathOrDefault("default", "")
+            val message: String? = options.getString("message")
 
+            if (message == null) {
+                reject(Exception("Message must not null"))
+                return@Promise
+            }
+
+            if (theme == "md3") {
+                activity.addOverlayView {
+                    this@ApplicationInterface.Md3Prompt(
+                        title = title,
+                        description = message,
+                        value = default,
+                        onValid = onValid,
+                        onConfirm = {
+                            resolve(it)
+                        },
+                        onClose = {
+                            resolve(null)
+                        },
+                        colorScheme = colorScheme,
+                        confirmText = confirmText,
+                        cancelText = cancelText,
+                        launchKeyboard = launchKeyboard
+                    )
+                }
+
+                return@Promise
+            }
+
+            if (theme == "mmrlx") {
+                activity.addOverlayView {
+                    this@ApplicationInterface.MXPrompt(
+                        title = title,
+                        description = message,
+                        value = default,
+                        onConfirm = {
+                            resolve(it)
+                        },
+                        onClose = {
+                            resolve(null)
+                        },
+                        confirmText = confirmText,
+                        cancelText = cancelText,
+                        launchKeyboard = launchKeyboard
+                    )
+                }
+
+                return@Promise
+            }
+
+            reject(Exception("Unsupported theme: $theme"))
+        }
+    }
 
     @ExportMethod
     override suspend fun confirm(options: JSONObject): Promise<Boolean> {
@@ -42,63 +102,40 @@ class ApplicationInterface(
             }
 
             if (theme == "md3") {
-                activity.confirm(
-                    colorScheme = colorScheme,
-                    confirmData = ConfirmData(
+                activity.addOverlayView {
+                    this@ApplicationInterface.Md3Confirm(
                         title = title,
                         description = message,
-                        confirmText = confirmText,
-                        closeText = cancelText,
                         onConfirm = {
                             resolve(true)
                         },
                         onClose = {
                             resolve(false)
                         },
+                        colorScheme = colorScheme,
+                        confirmText = confirmText,
+                        cancelText = cancelText,
                     )
-                )
+                }
+
                 return@Promise
             }
 
             if (theme == "mmrlx") {
                 activity.addOverlayView {
-                    MMRLXTheme(
-                        darkTheme = isDarkMode
-                    ) {
-                        val dialog = rememberDialog(true)
+                    this@ApplicationInterface.MXConfirm(
+                        title = title,
+                        description = message,
+                        onConfirm = {
+                            resolve(true)
+                        },
+                        onClose = {
+                            resolve(false)
+                        },
+                        confirmText = confirmText,
+                        cancelText = cancelText,
 
-                        dialog {
-                            Title {
-                                Text(title)
-                            }
-
-                            Content(
-                                contentPadding = PaddingValues(0.dp),
-                            ) {
-                                Text(message)
-                            }
-
-                            Footer {
-                                Button(
-                                    onClick = {
-                                        dialog.close()
-                                        resolve(false)
-                                    },
-                                    variant = ButtonVariant.Outline
-                                ) {
-                                    Text(confirmText)
-                                }
-                                Button(
-                                    onClick = {
-                                        dialog.close()
-                                        resolve(true)
-                                    },
-                                ) {
-                                    Text(cancelText)
-                                }
-                            }
-                        }
-                    }
+                        )
                 }
                 return@Promise
             }
