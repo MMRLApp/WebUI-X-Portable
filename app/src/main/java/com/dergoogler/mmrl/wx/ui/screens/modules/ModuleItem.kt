@@ -48,7 +48,7 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
 import dev.mmrlx.compose.ui.AppAvatar
-import dev.mmrlx.compose.ui.AppSeparator
+import dev.mmrlx.compose.ui.Separator
 import dev.mmrlx.compose.ui.ProvideTextStyle
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.card
@@ -178,7 +178,7 @@ fun ModuleItem(
                 style = MMRLXTheme.typography.bodySmall
             )
 
-            AppSeparator()
+            Separator()
 
             ProvideTextStyle(
                 MMRLXTheme.typography.labelSmall

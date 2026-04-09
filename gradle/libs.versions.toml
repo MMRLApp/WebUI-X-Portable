@@ -1,6 +1,6 @@
 [versions]
 dexlib2 = "2.5.2"
-mmrlx = "1.0.52"
+mmrlx = "1.0.62"
 mmrl = "v34242"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "9.0.0"

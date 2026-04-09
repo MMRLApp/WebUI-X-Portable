@@ -3,23 +3,23 @@ package com.dergoogler.mmrl.wx.ui.component
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.nullable
-import com.dergoogler.mmrl.ui.component.listItem.dsl.ListItemScope
-import com.dergoogler.mmrl.ui.component.listItem.dsl.ListItemSlot
-import com.dergoogler.mmrl.ui.component.listItem.dsl.ListScope
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.ButtonItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
-
+import dev.mmrlx.compose.ui.list.ListItemScope
+import dev.mmrlx.compose.ui.list.ListItemSlot
+import dev.mmrlx.compose.ui.list.ListScope
+import dev.mmrlx.compose.ui.list.component.RawItem
+import dev.mmrlx.compose.ui.list.component.SwitchItem
+import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.Icon
+import dev.mmrlx.compose.ui.list.component.item.Title
 
 @Composable
 internal fun <T : Direction> ListScope.NavButton(
@@ -30,22 +30,23 @@ internal fun <T : Direction> ListScope.NavButton(
 ) {
     val navigator = LocalDestinationsNavigator.current
 
-    ButtonItem(
-        onClick = {
-            navigator.navigate(route)
-        },
-        content = {
-            icon.nullable {
-                Icon(
-                    painter = painterResource(it)
-                )
+    RawItem(
+        modifier = Modifier
+            .onClick {
+                navigator.navigate(route)
             }
-            Title(title)
-            desc.nullable {
-                Description(it)
-            }
+            .contentPadding()
+    ) {
+        icon?.let {
+            Icon(
+                painter = painterResource(it)
+            )
         }
-    )
+        Title(title)
+        desc?.let {
+            Description(it)
+        }
+    }
 }
 
 @Composable
@@ -57,25 +58,26 @@ internal fun ListScope.LinkButton(
 ) {
     val browser = LocalUriHandler.current
 
-    ButtonItem(
-        onClick = {
-            browser.openUri(uri)
-        },
-        content = {
-            Icon(
-                painter = painterResource(icon)
-            )
-            Title(title)
-            desc.nullable {
-                Description(it)
+    RawItem(
+        modifier = Modifier
+            .contentPadding()
+            .onClick {
+                browser.openUri(uri)
             }
-            Icon(
-                slot = ListItemSlot.End,
-                size = 12.dp,
-                painter = painterResource(R.drawable.external_link)
-            )
+    ) {
+        Icon(
+            painter = painterResource(icon)
+        )
+        Title(title)
+        desc.nullable {
+            Description(it)
         }
-    )
+        Icon(
+            slot = ListItemSlot.End,
+            size = 12.dp,
+            painter = painterResource(R.drawable.external_link)
+        )
+    }
 }
 
 @Composable
