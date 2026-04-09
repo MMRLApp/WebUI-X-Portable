@@ -4,56 +4,67 @@ import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dergoogler.mmrl.ext.LoadData
-import com.dergoogler.mmrl.ext.nullable
-import com.dergoogler.mmrl.ext.plus
-import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.Loading
-import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.PageIndicator
-import com.dergoogler.mmrl.ui.component.card.Card
-import com.dergoogler.mmrl.ui.component.listItem.dsl.List
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Item
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Labels
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.license.UiLicense
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
+import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.viewmodel.LicenseViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import dev.mmrlx.compose.ui.Badge
+import dev.mmrlx.compose.ui.BadgeVariant
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.list.List
+import dev.mmrlx.compose.ui.list.ListScope
+import dev.mmrlx.compose.ui.list.component.RawItem
+import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.Supporting
+import dev.mmrlx.compose.ui.list.component.item.Title
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
+import dev.mmrlx.compose.ui.text.FormatText
+import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
+import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
 
 @Destination<RootGraph>()
 @Composable
 fun LicensesScreen(
     viewModel: LicenseViewModel = hiltViewModel(),
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val navController = LocalNavController.current
 
     Scaffold(
-        topBar = {
+        toolbar = {
             TopBar(
                 navController = navController,
                 scrollBehavior = scrollBehavior
             )
+        },
+        bottomBar = {
+            // TODO: blur is somehow not applied
+            BottomNavigation()
         }
-    ) { contentPadding ->
+    ) {
         when (val data = viewModel.data) {
             LoadData.Pending, LoadData.Loading -> Loading(
                 modifier = Modifier.padding(contentPadding)
@@ -61,7 +72,6 @@ fun LicensesScreen(
 
             is LoadData.Success<List<UiLicense>> -> LicensesContent(
                 list = data.value,
-                contentPadding = contentPadding,
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             )
 
@@ -76,62 +86,80 @@ fun LicensesScreen(
 }
 
 @Composable
-private fun LicensesContent(
+private fun ScaffoldScope.LicensesContent(
     list: List<UiLicense>,
-    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-
-    LazyColumn(
-        modifier = modifier,
-        state = listState,
-        contentPadding = PaddingValues(all = 20.dp) + contentPadding,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        items(list) {
-            LicenseItem(it)
+    List {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .with(this@LicensesContent) {
+                    it.scaffoldHazeSource("licenses")
+                }
+                .then(modifier),
+            contentPadding = PaddingValues(
+                top = this@LicensesContent.scaffoldTopPadding + 8.dp,
+                start = 8.dp,
+                end = 8.dp,
+                bottom = this@LicensesContent.scaffoldBottomPadding + 8.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(list) {
+                this@List.LicenseItem(it)
+            }
         }
     }
 }
 
 @Composable
-private fun LicenseItem(
+private fun ListScope.LicenseItem(
     license: UiLicense,
 ) {
     val context = LocalContext.current
 
-    Card(
-        onClick = license.hasUrl nullable {
-            context.startActivity(
-                Intent.parseUri(license.url, Intent.URI_INTENT_SCHEME)
-            )
-        }
-    ) {
-        List(
-            modifier = Modifier.relative()
-        ) {
-            Item {
-                Title(license.name)
-                Description(license.dependency)
-
-                Labels {
-                    LabelItem(
-                        text = license.version
-                    )
-
-                    license.spdxLicenses.forEach {
-                        LabelItem(
-                            text = it.name
+    RawItem(
+        modifier = Modifier
+            .let {
+                if (license.hasUrl) {
+                    it.onClick {
+                        context.startActivity(
+                            Intent.parseUri(license.url, Intent.URI_INTENT_SCHEME)
                         )
                     }
-
-                    license.unknownLicenses.forEach {
-                        LabelItem(
-                            text = it.name.ifEmpty { it.url }
+                } else Modifier
+            }
+            .contentPadding()
+    ) {
+        Title {
+            if (license.hasUrl) {
+                FormatText(license.name + " %c") {
+                    composable {
+                        Icon(
+                            // Don't ever do that :clown:
+                            modifier = Modifier.size(fontSize.dp),
+                            painter = painterResource(R.drawable.external_link)
                         )
                     }
                 }
+                return@Title
+            }
+
+            Text(license.name)
+        }
+        Description(license.dependency)
+
+        Supporting {
+            Badge(license.version, variant = BadgeVariant.Default)
+
+            license.spdxLicenses.forEach {
+                Badge(it.name, variant = BadgeVariant.Outline)
+            }
+
+            license.unknownLicenses.forEach {
+                Badge(it.name, variant = BadgeVariant.Warning)
             }
         }
     }
@@ -140,9 +168,9 @@ private fun LicenseItem(
 @Composable
 private fun TopBar(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior,
+    scrollBehavior: ToolbarScrollBehavior,
 ) {
-    NavigateUpTopBar(
+    NavigateUpToolbar(
         title = stringResource(R.string.license_title),
         scrollBehavior = scrollBehavior,
         navController = navController,

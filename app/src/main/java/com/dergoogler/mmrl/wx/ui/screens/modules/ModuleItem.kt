@@ -51,7 +51,7 @@ import dev.mmrlx.compose.ui.AppAvatar
 import dev.mmrlx.compose.ui.Separator
 import dev.mmrlx.compose.ui.ProvideTextStyle
 import dev.mmrlx.compose.ui.Text
-import dev.mmrlx.compose.ui.card
+import dev.mmrlx.compose.layout.flashlightCard
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
@@ -93,7 +93,6 @@ fun ModuleItem(
 
     Column(
         modifier = Modifier
-            .card()
             .combinedClickable(
                 onLongClick = {
                     navigator.navigate(FileExplorerScreenDestination(module))
@@ -122,6 +121,7 @@ fun ModuleItem(
                 }
             )
             .fillMaxWidth()
+            .flashlightCard()
     ) {
         config.cover?.let {
             SuFile(it).exists { cover ->
