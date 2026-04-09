@@ -145,4 +145,5 @@
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="learn_more">Learn more</string>
+    <string name="unsupported_engine">Unsupported engine</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
@@ -44,6 +45,9 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.adbDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.ui.component.LocalCover
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
+import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
@@ -56,6 +60,7 @@ import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
 import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -91,6 +96,8 @@ fun ModuleItem(
         module.config
     }
 
+    val toastStr = stringResource(R.string.unsupported_engine)
+
     Column(
         modifier = Modifier
             .combinedClickable(
@@ -98,26 +105,34 @@ fun ModuleItem(
                     navigator.navigate(FileExplorerScreenDestination(module))
                 },
                 onClick = {
-                    if (module.hasWebUI) {
+                    if (canWenUIAccessed) {
                         val baseDir = module.id.adbDir.toString()
-                        //context.launchWebUIX<WebUIActivity>(module.id.toModId(baseDir), baseDir)
 
-                        val intent = Intent(context, WebUIActivity::class.java)
-                            .apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-                                putModId(module.id)
-                                putBaseDir(baseDir)
-                            }
+                        if (userPreferences.webuiEngine == WebUIEngine.MX) {
+                            val intent = Intent(context, WebUIActivity::class.java)
+                                .apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                                    putModId(module.id)
+                                    putBaseDir(baseDir)
+                                }
 
-                        context.startActivity(intent)
+                            context.startActivity(intent)
+                            return@combinedClickable
+                        }
 
-
-
-
-                        return@combinedClickable
+                        // TODO: deprecate WX engine, devtools are crashing currently!
+                        if (userPreferences.webuiEngine == WebUIEngine.WX) {
+                            context.launchWebUIX<com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity>(
+                                module.id,
+                                baseDir
+                            )
+                            return@combinedClickable
+                        }
                     }
 
-                    Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context, toastStr, Toast.LENGTH_SHORT
+                    ).show()
                 }
             )
             .fillMaxWidth()

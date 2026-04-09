@@ -5,7 +5,7 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.interfaces.JavaScriptInterface
 
-
+// TODO: Not yet implemented, requires file system re-work.
 class FileSystemInterface(webui: WebUI) : JavaScriptInterface(webui) {
 
     init {
