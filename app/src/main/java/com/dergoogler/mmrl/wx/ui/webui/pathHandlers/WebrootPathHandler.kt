@@ -151,6 +151,18 @@ class WebrootPathHandler(
                     }
                 }
 
+                if (config.autoAddInsets) {
+                    addInjection {
+                        appendLine(
+                            """<script>
+                                document.documentElement.style.transform = `translateY(${insets.top}px)`;
+                                document.documentElement.style.transformOrigin = 'top left';
+                                document.documentElement.style.height = `calc(100vh - ${insets.top + insets.bottom}px)`;
+                            </script>""".trimIndent()
+                        )
+                    }
+                }
+
                 configStyleBase.exists {
                     it.listFiles { f -> f.exists() && f.extension == "css" }?.forEach { css ->
                         addInjection {
