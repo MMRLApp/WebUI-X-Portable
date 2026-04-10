@@ -20,7 +20,6 @@ import dev.mmrlx.compose.ui.dialog.Title
 import dev.mmrlx.compose.ui.dialog.rememberDialog
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
-
 @Composable
 fun ApplicationInterface.Md3Confirm(
     title: String,
