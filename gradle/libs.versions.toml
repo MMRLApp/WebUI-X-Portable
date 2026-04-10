@@ -1,7 +1,7 @@
 [versions]
 dexlib2 = "2.5.2"
-mmrlx = "1.0.65"
-mmrl = "v34242"
+mmrlx = "1.0.66"
+mmrl = "b6da2febe9"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "9.0.0"
 androidxActivity = "1.9.3"

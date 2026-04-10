@@ -39,6 +39,7 @@ data class UserPreferences(
     @ProtoNumber(39) val forceKillWebUIProcess: Boolean = true,
     @ProtoNumber(40) val disableGlobalExitConfirm: Boolean = false,
     @ProtoNumber(41) val enableDevTools: Boolean = false,
+    @ProtoNumber(42) val disableConsoleInterceptor: Boolean = false,
 ) {
     fun isDarkMode() = when (darkMode) {
         DarkMode.AlwaysOff -> false

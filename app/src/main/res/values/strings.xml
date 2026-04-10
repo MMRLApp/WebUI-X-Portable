@@ -140,6 +140,8 @@
     <string name="network">Network</string>
     <string name="settings_security_enable_devtools">DevTools</string>
     <string name="settings_security_enable_devtools_desc">Unlike Eruda, this debugging console can be used even with remote hosts.</string>
+    <string name="settings_disable_console_interceptor">Disable Console Interceptor</string>
+    <string name="settings_disable_console_interceptor_desc">Stop capturing and redirecting console logs to prevent the app from overriding default output. Useful when using Chrome DevTools since logs may not appear there otherwise.</string>
     <string name="beta">Beta</string>
     <string name="stack_trace_truncated">%s\\n… %d more</string>
     <string name="cancel">Cancel</string>

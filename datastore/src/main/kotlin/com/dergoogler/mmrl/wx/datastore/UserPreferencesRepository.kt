@@ -48,6 +48,9 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setDisableGlobalExitConfirm(value: Boolean) =
         userPreferencesDataSource.setDisableGlobalExitConfirm(value)
 
+    suspend fun setDisableConsoleInterceptor(value: Boolean) =
+        userPreferencesDataSource.setDisableConsoleInterceptor(value)
+
     suspend fun setWebUIEngine(value: WebUIEngine) =
         userPreferencesDataSource.setWebUIEngine(value)
 }

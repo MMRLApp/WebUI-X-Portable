@@ -28,6 +28,7 @@ import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.webui.devtools.DevTools
 import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
@@ -113,6 +114,7 @@ class WebUIActivity : BaseActivity() {
                     debug = isDebug
                     forceKillProcess = prefs.forceKillWebUIProcess
                     userAgentString = userAgent
+                    useConsoleInterceptor = !prefs.disableConsoleInterceptor
                     darkMode = prefs.isDarkMode()
                     extra = jsonObject {
                         "moduleId" to modId.toString()
@@ -134,6 +136,7 @@ class WebUIActivity : BaseActivity() {
                     .registerPathHandler(InternalPathHandler::class.java) {
                         add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }
+                    .registerJavascriptInterface(FileSystemInterface::class.java)
                     .registerPathHandler(WebrootPathHandler::class.java)
             }
 
@@ -141,11 +144,13 @@ class WebUIActivity : BaseActivity() {
                 LocalWebUI provides wstate.webui
             ) {
                 WebUIView(wstate)
-                DraggableFab(onClick = { openDevTools = true })
-                DevTools(
-                    isOpen = openDevTools,
-                    onDismissRequest = { openDevTools = false }
-                )
+                if (prefs.developerMode { enableDevTools }) {
+                    DraggableFab(onClick = { openDevTools = true })
+                    DevTools(
+                        isOpen = openDevTools,
+                        onDismissRequest = { openDevTools = false }
+                    )
+                }
             }
         }
 

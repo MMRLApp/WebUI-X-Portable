@@ -119,6 +119,14 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setDisableConsoleInterceptor(value: Boolean) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                disableConsoleInterceptor = value
+            )
+        }
+    }
+
     suspend fun setWebUIEngine(value: WebUIEngine) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
             it.copy(

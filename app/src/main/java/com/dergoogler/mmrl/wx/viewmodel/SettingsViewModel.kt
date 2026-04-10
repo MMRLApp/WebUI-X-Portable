@@ -102,6 +102,12 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setDisableConsoleInterceptor(value: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setDisableConsoleInterceptor(value)
+        }
+    }
+
     fun setWebUIEngine(value: WebUIEngine) {
         viewModelScope.launch {
             userPreferencesRepository.setWebUIEngine(value)
