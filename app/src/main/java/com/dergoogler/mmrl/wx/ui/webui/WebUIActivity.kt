@@ -111,6 +111,7 @@ class WebUIActivity : BaseActivity() {
             val wstate = rememberWebUIState(domain) {
                 it.settings {
                     useDefaultApplicationInterface = false
+                    useDefaultFileSystem = false
                     debug = isDebug
                     forceKillProcess = prefs.forceKillWebUIProcess
                     userAgentString = userAgent

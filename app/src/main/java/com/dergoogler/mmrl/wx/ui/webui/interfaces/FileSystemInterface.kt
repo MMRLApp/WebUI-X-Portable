@@ -5,15 +5,22 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces
 import android.os.Build
 import android.system.OsConstants
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.SuFileInputStream
 import com.dergoogler.mmrl.platform.file.SuFileOutputStream
 import com.dergoogler.mmrl.platform.file.inputStream
 import com.dergoogler.mmrl.wx.util.PermissionParser
 import dev.mmrlx.utilities.json.getAs
+import dev.mmrlx.utilities.json.toByteArray
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.interfaces.ExportMethod
 import dev.mmrlx.webui.interfaces.ExportVariable
-import dev.mmrlx.webui.interfaces.JavaScriptInterface
+import dev.mmrlx.webui.interfaces.JSObject
+import dev.mmrlx.webui.interfaces.prebuilt.WebUIFileSystemInterface
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -24,10 +31,7 @@ import java.nio.charset.CodingErrorAction
 import kotlin.math.ceil
 
 // TODO: Not yet implemented, requires file system re-work.
-class FileSystemInterface(webui: WebUI) : JavaScriptInterface(webui) {
-    override val objectClassName = "FileSystem"
-    override val windowObjectName = "fs"
-
+class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
     // Hidden, sadly
     //    val O_DIRECT: Int = OsConstants.O_DIRECT
 
@@ -83,7 +87,106 @@ class FileSystemInterface(webui: WebUI) : JavaScriptInterface(webui) {
     @ExportVariable
     val O_CREAT: Int = OsConstants.O_CREAT
 
-// TODO: promise callback broken, fix in mx
+    // TODO: better handle
+    private class JSInputStream : JSObject {
+        private var stream: SuFileInputStream
+
+        constructor(path: String, flags: Int, mode: Int) {
+            stream = SuFileInputStream(SuFile(path), flags, mode)
+        }
+
+        @ExportMethod
+        suspend fun read(): Int = withContext(Dispatchers.IO) {
+            return@withContext stream.read()
+        }
+
+        @ExportMethod
+        suspend fun read(b: JSONArray): Int = withContext(Dispatchers.IO) {
+            return@withContext stream.read(b.toByteArray())
+        }
+
+        @ExportMethod
+        suspend fun read(b: JSONArray, off: Int, len: Int): Int =
+            withContext(Dispatchers.IO) {
+                return@withContext stream.read(b.toByteArray(), off, len)
+            }
+
+        @ExportMethod
+        suspend fun skip(n: Long): Long = withContext(Dispatchers.IO) {
+            return@withContext stream.skip(n)
+        }
+
+        @ExportMethod
+        fun mark(readLimit: Int) {
+            stream.mark(readLimit)
+        }
+
+        @ExportMethod
+        suspend fun reset() =
+            withContext(Dispatchers.IO) {
+                stream.reset()
+            }
+
+        @ExportMethod
+        fun markSupported() = stream.markSupported()
+
+        @ExportMethod
+        suspend fun available(): Int = withContext(Dispatchers.IO) {
+            stream.available()
+        }
+
+        @ExportMethod
+        suspend fun close() {
+            withContext(Dispatchers.IO) {
+                stream.close()
+            }
+        }
+    }
+
+    @ExportMethod
+    suspend fun inputstream(path: String, options: JSONObject?): Promise<JSObject> {
+        val flags = options.getAs<Int>("flags", O_RDONLY)
+        val rawMode = options?.opt("mode") ?: 0
+        val mode = PermissionParser.parse(rawMode)
+
+        return Promise(Dispatchers.Main) {
+            try {
+                resolve(JSInputStream(path, flags, mode))
+            } catch (e: Exception) {
+                reject(e)
+            }
+        }
+    }
+
+    @ExportMethod
+    suspend fun outputstream(path: String, options: JSONObject): Promise<JSObject> {
+        return Promise {
+            try {
+                val fos = FileOutputStream(path, false) // overwrite (use true for append)
+
+                val writer = object : JSObject {
+                    @ExportMethod
+                    fun write(chunk: JSONArray) {
+                        val byteArray = ByteArray(chunk.length()) { i ->
+                            chunk.getInt(i).toByte()
+                        }
+                        fos.write(byteArray)
+                    }
+
+                    @ExportMethod
+                    fun close() {
+                        fos.flush()
+                        fos.close()
+                    }
+                }
+
+                resolve(writer)
+            } catch (e: Throwable) {
+                reject(e)
+            }
+        }
+    }
+
     @ExportMethod
     suspend fun readFile(
         path: String,
@@ -152,12 +255,12 @@ class FileSystemInterface(webui: WebUI) : JavaScriptInterface(webui) {
 
         return Promise {
             if (charset == null) {
-                console.error(Error("Invalid charset"))
+                reject(Error("Invalid charset"))
                 return@Promise
             }
 
             try {
-                SuFile(path).writeNIOText(data,flags, mode, charset)
+                SuFile(path).writeNIOText(data, flags, mode, charset)
                 resolve(Unit)
             } catch (e: Exception) {
                 reject(e)
