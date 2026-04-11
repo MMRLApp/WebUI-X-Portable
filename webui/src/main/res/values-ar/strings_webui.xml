@@ -1,2 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">لا يمكن تحميل WebUI X</string>
+    <string name="confirm">تأكيد</string>
+    <string name="requireNewVersion_require_text">يتطلب على الاقل %1$s&gt;=</string>
+    <string name="cancel">إلغاء</string>
+    <string name="requireNewVersion_try_the_following">جرب التالي:</string>
+    <string name="requireNewVersion_try_the_following_one">قم بتحديث %1$s إلى أحدث إصدار من متجر Google Play أو من GitHub Releases.</string>
+    <string name="loading">جاري التحميل…</string>
+    <string name="requireNewVersion_try_the_following_two">تواصل مع مطور الوحدة للحصول على حل بديل ممكن.</string>
+    <string name="unknown_error">خطأ غير معروف</string>
+    <string name="requireNewVersion_refresh">إنعاش</string>
+    <string name="says">%1$s يقول</string>
+    <string name="title_or_icon_not_found">لم يتم العثور على العنوان أو الأيقونة</string>
+    <string name="icon_not_found">الأيقونة غير موجودة</string>
+</resources>
