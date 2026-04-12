@@ -3,6 +3,7 @@ package com.dergoogler.mmrl.wx.ui.webui
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.BackHandler
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -144,6 +145,20 @@ class WebUIActivity : BaseActivity() {
                     .registerJavascriptInterface(FileSystemInterface::class.java)
                     .registerPathHandler(WebrootPathHandler::class.java)
             }
+
+
+            // TODO: not a long term fix
+            BackHandler {
+                val webui = wstate.webui
+                val webview = webui.webview
+                if (webview.canGoBack()) {
+                    webview.goBack()
+                    return@BackHandler
+                }
+
+                this@WebUIActivity.finish()
+            }
+
 
             CompositionLocalProvider(
                 LocalWebUI provides wstate.webui

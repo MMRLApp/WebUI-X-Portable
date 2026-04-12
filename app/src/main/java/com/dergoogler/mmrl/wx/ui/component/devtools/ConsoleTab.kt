@@ -21,8 +21,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,12 +54,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dergoogler.mmrl.webui.view.WXView
+import com.dergoogler.mmrl.wx.R
 import dev.mmrlx.hybridwebui.ConsoleEntry
 import dev.mmrlx.hybridwebui.PrimitiveKind
 import dev.mmrlx.hybridwebui.ResultNode
 import dev.mmrlx.hybridwebui.wrapConsoleEvalResult
-import com.dergoogler.mmrl.webui.view.WXView
-import com.dergoogler.mmrl.wx.R
 import org.json.JSONObject
 
 private sealed class LogEntry {
@@ -624,7 +621,7 @@ private fun ConsoleToolbar(
     ) {
         IconButton(onClick = onClear, modifier = Modifier.size(28.dp)) {
             Icon(
-                imageVector = Icons.Default.Clear,
+                painter = painterResource(com.dergoogler.mmrl.webui.R.drawable.refresh),
                 contentDescription = "Clear console",
                 modifier = Modifier.size(16.dp),
                 tint = MaterialTheme.colorScheme.onSurface

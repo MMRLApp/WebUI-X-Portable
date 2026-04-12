@@ -136,20 +136,20 @@ class WebrootPathHandler(
                     }
                 }
 
-                if (config.backHandler == true && config.backInterceptor == "native") {
-                    addInjection {
-                        appendLine(
-                            """<script>
-                            document.addWNEventListener("backPressed", async () => {
-                                if (await webui.confirm({ title: "Leave?", message: "Are you sure that you want leave this app?" })) {
-                                    webui.exit();
-                                    return;
-                                }
-                            });
-                        </script>""".trimIndent()
-                        )
-                    }
-                }
+//                if (config.backHandler == true && config.backInterceptor == "native") {
+//                    addInjection {
+//                        appendLine(
+//                            """<script>
+//                            document.addWNEventListener("backPressed", async () => {
+//                                if (await webui.confirm({ title: "Leave?", message: "Are you sure that you want leave this app?" })) {
+//                                    webui.exit();
+//                                    return;
+//                                }
+//                            });
+//                        </script>""".trimIndent()
+//                        )
+//                    }
+//                }
 
                 if (config.autoAddInsets) {
                     addInjection {
