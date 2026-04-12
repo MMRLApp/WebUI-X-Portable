@@ -57,7 +57,6 @@ class KernelSUInterface(
         return shell
     }
 
-
     @JavascriptInterface
     fun mmrl(): Boolean {
         return true

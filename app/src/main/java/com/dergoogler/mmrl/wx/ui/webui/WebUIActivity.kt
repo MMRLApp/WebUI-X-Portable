@@ -23,12 +23,14 @@ import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.webui.devtools.DevTools
 import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
@@ -61,7 +63,7 @@ class WebUIActivity : BaseActivity() {
             return "WebUI X/$mmrlVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
         }
 
-    fun WebUI.registerSuPathHandler(
+    private fun WebUI.registerSuPathHandler(
         path: String,
         directory: String,
         authority: String = baseUri.toString(),
@@ -122,10 +124,12 @@ class WebUIActivity : BaseActivity() {
                         "enableEruda" to prefs.enableErudaConsole
                         "autoOpenEruda" to prefs.enableAutoOpenEruda
                         "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm
+                        "isRootMode" to prefs.workingMode.isRoot
                     }
                 }
                     .client { }
                     .chromeClient { }
+                    .registerJavascriptInterface(KernelSUInterface::class.java)
                     .registerJavascriptInterface(ApplicationInterface::class.java) {
                         add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }

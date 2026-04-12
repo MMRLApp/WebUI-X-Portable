@@ -3,9 +3,9 @@ package com.dergoogler.mmrl.wx.datastore
 import androidx.datastore.core.DataStore
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

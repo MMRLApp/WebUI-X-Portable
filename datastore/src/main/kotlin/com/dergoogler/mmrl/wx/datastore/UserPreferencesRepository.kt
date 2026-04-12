@@ -2,7 +2,7 @@ package com.dergoogler.mmrl.wx.datastore
 
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.R
 import dev.mmrlx.compose.ui.list.component.RadioDialogOption
 

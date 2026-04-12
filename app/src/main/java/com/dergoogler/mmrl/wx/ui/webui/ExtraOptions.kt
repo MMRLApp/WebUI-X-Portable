@@ -19,6 +19,9 @@ val WebUISettings.autoOpenEruda: Boolean
 val WebUISettings.disableGlobalExitConfirm: Boolean
     get() = extra.optBoolean("disableGlobalExitConfirm", false)
 
+val WebUISettings.isRootMode: Boolean
+    get() = extra.optBoolean("isRootMode", false)
+
 val WebUI.moduleConfig: JSONObject
     get() {
         val configFile = SuFile(modId.webrootDir, "config.json")

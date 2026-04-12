@@ -14,7 +14,6 @@ import dev.mmrlx.utilities.json.toByteArray
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.interfaces.ExportMethod
 import dev.mmrlx.webui.interfaces.ExportVariable
-import dev.mmrlx.webui.interfaces.JSObject
 import dev.mmrlx.webui.interfaces.prebuilt.WebUIFileSystemInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -30,6 +29,7 @@ import java.nio.charset.CharsetEncoder
 import java.nio.charset.CodingErrorAction
 import kotlin.math.ceil
 
+// TODO: migrate from com.dergoogler.mmrl.platform.file.SuFile to dev.mmrlx.nio.SuFile
 // TODO: Not yet implemented, requires file system re-work.
 class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
     // Hidden, sadly

@@ -9,13 +9,12 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.dergoogler.mmrl.datastore.model.WorkingMode
-import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isSetup
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isSetup
 import com.dergoogler.mmrl.wx.ui.screens.MainScreen
 import com.dergoogler.mmrl.wx.util.BaseActivity
 import com.dergoogler.mmrl.wx.util.setBaseContent
 import dagger.hilt.android.AndroidEntryPoint
-import dev.mmrlx.thread.ktx.addRootThread
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
