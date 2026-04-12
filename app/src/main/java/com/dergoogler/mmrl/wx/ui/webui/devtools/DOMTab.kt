@@ -53,10 +53,6 @@ import com.dergoogler.mmrl.wx.R
 import org.json.JSONArray
 import org.json.JSONObject
 
-// ---------------------------------------------------------------------------
-// Data model
-// ---------------------------------------------------------------------------
-
 private data class DomNode(
     val id: Int,
     val parentId: Int?,
@@ -68,19 +64,30 @@ private data class DomNode(
 )
 
 private sealed class RenderEntry {
-    data class Open(val node: DomNode) : RenderEntry()
-    data class Close(val nodeId: Int, val tag: String, val depth: Int) : RenderEntry()
-    data class TextNode(val text: String, val depth: Int, val parentId: Int) : RenderEntry()
+    abstract val stableId: String
+
+    data class Open(val node: DomNode) : RenderEntry() {
+        override val stableId: String = "open:${node.id}"
+    }
+
+    data class Close(val nodeId: Int, val tag: String, val depth: Int) : RenderEntry() {
+        override val stableId: String = "close:$nodeId:$depth"
+    }
+
+    data class TextNode(
+        val text: String,
+        val depth: Int,
+        val parentId: Int,
+        val index: Int
+    ) : RenderEntry() {
+        override val stableId: String = "text:$parentId:$depth:$index"
+    }
 }
 
 private sealed class RawEntry {
     data class Element(val node: DomNode) : RawEntry()
     data class Text(val text: String, val depth: Int, val parentId: Int?) : RawEntry()
 }
-
-// ---------------------------------------------------------------------------
-// DOM manipulation actions
-// ---------------------------------------------------------------------------
 
 private sealed class DomAction {
     data class EditAttribute(val node: DomNode) : DomAction()
@@ -94,10 +101,6 @@ private sealed class DomAction {
     data class RemoveClass(val node: DomNode) : DomAction()
 }
 
-// ---------------------------------------------------------------------------
-// JS helpers
-// ---------------------------------------------------------------------------
-
 /**
  * Builds a JS expression that resolves a node by its serialization id.
  * We re-query by id attribute path using a counter-based data attribute
@@ -107,10 +110,6 @@ private sealed class DomAction {
  */
 private fun jsNodeById(nodeId: Int) =
     "document.querySelector('[data-devtools-id=\"$nodeId\"]')"
-
-// ---------------------------------------------------------------------------
-// DomTab
-// ---------------------------------------------------------------------------
 
 @Composable
 fun DomTab() {
@@ -172,7 +171,9 @@ fun DomTab() {
 
         webui.runJs(script) { raw ->
             isLoading = false
-            if (raw == null || raw == "null") { error = "Failed to evaluate DOM."; return@runJs }
+            if (raw == null || raw == "null") {
+                error = "Failed to evaluate DOM."; return@runJs
+            }
             try {
                 val unwrapped = JSONObject("{\"v\":$raw}").getString("v")
                 val array = JSONArray(unwrapped)
@@ -200,6 +201,7 @@ fun DomTab() {
                             parsedNodes.add(node)
                             parsedRaw.add(RawEntry.Element(node))
                         }
+
                         "text" -> parsedRaw.add(
                             RawEntry.Text(
                                 text = obj.getString("text"),
@@ -231,50 +233,77 @@ fun DomTab() {
                 node = action.node,
                 onDismiss = { activeAction = null },
                 onConfirm = { attr, value ->
-                    runJs("${jsNodeById(action.node.id)}.setAttribute('$attr','${value.replace("'", "\\'")}');")
+                    runJs(
+                        "${jsNodeById(action.node.id)}.setAttribute('$attr','${
+                            value.replace(
+                                "'",
+                                "\\'"
+                            )
+                        }');"
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             is DomAction.AddAttribute -> AddAttributeDialog(
                 onDismiss = { activeAction = null },
                 onConfirm = { attr, value ->
-                    runJs("${jsNodeById(action.node.id)}.setAttribute('$attr','${value.replace("'", "\\'")}');")
+                    runJs(
+                        "${jsNodeById(action.node.id)}.setAttribute('$attr','${
+                            value.replace(
+                                "'",
+                                "\\'"
+                            )
+                        }');"
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             is DomAction.EditText -> EditTextDialog(
                 node = action.node,
                 onDismiss = { activeAction = null },
                 onConfirm = { newText ->
-                    runJs("""
+                    runJs(
+                        """
                         (function(){
                             var el = ${jsNodeById(action.node.id)};
                             var tn = Array.from(el.childNodes).find(function(n){ return n.nodeType===3; });
-                            if(tn) tn.nodeValue='${newText.replace("'","\\'")}';
-                            else el.insertBefore(document.createTextNode('${newText.replace("'","\\'")}'), el.firstChild);
+                            if(tn) tn.nodeValue='${newText.replace("'", "\\'")}';
+                            else el.insertBefore(document.createTextNode('${
+                            newText.replace(
+                                "'",
+                                "\\'"
+                            )
+                        }'), el.firstChild);
                         })()
-                    """.trimIndent())
+                    """.trimIndent()
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             is DomAction.AddChild -> AddChildDialog(
                 onDismiss = { activeAction = null },
                 onConfirm = { tag, text ->
-                    runJs("""
+                    runJs(
+                        """
                         (function(){
                             var el = ${jsNodeById(action.node.id)};
                             var child = document.createElement('$tag');
-                            if('$text'.length>0) child.textContent='${text.replace("'","\\'")}';
+                            if('$text'.length>0) child.textContent='${text.replace("'", "\\'")}';
                             el.appendChild(child);
                         })()
-                    """.trimIndent())
+                    """.trimIndent()
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             is DomAction.RemoveNode -> ConfirmDialog(
                 title = "Remove <${action.node.tag}>?",
                 message = "This will remove the element and all its children from the DOM.",
@@ -285,32 +314,57 @@ fun DomTab() {
                     fetchDomFull()
                 }
             )
+
             is DomAction.EditStyle -> EditStyleDialog(
                 node = action.node,
                 onDismiss = { activeAction = null },
                 onConfirm = { css ->
-                    runJs("${jsNodeById(action.node.id)}.style.cssText='${css.replace("'","\\'")}';")
+                    runJs(
+                        "${jsNodeById(action.node.id)}.style.cssText='${
+                            css.replace(
+                                "'",
+                                "\\'"
+                            )
+                        }';"
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             is DomAction.AddClass -> AddClassDialog(
                 onDismiss = { activeAction = null },
                 onConfirm = { cls ->
-                    runJs("${jsNodeById(action.node.id)}.classList.add('${cls.replace("'","\\'")}');")
+                    runJs(
+                        "${jsNodeById(action.node.id)}.classList.add('${
+                            cls.replace(
+                                "'",
+                                "\\'"
+                            )
+                        }');"
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             is DomAction.RemoveClass -> RemoveClassDialog(
                 node = action.node,
                 onDismiss = { activeAction = null },
                 onConfirm = { cls ->
-                    runJs("${jsNodeById(action.node.id)}.classList.remove('${cls.replace("'","\\'")}');")
+                    runJs(
+                        "${jsNodeById(action.node.id)}.classList.remove('${
+                            cls.replace(
+                                "'",
+                                "\\'"
+                            )
+                        }');"
+                    )
                     activeAction = null
                     fetchDomFull()
                 }
             )
+
             else -> {}
         }
     }
@@ -334,7 +388,10 @@ fun DomTab() {
             }
             Text(
                 text = "${nodes.size} nodes",
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontFamily = FontFamily.Monospace),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -345,15 +402,29 @@ fun DomTab() {
             isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             }
+
             error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(error!!, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                Text(
+                    error!!,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
             }
-            renderList.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No DOM nodes found.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            renderList.isEmpty() -> Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No DOM nodes found.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+
             else -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(renderList, key = { it.key() }) { entry ->
+                    items(renderList, key = { it.stableId }) { entry ->
                         RenderEntryRow(
                             entry = entry,
                             collapsedIds = collapsedIds,
@@ -385,10 +456,6 @@ fun DomTab() {
         )
     }
 }
-
-// ---------------------------------------------------------------------------
-// Context menu
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun DomContextMenu(
@@ -439,7 +506,8 @@ private fun DomContextMenu(
 
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     items.forEachIndexed { index, (label, action) ->
-                        val isDestructive = action is DomAction.RemoveNode || action is DomAction.RemoveAttribute
+                        val isDestructive =
+                            action is DomAction.RemoveNode || action is DomAction.RemoveAttribute
 
                         DropdownMenuItem(
                             text = {
@@ -465,10 +533,6 @@ private fun DomContextMenu(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Dialogs
-// ---------------------------------------------------------------------------
-
 @Composable
 private fun EditAttributeDialog(
     node: DomNode,
@@ -480,11 +544,22 @@ private fun EditAttributeDialog(
         mutableStateOf(node.attributes.firstOrNull { it.first == selectedAttr }?.second ?: "")
     }
 
-    DevToolsDialog(title = "Edit Attribute", onDismiss = onDismiss, onConfirm = { onConfirm(selectedAttr, attrValue) }) {
+    DevToolsDialog(
+        title = "Edit Attribute",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(selectedAttr, attrValue) }) {
         if (node.attributes.isEmpty()) {
-            Text("No attributes on this element.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "No attributes on this element.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         } else {
-            Text("Attribute", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "Attribute",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 node.attributes.forEach { (name, _) ->
                     val selected = name == selectedAttr
@@ -501,13 +576,19 @@ private fun EditAttributeDialog(
                                 attrValue = node.attributes.first { it.first == name }.second
                             })
                             .padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 11.sp),
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp
+                        ),
                         color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
             Spacer(Modifier.height(8.dp))
-            DevToolsTextField(label = "Value", value = attrValue, onValueChange = { attrValue = it })
+            DevToolsTextField(
+                label = "Value",
+                value = attrValue,
+                onValueChange = { attrValue = it })
         }
     }
 }
@@ -519,7 +600,10 @@ private fun AddAttributeDialog(
 ) {
     var attr by remember { mutableStateOf("") }
     var value by remember { mutableStateOf("") }
-    DevToolsDialog(title = "Add Attribute", onDismiss = onDismiss, onConfirm = { onConfirm(attr, value) }) {
+    DevToolsDialog(
+        title = "Add Attribute",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(attr, value) }) {
         DevToolsTextField(label = "Attribute name", value = attr, onValueChange = { attr = it })
         Spacer(Modifier.height(8.dp))
         DevToolsTextField(label = "Value", value = value, onValueChange = { value = it })
@@ -533,8 +617,16 @@ private fun EditTextDialog(
     onConfirm: (String) -> Unit,
 ) {
     var text by remember { mutableStateOf("") }
-    DevToolsDialog(title = "Edit Text Content", onDismiss = onDismiss, onConfirm = { onConfirm(text) }) {
-        DevToolsTextField(label = "Text", value = text, onValueChange = { text = it }, singleLine = false)
+    DevToolsDialog(
+        title = "Edit Text Content",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(text) }) {
+        DevToolsTextField(
+            label = "Text",
+            value = text,
+            onValueChange = { text = it },
+            singleLine = false
+        )
     }
 }
 
@@ -545,10 +637,16 @@ private fun AddChildDialog(
 ) {
     var tag by remember { mutableStateOf("div") }
     var text by remember { mutableStateOf("") }
-    DevToolsDialog(title = "Append Child", onDismiss = onDismiss, onConfirm = { onConfirm(tag, text) }) {
+    DevToolsDialog(
+        title = "Append Child",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(tag, text) }) {
         DevToolsTextField(label = "Tag name", value = tag, onValueChange = { tag = it })
         Spacer(Modifier.height(8.dp))
-        DevToolsTextField(label = "Text content (optional)", value = text, onValueChange = { text = it })
+        DevToolsTextField(
+            label = "Text content (optional)",
+            value = text,
+            onValueChange = { text = it })
     }
 }
 
@@ -560,8 +658,16 @@ private fun EditStyleDialog(
 ) {
     val existing = node.attributes.firstOrNull { it.first == "style" }?.second ?: ""
     var css by remember { mutableStateOf(existing) }
-    DevToolsDialog(title = "Edit Inline Style", onDismiss = onDismiss, onConfirm = { onConfirm(css) }) {
-        DevToolsTextField(label = "CSS (e.g. color:red; font-size:14px)", value = css, onValueChange = { css = it }, singleLine = false)
+    DevToolsDialog(
+        title = "Edit Inline Style",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(css) }) {
+        DevToolsTextField(
+            label = "CSS (e.g. color:red; font-size:14px)",
+            value = css,
+            onValueChange = { css = it },
+            singleLine = false
+        )
     }
 }
 
@@ -588,9 +694,16 @@ private fun RemoveClassDialog(
     }
     var selected by remember { mutableStateOf(classes.firstOrNull() ?: "") }
 
-    DevToolsDialog(title = "Remove Class", onDismiss = onDismiss, onConfirm = { onConfirm(selected) }) {
+    DevToolsDialog(
+        title = "Remove Class",
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(selected) }) {
         if (classes.isEmpty()) {
-            Text("No classes on this element.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "No classes on this element.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 classes.forEach { cls ->
@@ -604,7 +717,10 @@ private fun RemoveClassDialog(
                             )
                             .combinedClickable(onClick = { selected = cls })
                             .padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 11.sp),
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp
+                        ),
                         color = if (cls == selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -621,10 +737,20 @@ private fun ConfirmDialog(
     onConfirm: () -> Unit,
 ) {
     Dialog(onDismissRequest = onDismiss) {
-        Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
-                Text(message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     TextButton(onClick = onDismiss) { Text("Cancel") }
                     TextButton(onClick = onConfirm) {
@@ -635,10 +761,6 @@ private fun ConfirmDialog(
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Shared dialog / field components
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun DevToolsDialog(
@@ -653,7 +775,12 @@ private fun DevToolsDialog(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
-            Column(modifier = Modifier.padding(20.dp).width(280.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .width(280.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 HorizontalDivider()
                 content()
@@ -675,7 +802,11 @@ private fun DevToolsTextField(
     singleLine: Boolean = true,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
@@ -694,10 +825,6 @@ private fun DevToolsTextField(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Render list builder (unchanged from before)
-// ---------------------------------------------------------------------------
-
 private fun buildRenderList(
     raw: List<RawEntry>,
     nodeMap: Map<Int, DomNode>,
@@ -706,10 +833,12 @@ private fun buildRenderList(
     if (raw.isEmpty()) return emptyList()
     val result = mutableListOf<RenderEntry>()
     val stack = ArrayDeque<DomNode>()
+    val textCounters = mutableMapOf<Long, Int>()
+
     for (entry in raw) {
         val currentDepth = when (entry) {
             is RawEntry.Element -> entry.node.depth
-            is RawEntry.Text -> entry.depth
+            is RawEntry.Text    -> entry.depth
         }
         while (stack.isNotEmpty() && stack.last().depth >= currentDepth) {
             val closing = stack.removeLast()
@@ -727,7 +856,12 @@ private fun buildRenderList(
             is RawEntry.Text -> {
                 if (entry.parentId != null && collapsedIds.contains(entry.parentId)) continue
                 if (entry.parentId != null && isAncestorCollapsed(entry.parentId, nodeMap, collapsedIds)) continue
-                result.add(RenderEntry.TextNode(entry.text, entry.depth, entry.parentId ?: -1))
+                val pid = entry.parentId ?: -1
+                // pack parentId and depth into a single Long key for the counter map
+                val counterKey = (pid.toLong() shl 32) or (entry.depth.toLong() and 0xFFFFFFFFL)
+                val idx = textCounters.getOrDefault(counterKey, 0)
+                textCounters[counterKey] = idx + 1
+                result.add(RenderEntry.TextNode(entry.text, entry.depth, pid, idx))
             }
         }
     }
@@ -740,7 +874,11 @@ private fun buildRenderList(
     return result
 }
 
-private fun isAncestorCollapsed(parentId: Int?, nodeMap: Map<Int, DomNode>, collapsedIds: List<Int>): Boolean {
+private fun isAncestorCollapsed(
+    parentId: Int?,
+    nodeMap: Map<Int, DomNode>,
+    collapsedIds: List<Int>,
+): Boolean {
     var id = parentId
     while (id != null) {
         if (collapsedIds.contains(id)) return true
@@ -748,16 +886,6 @@ private fun isAncestorCollapsed(parentId: Int?, nodeMap: Map<Int, DomNode>, coll
     }
     return false
 }
-
-private fun RenderEntry.key(): String = when (this) {
-    is RenderEntry.Open -> "open_${node.id}"
-    is RenderEntry.Close -> "close_${nodeId}"
-    is RenderEntry.TextNode -> "text_${parentId}_${text.hashCode()}"
-}
-
-// ---------------------------------------------------------------------------
-// Row composable
-// ---------------------------------------------------------------------------
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -786,7 +914,12 @@ private fun RenderEntryRow(
                         onClick = { if (node.hasChildren) onToggle(node.id) },
                         onLongClick = { onLongPress(node) }
                     )
-                    .padding(start = indentPerLevel * node.depth + 4.dp, end = 8.dp, top = 3.dp, bottom = 3.dp),
+                    .padding(
+                        start = indentPerLevel * node.depth + 4.dp,
+                        end = 8.dp,
+                        top = 3.dp,
+                        bottom = 3.dp
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -803,12 +936,27 @@ private fun RenderEntryRow(
                 Text(
                     text = buildAnnotatedString {
                         withStyle(SpanStyle(color = punctColor)) { append("<") }
-                        withStyle(SpanStyle(color = tagColor, fontFamily = FontFamily.Monospace)) { append(node.tag) }
+                        withStyle(
+                            SpanStyle(
+                                color = tagColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        ) { append(node.tag) }
                         node.attributes.forEach { (name, value) ->
                             append(" ")
-                            withStyle(SpanStyle(color = attrNameColor, fontFamily = FontFamily.Monospace)) { append(name) }
+                            withStyle(
+                                SpanStyle(
+                                    color = attrNameColor,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            ) { append(name) }
                             withStyle(SpanStyle(color = punctColor)) { append("=\"") }
-                            withStyle(SpanStyle(color = attrValueColor, fontFamily = FontFamily.Monospace)) {
+                            withStyle(
+                                SpanStyle(
+                                    color = attrValueColor,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            ) {
                                 append(if (value.length > 60) value.take(60) + "…" else value)
                             }
                             withStyle(SpanStyle(color = punctColor)) { append("\"") }
@@ -817,9 +965,15 @@ private fun RenderEntryRow(
                             !node.hasChildren -> withStyle(SpanStyle(color = punctColor)) { append("/>") }
                             isCollapsed -> {
                                 withStyle(SpanStyle(color = punctColor)) { append(">…</") }
-                                withStyle(SpanStyle(color = tagColor, fontFamily = FontFamily.Monospace)) { append(node.tag) }
+                                withStyle(
+                                    SpanStyle(
+                                        color = tagColor,
+                                        fontFamily = FontFamily.Monospace
+                                    )
+                                ) { append(node.tag) }
                                 withStyle(SpanStyle(color = punctColor)) { append(">") }
                             }
+
                             else -> withStyle(SpanStyle(color = punctColor)) { append(">") }
                         }
                     },
@@ -833,12 +987,22 @@ private fun RenderEntryRow(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = indentPerLevel * entry.depth + 4.dp + 14.dp, end = 8.dp, top = 3.dp, bottom = 3.dp)
+                    .padding(
+                        start = indentPerLevel * entry.depth + 4.dp + 14.dp,
+                        end = 8.dp,
+                        top = 3.dp,
+                        bottom = 3.dp
+                    )
             ) {
                 Text(
                     text = buildAnnotatedString {
                         withStyle(SpanStyle(color = punctColor)) { append("</") }
-                        withStyle(SpanStyle(color = tagColor, fontFamily = FontFamily.Monospace)) { append(entry.tag) }
+                        withStyle(
+                            SpanStyle(
+                                color = tagColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        ) { append(entry.tag) }
                         withStyle(SpanStyle(color = punctColor)) { append(">") }
                     },
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
@@ -850,11 +1014,20 @@ private fun RenderEntryRow(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = indentPerLevel * entry.depth + 4.dp + 14.dp, end = 8.dp, top = 2.dp, bottom = 2.dp)
+                    .padding(
+                        start = indentPerLevel * entry.depth + 4.dp + 14.dp,
+                        end = 8.dp,
+                        top = 2.dp,
+                        bottom = 2.dp
+                    )
             ) {
                 Text(
                     text = if (entry.text.length > 120) entry.text.take(120) + "…" else entry.text,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontFamily = FontFamily.Monospace, color = stringColor),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = stringColor
+                    ),
                     softWrap = true
                 )
             }
