@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -61,6 +62,8 @@ import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
 import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 import androidx.compose.ui.res.stringResource
+import com.dergoogler.mmrl.ext.nullply
+import dev.mmrlx.compose.ui.HorizontalDivider
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -193,9 +196,27 @@ fun ModuleItem(
                 style = MMRLXTheme.typography.bodySmall
             )
 
-            Separator()
+            HorizontalDivider(Modifier.padding(top = 8.dp))
 
-            ProvideTextStyle(
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                leadingButton.nullply {
+                    this()
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                trailingButton.nullply {
+                    this()
+                }
+            }
+
+            /*ProvideTextStyle(
                 MMRLXTheme.typography.labelSmall
             ) {
                 Row(
@@ -213,10 +234,11 @@ fun ModuleItem(
                         Text(module.size.toFormattedFileSize())
                         Text(module.version)
                     }
-                }
-            }
+                }*/
+
         }
     }
+}
 
 
 //
@@ -377,7 +399,7 @@ fun ModuleItem(
 //            }
 //        }
 //    }
-}
+
 
 @Composable
 fun StateIndicator(
