@@ -105,7 +105,7 @@ fun DeveloperScreen() {
                     onChange = viewModel::setEnableDevTools
                 ) {
                     Title {
-                        FormatText(stringResource(R.string.settings_security_enable_devtools) + " %c") {
+                        FormatText(stringResource(R.string.settings_security_enable_devtools) + " %y") {
                             composable {
                                 Badge(
                                     text = stringResource(R.string.beta),

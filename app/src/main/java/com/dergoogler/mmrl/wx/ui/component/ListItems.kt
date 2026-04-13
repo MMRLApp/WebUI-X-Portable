@@ -60,10 +60,10 @@ internal fun ListScope.LinkButton(
 
     RawItem(
         modifier = Modifier
-            .contentPadding()
             .onClick {
                 browser.openUri(uri)
             }
+            .contentPadding()
     ) {
         Icon(
             painter = painterResource(icon)

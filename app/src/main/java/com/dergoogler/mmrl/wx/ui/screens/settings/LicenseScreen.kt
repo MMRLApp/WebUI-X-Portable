@@ -135,7 +135,7 @@ private fun ListScope.LicenseItem(
     ) {
         Title {
             if (license.hasUrl) {
-                FormatText(license.name + " %c") {
+                FormatText(license.name + " %y") {
                     composable {
                         Icon(
                             // Don't ever do that :clown:

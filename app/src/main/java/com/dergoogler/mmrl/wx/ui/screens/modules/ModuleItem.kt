@@ -1,11 +1,9 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -32,9 +31,12 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.fadingEdge
+import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
@@ -52,18 +54,17 @@ import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
-import dev.mmrlx.compose.ui.AppAvatar
-import dev.mmrlx.compose.ui.Separator
-import dev.mmrlx.compose.ui.ProvideTextStyle
-import dev.mmrlx.compose.ui.Text
+import com.dergoogler.mmrl.wx.util.versionDisplay
+import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 import dev.mmrlx.compose.layout.flashlightCard
+import dev.mmrlx.compose.ui.AppAvatar
+import dev.mmrlx.compose.ui.HorizontalDivider
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.text.FormatText
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
-import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
-import androidx.compose.ui.res.stringResource
-import com.dergoogler.mmrl.ext.nullply
-import dev.mmrlx.compose.ui.HorizontalDivider
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -182,7 +183,7 @@ fun ModuleItem(
                     )
 
                     Text(
-                        text = module.author,
+                        text = "${module.author}, ${module.versionDisplay}",
                         style = MMRLXTheme.typography.labelSmall,
                         color = MMRLXTheme.colors.mutedForeground
                     )
@@ -191,16 +192,40 @@ fun ModuleItem(
             }
 
             Text(
-                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
                 text = module.description,
                 style = MMRLXTheme.typography.bodySmall
             )
+
+            FormatText(
+                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                text = "%y %s • %y %s",
+                style = MMRLXTheme.typography.labelSmall,
+                color = MMRLXTheme.colors.mutedForeground
+            ) {
+                composable {
+                    Icon(
+                        modifier = Modifier.size(fontSize.dp),
+                        painter = painterResource(R.drawable.folder),
+                        tint = MMRLXTheme.colors.mutedForeground
+                    )
+                }
+                string(module.size.toFormattedFileSize())
+                composable {
+                    Icon(
+                        modifier = Modifier.size(fontSize.dp),
+                        painter = painterResource(R.drawable.git_branch),
+                        tint = MMRLXTheme.colors.mutedForeground
+                    )
+                }
+                string(module.lastUpdated.toFormattedDateSafely(userPreferences.datePattern))
+            }
 
             HorizontalDivider(Modifier.padding(top = 8.dp))
 
             Row(
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(top = 8.dp)
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
