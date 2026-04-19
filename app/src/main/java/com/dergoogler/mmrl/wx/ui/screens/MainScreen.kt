@@ -10,30 +10,19 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavBackStackEntry
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.App.Companion.TAG
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.service.PlatformService
-import com.dergoogler.mmrl.wx.ui.navigation.MainDestination
-import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.generated.NavGraphs
-import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
-import dev.mmrlx.compose.ui.icon.Icon
-import dev.mmrlx.compose.ui.navigationbar.NavigationBar
-import dev.mmrlx.compose.ui.navigationbar.NavigationBarItem
-import dev.mmrlx.compose.ui.scaffold.ProvideLocalScaffoldScope
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 
 @Composable
@@ -62,7 +51,6 @@ fun MainScreen() {
         contentWindowInsets = WindowInsets.none
     ) {
         DestinationsNavHost(
-            modifier = Modifier.scaffoldHazeSource("mainScreen"),
             navGraph = NavGraphs.root,
             navController = navController,
             defaultTransitions = object : NavHostAnimatedDestinationStyle() {

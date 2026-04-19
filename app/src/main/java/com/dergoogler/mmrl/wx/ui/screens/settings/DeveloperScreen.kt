@@ -15,6 +15,7 @@ import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
@@ -62,14 +63,17 @@ fun DeveloperScreen() {
                 navController = navController,
             )
         },
+        bottomBar = {
+            BottomNavigation()
+        },
         contentWindowInsets = WindowInsets.none
     ) {
         List(
             modifier = Modifier
                 .scaffoldHazeSource()
-                .scaffoldPadding()
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
+                .scaffoldPadding()
         ) {
             Section {
                 SwitchItem(
@@ -122,7 +126,7 @@ fun DeveloperScreen() {
                     onChange = viewModel::setDisableConsoleInterceptor
                 ) {
                     Title {
-                        FormatText(stringResource(R.string.settings_disable_console_interceptor) + " %c") {
+                        FormatText(stringResource(R.string.settings_disable_console_interceptor) + " %y") {
                             composable {
                                 Badge(
                                     text = stringResource(R.string.beta),
