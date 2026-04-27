@@ -123,7 +123,7 @@
     <string name="build_tools_version">ビルドツールのバージョン</string>
     <string name="compile_sdk">コンパイル SDK</string>
     <string name="settings_force_kill_webui_process">WebUI プロセスを強制停止</string>
-    <string name="settings_force_kill_webui_process_desc">現在実行中の WebUI X プロセスを直ちに終了します。[bold]KSU WebUI には影響しません。[/bold]</string>
+    <string name="settings_force_kill_webui_process_desc">現在実行している WebUI X のプロセスを即座に終了します。この設定は ON にしておくことを推奨します。</string>
     <string name="webui_additional_config">追加の構成</string>
     <string name="webui_additional_config_desc">モジュールの開発者によって定義されたオプションの構成です。</string>
     <string name="settings_webui_engine_undefined">未定義</string>
@@ -134,4 +134,11 @@
     <string name="behavior">動作</string>
     <string name="behavior_desc">アプリ機能の動作を変更します。</string>
     <string name="globally_disabled">グローバルで無効化</string>
+    <string name="dom">DOM</string>
+    <string name="console">コンソール</string>
+    <string name="network">ネットワーク</string>
+    <string name="settings_security_enable_devtools">開発者ツール</string>
+    <string name="settings_security_enable_devtools_desc">Eruda とは異なり、このデバッグコンソールはリモートホストでも利用可能です。</string>
+    <string name="beta">Beta</string>
+    <string name="stack_trace_truncated">%s\\n… %d 個以上</string>
 </resources>
