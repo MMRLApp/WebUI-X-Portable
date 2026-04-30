@@ -1,6 +1,6 @@
 package com.dergoogler.mmrl.webui.model
 
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets
+import dev.mmrlx.hybridwebui.HybridWebUIInsets
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)

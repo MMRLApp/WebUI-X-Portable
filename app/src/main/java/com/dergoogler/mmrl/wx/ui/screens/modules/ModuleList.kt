@@ -1,22 +1,18 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.R.attr.description
+import android.R.attr.onClick
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,45 +27,59 @@ import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
-import com.dergoogler.mmrl.ui.component.scrollbar.VerticalFastScrollbar
 import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
+import java.io.File
 import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.button.Button
+import dev.mmrlx.compose.ui.button.ButtonSize
+import dev.mmrlx.compose.ui.button.ButtonVariant
+import dev.mmrlx.compose.ui.dialog.Content
+import dev.mmrlx.compose.ui.dialog.Footer
+import dev.mmrlx.compose.ui.dialog.Title
+import dev.mmrlx.compose.ui.dialog.rememberDialog
+
 
 @Composable
-fun ModulesList(
+fun ScaffoldScope.ModulesList(
     list: List<LocalModule>,
     state: LazyListState,
-    isProviderAlive: Boolean,
     platform: Platform,
-) = Box(
-    modifier = Modifier.fillMaxSize()
+    isProviderAlive: Boolean,
 ) {
     LazyColumn(
         state = state,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.with(this@ModulesList) { it.scaffoldHazeSource() },
+        contentPadding = PaddingValues(
+            top = this@ModulesList.scaffoldTopPadding + 8.dp,
+            start = 8.dp,
+            end = 8.dp,
+            bottom = this@ModulesList.scaffoldBottomPadding + 8.dp
+        ),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(
-            items = list.filter { it.hasWebUI || it.hasModConf },
+            items = list.filter { it.hasWebUI },
             key = { it.id }
         ) { module ->
             ModuleItem(
-                isProviderAlive = isProviderAlive,
                 platform = platform,
                 module = module,
+                isProviderAlive = isProviderAlive
             )
         }
     }
-
-    VerticalFastScrollbar(
-        state = state,
-        modifier = Modifier.align(Alignment.CenterEnd)
-    )
+//
+//    VerticalFastScrollbar(
+//        state = state,
+//        modifier = Modifier.align(Alignment.CenterEnd)
+//    )
 }
 
 @Composable
@@ -81,11 +91,15 @@ fun ModuleItem(
     val context = LocalContext.current
     val navigator = LocalDestinationsNavigator.current
 
+    val removeDialog = rememberDialog()
+
     ModuleItem(
         module = module,
         indicator = {
             when (module.state) {
-                State.REMOVE -> StateIndicator(R.drawable.trash)
+                State.REMOVE,
+                    -> StateIndicator(R.drawable.trash)
+
                 State.UPDATE -> StateIndicator(R.drawable.device_mobile_down)
                 else -> {}
             }
@@ -105,37 +119,61 @@ fun ModuleItem(
             )
 
             if (platform.isNonRoot) {
-                val colorScheme = MaterialTheme.colorScheme
-                RemoveButton(isProviderAlive) {
-                    context.confirm(
-                        ConfirmData(
-                            title = "Remove ${module.name}?",
-                            description = "Are you sure that you want to remove this module?",
-                            onConfirm = {
-                                val file = module.id.moduleDir.toExtFile()
-
-                                if (file.deleteRecursively()) {
-                                    Toast.makeText(
-                                        context,
-                                        "Successfully removed!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    return@ConfirmData
-                                }
-
-                                Toast.makeText(
-                                    context,
-                                    "Failed to remove",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            },
-                        ),
-                        colorScheme
-                    )
+                RemoveButton {
+                    removeDialog.open()
                 }
             }
         }
     )
+
+    removeDialog {
+
+
+        Title {
+            Text("Remove ${module.name}?")
+        }
+
+        Content {
+            Text("Are you sure that you want to remove this module?")
+        }
+
+        Footer {
+            Button(
+                onClick = {
+                    removeDialog.close()
+                },
+                variant = ButtonVariant.Outline
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+            Button(
+                variant = ButtonVariant.Destructive,
+                onClick = {
+                    val file = File(module.id.moduleDir.toString())
+
+                    if (file.deleteRecursively()) {
+                        Toast.makeText(
+                            context,
+                            "Successfully removed!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@Button
+                    }
+
+                    Toast.makeText(
+                        context,
+                        "Failed to remove",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    removeDialog.close()
+                },
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        }
+
+    }
 }
 
 @Composable
@@ -143,74 +181,81 @@ private fun ShortcutAdd(
     module: LocalModule,
     enabled: Boolean,
 ) {
-    val webUiConfig = module.id.toWebUIConfig()
-    val modConfConfig = module.id.toModConfConfig()
-
+//    val webUiConfig = module.id.toWebUIConfig()
+//    val modConfConfig = module.id.toModConfConfig()
     val context = LocalContext.current
 
-    FilledTonalButton(
+    Button(
         onClick = {
             if (module.hasModConf) {
-                modConfConfig.createShortcut(context, ModConfActivity::class.java)
-                return@FilledTonalButton
+//                modConfConfig.createShortcut(context, ModConfActivity::class.java)
+                return@Button
             }
 
             if (module.hasWebUI) {
-                webUiConfig.createShortcut(context, WebUIActivity::class.java)
-                return@FilledTonalButton
+//                webUiConfig.createShortcut(context, WebUIActivity::class.java)
+                return@Button
             }
 
             Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
         },
-        enabled = enabled
-                && (webUiConfig.canAddWebUIShortcut() || modConfConfig.canAddWebUIShortcut())
-                && !(webUiConfig.hasWebUIShortcut(
-            context
-        ) || modConfConfig.hasWebUIShortcut(context)),
-        contentPadding = PaddingValues(horizontal = 12.dp)
+//        enabled = enabled
+//                && (webUiConfig.canAddWebUIShortcut() || modConfConfig.canAddWebUIShortcut())
+//                && !(webUiConfig.hasWebUIShortcut(
+//            context
+//        ) || modConfConfig.hasWebUIShortcut(context)),
+        variant = ButtonVariant.Outline,
+        size = ButtonSize.Sm
     ) {
-        Icon(
+        dev.mmrlx.compose.ui.icon.Icon(
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.link),
             contentDescription = null
         )
 
         Spacer(modifier = Modifier.width(6.dp))
-        Text(
+        dev.mmrlx.compose.ui.Text(
             text = stringResource(id = R.string.add_shortcut)
         )
     }
 }
 
-
 @Composable
 private fun ConfigButton(
     enabled: Boolean,
     onClick: () -> Unit,
-) = FilledTonalButton(
-    onClick = onClick,
-    enabled = enabled,
-    contentPadding = PaddingValues(horizontal = 12.dp)
 ) {
-    Icon(
-        modifier = Modifier.size(20.dp),
-        painter = painterResource(id = R.drawable.settings),
-        contentDescription = null
-    )
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        variant = ButtonVariant.Outline,
+        size = ButtonSize.Sm
+    ) {
+        dev.mmrlx.compose.ui.icon.Icon(
+            modifier = Modifier.size(20.dp),
+            painter = painterResource(id = R.drawable.settings),
+            contentDescription = null
+
+        )
+    }
 }
 
 @Composable
 private fun RemoveButton(
-    enabled: Boolean,
+    enabled: Boolean = true,
     onClick: () -> Unit,
-) = FilledTonalButton(
-    onClick = onClick,
-    enabled = enabled,
-    contentPadding = PaddingValues(horizontal = 12.dp)
 ) {
-    Icon(
-        modifier = Modifier.size(20.dp),
-        painter = painterResource(id = R.drawable.trash),
-        contentDescription = null
-    )
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        variant = ButtonVariant.Destructive,
+        size = ButtonSize.Sm
+    ) {
+        dev.mmrlx.compose.ui.icon.Icon(
+            modifier = Modifier.size(20.dp),
+            painter = painterResource(id = R.drawable.trash),
+            contentDescription = null
+
+        )
+    }
 }

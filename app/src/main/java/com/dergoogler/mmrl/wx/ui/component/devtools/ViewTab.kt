@@ -6,16 +6,17 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,6 +43,8 @@ fun ViewTab(
     state: PagerState,
     onDismissRequest: () -> Unit,
 ) {
+    val statusBarHeight =
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val scope = rememberCoroutineScope()
 
     val pages = remember {
@@ -56,7 +60,9 @@ fun ViewTab(
             verticalAlignment = Alignment.CenterVertically
         ) {
             DevToolsTabRow(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .padding(top = statusBarHeight)
+                    .weight(1f),
                 selectedTabIndex = state.currentPage,
                 indicator = { tabPositions ->
                     AnimatedIndicator(
@@ -90,7 +96,7 @@ fun ViewTab(
 
             IconButton(onClick = onDismissRequest) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    painter = painterResource(R.drawable.square_chevrons_left),
                     contentDescription = "Close DevTools",
                     modifier = Modifier.size(20.dp)
                 )

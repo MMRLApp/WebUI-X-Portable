@@ -54,10 +54,6 @@ import com.dergoogler.mmrl.wx.R
 import org.json.JSONArray
 import org.json.JSONObject
 
-// ---------------------------------------------------------------------------
-// Data model
-// ---------------------------------------------------------------------------
-
 private data class DomNode(
     val id: Int,
     val parentId: Int?,
@@ -68,20 +64,32 @@ private data class DomNode(
     val hasChildren: Boolean,
 )
 
+
 private sealed class RenderEntry {
-    data class Open(val node: DomNode) : RenderEntry()
-    data class Close(val nodeId: Int, val tag: String, val depth: Int) : RenderEntry()
-    data class TextNode(val text: String, val depth: Int, val parentId: Int) : RenderEntry()
+    abstract val stableId: String
+
+    data class Open(val node: DomNode) : RenderEntry() {
+        override val stableId: String = "open:${node.id}"
+    }
+
+    data class Close(val nodeId: Int, val tag: String, val depth: Int) : RenderEntry() {
+        override val stableId: String = "close:$nodeId:$depth"
+    }
+
+    data class TextNode(
+        val text: String,
+        val depth: Int,
+        val parentId: Int,
+        val index: Int
+    ) : RenderEntry() {
+        override val stableId: String = "text:$parentId:$depth:$index"
+    }
 }
 
 private sealed class RawEntry {
     data class Element(val node: DomNode) : RawEntry()
     data class Text(val text: String, val depth: Int, val parentId: Int?) : RawEntry()
 }
-
-// ---------------------------------------------------------------------------
-// DOM manipulation actions
-// ---------------------------------------------------------------------------
 
 private sealed class DomAction {
     data class EditAttribute(val node: DomNode) : DomAction()
@@ -95,10 +103,6 @@ private sealed class DomAction {
     data class RemoveClass(val node: DomNode) : DomAction()
 }
 
-// ---------------------------------------------------------------------------
-// JS helpers
-// ---------------------------------------------------------------------------
-
 /**
  * Builds a JS expression that resolves a node by its serialization id.
  * We re-query by id attribute path using a counter-based data attribute
@@ -108,10 +112,6 @@ private sealed class DomAction {
  */
 private fun jsNodeById(nodeId: Int) =
     "document.querySelector('[data-devtools-id=\"$nodeId\"]')"
-
-// ---------------------------------------------------------------------------
-// DomTab
-// ---------------------------------------------------------------------------
 
 @Composable
 fun DomTab(webview: WXView) {
@@ -352,7 +352,7 @@ fun DomTab(webview: WXView) {
             }
             else -> {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(renderList, key = { it.key() }) { entry ->
+                    items(renderList, key = { it.stableId }) { entry ->
                         RenderEntryRow(
                             entry = entry,
                             collapsedIds = collapsedIds,
@@ -384,10 +384,6 @@ fun DomTab(webview: WXView) {
         )
     }
 }
-
-// ---------------------------------------------------------------------------
-// Context menu
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun DomContextMenu(
@@ -463,10 +459,6 @@ private fun DomContextMenu(
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Dialogs
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun EditAttributeDialog(
@@ -635,10 +627,6 @@ private fun ConfirmDialog(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Shared dialog / field components
-// ---------------------------------------------------------------------------
-
 @Composable
 private fun DevToolsDialog(
     title: String,
@@ -693,10 +681,6 @@ private fun DevToolsTextField(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Render list builder (unchanged from before)
-// ---------------------------------------------------------------------------
-
 private fun buildRenderList(
     raw: List<RawEntry>,
     nodeMap: Map<Int, DomNode>,
@@ -705,10 +689,12 @@ private fun buildRenderList(
     if (raw.isEmpty()) return emptyList()
     val result = mutableListOf<RenderEntry>()
     val stack = ArrayDeque<DomNode>()
+    val textCounters = mutableMapOf<Long, Int>()
+
     for (entry in raw) {
         val currentDepth = when (entry) {
             is RawEntry.Element -> entry.node.depth
-            is RawEntry.Text -> entry.depth
+            is RawEntry.Text    -> entry.depth
         }
         while (stack.isNotEmpty() && stack.last().depth >= currentDepth) {
             val closing = stack.removeLast()
@@ -726,7 +712,12 @@ private fun buildRenderList(
             is RawEntry.Text -> {
                 if (entry.parentId != null && collapsedIds.contains(entry.parentId)) continue
                 if (entry.parentId != null && isAncestorCollapsed(entry.parentId, nodeMap, collapsedIds)) continue
-                result.add(RenderEntry.TextNode(entry.text, entry.depth, entry.parentId ?: -1))
+                val pid = entry.parentId ?: -1
+                // pack parentId and depth into a single Long key for the counter map
+                val counterKey = (pid.toLong() shl 32) or (entry.depth.toLong() and 0xFFFFFFFFL)
+                val idx = textCounters.getOrDefault(counterKey, 0)
+                textCounters[counterKey] = idx + 1
+                result.add(RenderEntry.TextNode(entry.text, entry.depth, pid, idx))
             }
         }
     }
@@ -753,10 +744,6 @@ private fun RenderEntry.key(): String = when (this) {
     is RenderEntry.Close -> "close_${nodeId}"
     is RenderEntry.TextNode -> "text_${parentId}_${text.hashCode()}"
 }
-
-// ---------------------------------------------------------------------------
-// Row composable
-// ---------------------------------------------------------------------------
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

@@ -1,8 +1,8 @@
 package com.dergoogler.mmrl.ext
 
 import android.util.Log
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterface
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 

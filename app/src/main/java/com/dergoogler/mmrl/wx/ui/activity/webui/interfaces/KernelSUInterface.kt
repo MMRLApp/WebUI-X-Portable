@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
@@ -56,7 +57,6 @@ class KernelSUInterface(
         return shell
     }
 
-
     @JavascriptInterface
     fun mmrl(): Boolean {
         return true
@@ -71,11 +71,12 @@ class KernelSUInterface(
 
     @JavascriptInterface
     fun fullScreen(enable: Boolean) {
-        runMainLooperPost {
+        val act = context.findActivity() ?: return
+        mainThread {
             if (enable) {
-                hideSystemUI(window)
+                hideSystemUI(act.window)
             } else {
-                showSystemUI(window)
+                showSystemUI(act.window)
             }
         }
     }

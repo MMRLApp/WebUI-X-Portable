@@ -54,6 +54,7 @@
     <string name="settings_webui_engine">WebUI Engine</string>
     <string name="settings_webui_engine_desc">Select your preferred engine</string>
     <string name="settings_webui_engine_wx">WebUI X</string>
+    <string name="settings_webui_engine_mx">WebUI MX</string>
     <string name="settings_webui_engine_ksu">KSU WebUI</string>
     <string name="settings_webui_engine_prefer_module">Defined by the Module Config</string>
     <string name="settings_webui_engine_undefined">Undefined</string>
@@ -139,6 +140,12 @@
     <string name="network">Network</string>
     <string name="settings_security_enable_devtools">DevTools</string>
     <string name="settings_security_enable_devtools_desc">Unlike Eruda, this debugging console can be used even with remote hosts.</string>
+    <string name="settings_disable_console_interceptor">Disable Console Interceptor</string>
+    <string name="settings_disable_console_interceptor_desc">Stop capturing and redirecting console logs to prevent the app from overriding default output. Useful when using Chrome DevTools since logs may not appear there otherwise.</string>
     <string name="beta">Beta</string>
     <string name="stack_trace_truncated">%s\\n… %d more</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="learn_more">Learn more</string>
+    <string name="unsupported_engine">Unsupported engine</string>
 </resources>

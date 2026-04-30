@@ -176,12 +176,6 @@ fun JSONObject.getBoolean(key: String, defaultValue: Boolean = false): Boolean =
 fun JSONObject.getArray(key: String, defaultValue: JSONArray = JSONArray.EMPTY): JSONArray = getArray(key) ?: defaultValue
 fun JSONObject.getObject(key: String, defaultValue: JSONObject = JSONObject.EMPTY): JSONObject = getObject(key) ?: defaultValue
 
-// Safe casting with helpers
-fun JSONObject.optString(key: String): String? = getString(key)
-fun JSONObject.optNumber(key: String): Number? = getNumber(key)
-fun JSONObject.optBoolean(key: String): Boolean? = getBoolean(key)
-fun JSONObject.optArray(key: String): JSONArray? = getArray(key)
-fun JSONObject.optObject(key: String): JSONObject? = getObject(key)
 
 // ==================== JSONNull Helpers ====================
 

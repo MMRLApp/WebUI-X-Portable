@@ -29,9 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.ext.nullable
-import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.listItem.dsl.List
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioItem
@@ -39,7 +38,6 @@ import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
 import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.FeaturedManager
-import com.dergoogler.mmrl.wx.util.toWorkingMode
 
 @Composable
 fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {

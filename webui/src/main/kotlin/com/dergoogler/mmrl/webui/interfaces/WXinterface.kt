@@ -1,18 +1,20 @@
 package com.dergoogler.mmrl.webui.interfaces
 
 import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Handler
+import android.os.Looper
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import com.dergoogler.mmrl.ext.findActivity
-import com.dergoogler.mmrl.hybridwebui.HybridWebUI
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterface
+import dev.mmrlx.hybridwebui.HybridWebUI
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterface
+import dev.mmrlx.hybridwebui.store.error
+import dev.mmrlx.hybridwebui.store.trace
+import dev.mmrlx.hybridwebui.store.warn
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.util.WebUIOptions
@@ -133,9 +135,10 @@ open class WXInterface(
     }
 
     fun <R> withActivity(block: Activity.() -> R): R? {
-        if (activity == null) {
-            console.trace("withActivity -> activity == null")
-            console.error("[$tag->withActivity] Activity not found")
+        val act = context.findActivity()
+        if (act == null) {
+            consoleLogs.trace("withActivity -> activity == null")
+            consoleLogs.error("[$tag->withActivity] Activity not found")
             return null
         }
 
@@ -181,22 +184,32 @@ open class WXInterface(
     ) {
     }
 
+    fun mainThread(callback: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            callback()
+        } else {
+            Handler(Looper.getMainLooper()).post { callback() }
+        }
+    }
+
     @UiThread
     fun runMainLooperPost(action: Activity.() -> Unit) {
-        if (activity == null) {
-            console.error("[$tag->runMainLooperPost] Activity not found")
+        val act = context.findActivity()
+        if (act == null) {
+            consoleLogs.error("[$tag->runMainLooperPost] Activity not found")
             return
         }
 
         Handler(mainLooper).post {
-            action(activity)
+            action(act)
         }
     }
 
     @UiThread
     fun runMainLooperPost(r: Runnable) {
-        if (activity == null) {
-            console.error("[$tag->runMainLooperPost/Runnable] Activity not found")
+        val act = context.findActivity()
+        if (act == null) {
+            consoleLogs.error("[$tag->runMainLooperPost/Runnable] Activity not found")
             return
         }
 
@@ -220,7 +233,7 @@ open class WXInterface(
      * deprecated("oldFunction", "newFunction")
      */
     fun deprecated(method: String, replaceWith: String? = null) {
-        console.log(
+        consoleLogs.warn(
             "%c[DEPRECATED]%c The `$method` method will be removed in future versions.${if (replaceWith != null) " Use `$replaceWith` instead." else ""}",
             "color: white; background: red; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
             "color: orange; font-weight: bold;"
@@ -236,7 +249,7 @@ open class WXInterface(
     ): R = try {
         block()
     } catch (e: Throwable) {
-        console.error(e)
+        consoleLogs.error(e)
         default
     }
 
@@ -260,7 +273,7 @@ open class WXInterface(
         return try {
             with(with, block)
         } catch (e: Throwable) {
-            console.error(e)
+            consoleLogs.error(e)
             return default
         }
     }

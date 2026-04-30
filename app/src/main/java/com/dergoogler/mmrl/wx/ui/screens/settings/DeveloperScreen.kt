@@ -1,55 +1,48 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.ext.takeTrue
-import com.dergoogler.mmrl.ui.component.LabelItem
-import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
-import com.dergoogler.mmrl.ui.component.listItem.dsl.List
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Item
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Section
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.TextEditDialogItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.DialogSupportingText
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.End
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Labels
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.LearnMore
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
-import com.dergoogler.mmrl.ui.component.scaffold.Scaffold
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
+import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import dev.mmrlx.compose.ui.Badge
+import dev.mmrlx.compose.ui.BadgeVariant
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.button.Button
+import dev.mmrlx.compose.ui.dialog.Content
+import dev.mmrlx.compose.ui.dialog.Footer
+import dev.mmrlx.compose.ui.dialog.Title
+import dev.mmrlx.compose.ui.dialog.rememberDialog
+import dev.mmrlx.compose.ui.list.List
+import dev.mmrlx.compose.ui.list.component.InputDialogItem
+import dev.mmrlx.compose.ui.list.component.Item
+import dev.mmrlx.compose.ui.list.component.Section
+import dev.mmrlx.compose.ui.list.component.SwitchItem
+import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.DialogSupportingText
+import dev.mmrlx.compose.ui.list.component.item.Supporting
+import dev.mmrlx.compose.ui.list.component.item.Title
+import dev.mmrlx.compose.ui.list.component.item.VerticalDividerSwitch
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.text.FormatText
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 
 @Destination<RootGraph>()
 @Composable
@@ -57,24 +50,30 @@ fun DeveloperScreen() {
     val userPreferences = LocalUserPreferences.current
     val navController = LocalNavController.current
     val viewModel = LocalSettings.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
+
+    val remoteDomainDialog = rememberDialog()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            NavigateUpTopBar(
+        toolbar = {
+            NavigateUpToolbar(
                 title = stringResource(R.string.developer),
                 scrollBehavior = scrollBehavior,
                 navController = navController,
             )
         },
+        bottomBar = {
+            BottomNavigation()
+        },
         contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
+    ) {
         List(
             modifier = Modifier
-                .padding(innerPadding)
+                .scaffoldHazeSource()
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
+                .scaffoldPadding()
         ) {
             Section {
                 SwitchItem(
@@ -85,46 +84,14 @@ fun DeveloperScreen() {
                     Description(R.string.settings_developer_mode_desc)
                 }
 
-                var webuiRemoteUrlInfo by remember { mutableStateOf(false) }
-                if (webuiRemoteUrlInfo) AlertDialog(
-                    title = {
-                        Text(text = stringResource(id = R.string.settings_webui_remote_url))
-                    },
-                    text = {
-                        Text(text = stringResource(id = R.string.settings_webui_remote_url_alert_desc))
-                    },
-                    onDismissRequest = {
-                        webuiRemoteUrlInfo = false
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                webuiRemoteUrlInfo = false
-                            }
-                        ) {
-                            Text(text = stringResource(id = android.R.string.ok))
-                        }
-                    },
-                )
-
                 DeveloperSwitch(
                     enabled = !userPreferences.useWebUiDevUrl,
                     checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
                     onChange = viewModel::setEnableEruda
                 ) {
+                    // TODO: deprecate eruda
                     Title(R.string.settings_security_inject_eruda)
                     Description(R.string.settings_security_inject_eruda_desc)
-                }
-
-                DeveloperSwitch(
-                    checked = userPreferences.enableDevTools,
-                    onChange = viewModel::setEnableDevTools
-                ) {
-                    Title(R.string.settings_security_enable_devtools)
-                    Description(R.string.settings_security_enable_devtools_desc)
-                    Labels {
-                        LabelItem(stringResource(R.string.beta))
-                    }
                 }
 
                 DeveloperSwitch(
@@ -132,86 +99,81 @@ fun DeveloperScreen() {
                     checked = userPreferences.enableErudaConsole && userPreferences.enableAutoOpenEruda,
                     onChange = viewModel::setEnableAutoOpenEruda
                 ) {
+                    // TODO: deprecate eruda
                     Title(R.string.settings_security_auto_open_eruda)
                     Description(R.string.settings_security_auto_open_eruda_desc)
                 }
 
-                TextEditDialogItem(
+                DeveloperSwitch(
+                    checked = userPreferences.enableDevTools,
+                    onChange = viewModel::setEnableDevTools
+                ) {
+                    Title {
+                        FormatText(stringResource(R.string.settings_security_enable_devtools) + " %y") {
+                            composable {
+                                Badge(
+                                    text = stringResource(R.string.beta),
+                                    variant = BadgeVariant.Secondary,
+                                )
+                            }
+                        }
+                    }
+                    Description(R.string.settings_security_enable_devtools_desc)
+                }
+
+                DeveloperSwitch(
+                    checked = userPreferences.disableConsoleInterceptor,
+                    onChange = viewModel::setDisableConsoleInterceptor
+                ) {
+                    Title {
+                        FormatText(stringResource(R.string.settings_disable_console_interceptor) + " %y") {
+                            composable {
+                                Badge(
+                                    text = stringResource(R.string.beta),
+                                    variant = BadgeVariant.Secondary,
+                                )
+                            }
+                        }
+                    }
+                    Description(R.string.settings_disable_console_interceptor_desc)
+                }
+
+                InputDialogItem(
                     enabled = userPreferences.developerMode,
                     value = userPreferences.webUiDevUrl,
                     onConfirm = {
-                        viewModel.setWebUiDevUrl(it)
+                        viewModel.setWebUiDevUrl(it.value)
                     },
                     onValid = { it.isLocalWifiUrl() },
                 ) {
                     Title(R.string.settings_webui_remote_url)
                     Description(R.string.settings_webui_remote_url_desc)
 
-                    End {
-                        val interactionSource = remember { MutableInteractionSource() }
+                    VerticalDividerSwitch(
+                        checked = userPreferences.useWebUiDevUrl,
+                        onChange = viewModel::setUseWebUiDevUrl,
+                        enabled = userPreferences.developerMode
+                    )
 
-                        Layout(
-                            content = {
-                                VerticalDivider(
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                    thickness = 1.dp
-                                )
+                    Supporting {
+                        Text(
+                            modifier =
+                                Modifier.clickable(
+                                    onClick = {
+                                        remoteDomainDialog.open()
+                                    },
+                                ),
+                            text = stringResource(R.string.learn_more),
+                        )
 
-                                Switch(
-                                    modifier = Modifier
-                                        .toggleable(
-                                            value = userPreferences.useWebUiDevUrl,
-                                            onValueChange = viewModel::setUseWebUiDevUrl,
-                                            enabled = userPreferences.developerMode,
-                                            role = Role.Switch,
-                                            interactionSource = interactionSource,
-                                            indication = null
-                                        ),
-                                    checked = userPreferences.useWebUiDevUrl,
-                                    onCheckedChange = null,
-                                    interactionSource = interactionSource
-                                )
-                            }
-                        ) { measurables, constraints ->
-                            val dividerMeasurable = measurables[0]
-                            val switchMeasurable = measurables[1]
-
-                            // Measure switch first
-                            val switchPlaceable = switchMeasurable.measure(constraints)
-
-                            // Define divider height = switch height + padding
-                            val dividerHeight = switchPlaceable.height + 36
-                            val dividerPlaceable = dividerMeasurable.measure(
-                                constraints.copy(
-                                    minHeight = dividerHeight,
-                                    maxHeight = dividerHeight
-                                )
-                            )
-
-                            val width = dividerPlaceable.width + switchPlaceable.width
-                            val height = maxOf(dividerPlaceable.height, switchPlaceable.height)
-
-                            layout(width, height) {
-                                // Center divider vertically relative to the full layout
-                                val dividerY = (height - dividerPlaceable.height) / 2
-                                val switchY = (height - switchPlaceable.height) / 2
-
-                                dividerPlaceable.place(0, dividerY)
-                                switchPlaceable.place(dividerPlaceable.width, switchY)
-                            }
-                        }
                     }
 
-                    LearnMore {
-                        webuiRemoteUrlInfo = true
-                    }
-
-                    it.isError.takeTrue {
+                    if (it.isError) {
                         DialogSupportingText {
                             Text(
                                 text = stringResource(R.string.invalid_ip),
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.labelSmall
+                                color = MMRLXTheme.colors.destructive,
+                                style = MMRLXTheme.typography.labelSmall
                             )
                         }
                     }
@@ -233,6 +195,26 @@ fun DeveloperScreen() {
                     Title(stringResource(R.string.compile_sdk))
                     Description(BuildConfig.COMPILE_SDK)
                 }
+            }
+        }
+    }
+
+    remoteDomainDialog {
+        Title {
+            Text(stringResource(R.string.settings_webui_remote_url))
+        }
+
+        Content {
+            Text(stringResource(R.string.settings_webui_remote_url_alert_desc))
+        }
+
+        Footer {
+            Button(
+                onClick = {
+                    remoteDomainDialog.close()
+                },
+            ) {
+                Text(stringResource(android.R.string.ok))
             }
         }
     }

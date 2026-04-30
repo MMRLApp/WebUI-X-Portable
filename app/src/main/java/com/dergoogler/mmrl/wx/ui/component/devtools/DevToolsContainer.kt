@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.MaterialTheme
@@ -26,8 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -38,12 +35,6 @@ fun DevToolsContainer(
     content: @Composable () -> Unit,
 ) {
     val borderColor = MaterialTheme.colorScheme.outlineVariant
-    val statusBarHeight =
-        WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 28.dp
-    val density = LocalDensity.current
-    val maxHeight = with(density) {
-        LocalWindowInfo.current.containerSize.height.toDp()
-    } - statusBarHeight
 
     Box(
         modifier = Modifier
@@ -76,7 +67,6 @@ fun DevToolsContainer(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = maxHeight)
                     .drawWithContent {
                         drawContent()
 

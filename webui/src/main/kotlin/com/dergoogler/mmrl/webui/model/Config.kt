@@ -14,7 +14,6 @@ import android.widget.Toast
 import com.dergoogler.mmrl.ext.toBooleanOrNull
 import com.dergoogler.mmrl.ext.toIntOrNull
 import com.dergoogler.mmrl.ext.toStringOrNull
-import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFileInputStream
@@ -39,6 +38,7 @@ import com.squareup.moshi.JsonClass
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
+import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import kotlinx.coroutines.flow.StateFlow
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction
@@ -416,6 +416,7 @@ data class WebUIConfig(
     val pullToRefreshHelper: Boolean = true,
     val historyFallbackFile: String = "index.html",
     val autoStatusBarsStyle: Boolean = true,
+    val autoAddInsets: Boolean = false,
     val dexFiles: MutableList<WebUIConfigDexFile> = mutableListOf(),
     val killShellWhenBackground: Boolean = true,
     val contentSecurityPolicy: String = "default-src 'self' data: blob: {domain}; " +

@@ -8,7 +8,6 @@ import android.content.res.Resources
 import android.os.Build
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.ui.theme.Colors
 import com.dergoogler.mmrl.ui.theme.Colors.Companion.getColorScheme
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -39,6 +38,7 @@ data class UserPreferences(
     @ProtoNumber(39) val forceKillWebUIProcess: Boolean = true,
     @ProtoNumber(40) val disableGlobalExitConfirm: Boolean = false,
     @ProtoNumber(41) val enableDevTools: Boolean = false,
+    @ProtoNumber(42) val disableConsoleInterceptor: Boolean = false,
 ) {
     fun isDarkMode() = when (darkMode) {
         DarkMode.AlwaysOff -> false

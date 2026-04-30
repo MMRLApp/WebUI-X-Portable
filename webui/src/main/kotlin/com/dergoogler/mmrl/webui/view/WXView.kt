@@ -9,7 +9,7 @@ import android.view.WindowInsetsController
 import androidx.core.view.WindowCompat
 import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
-import com.dergoogler.mmrl.hybridwebui.HybridWebUIStore
+import dev.mmrlx.hybridwebui.HybridWebUIStore
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
 import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.client.WXChromeClient
@@ -144,7 +144,7 @@ open class WXView : WebUIView {
         }
     }
 
-    val consoleLogs get() = store.consoleStore
+    override val consoleLogs get() = store.buildConsoleStore(TAG)
     val networkRequests get() = store.networkStore
 
     override fun destroy() {

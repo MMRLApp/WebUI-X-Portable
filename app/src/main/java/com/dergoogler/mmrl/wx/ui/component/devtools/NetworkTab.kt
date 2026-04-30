@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.ui.component.Tab
 import com.dergoogler.mmrl.webui.view.WXView
+import com.dergoogler.mmrl.wx.R
 
 @Composable
 fun NetworkTab(webview: WXView) {
@@ -195,7 +197,7 @@ private fun RequestInspector(
             )
             IconButton(onClick = onClose, modifier = Modifier.size(24.dp)) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    painter = painterResource(R.drawable.x),
                     contentDescription = "Close inspector",
                     modifier = Modifier.size(16.dp),
                     tint = mutedColor

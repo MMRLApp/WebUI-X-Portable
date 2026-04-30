@@ -1,12 +1,12 @@
 package com.dergoogler.mmrl.wx
 
-import android.app.Application
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.app.utils.NotificationUtils
 import dagger.hilt.android.HiltAndroidApp
+import dev.mmrlx.utilities.app.LifecycleApplication
 
 @HiltAndroidApp
-class App : Application() {
+class App : LifecycleApplication() {
     override fun onCreate() {
         super.onCreate()
 
