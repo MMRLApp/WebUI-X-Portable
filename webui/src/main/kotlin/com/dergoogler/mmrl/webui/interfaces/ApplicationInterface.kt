@@ -24,8 +24,10 @@ class ApplicationInterface(
 
     @JavascriptInterface
     fun exit() {
-        withActivity {
-            exit(options)
+        post {
+            withActivity {
+                exit(options)
+            }
         }
     }
 
