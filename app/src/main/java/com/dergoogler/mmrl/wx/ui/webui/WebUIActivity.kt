@@ -38,6 +38,7 @@ import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.util.isPlatformAlive
+import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
 import com.dergoogler.mmrl.wx.util.BaseActivity
 import com.dergoogler.mmrl.wx.util.setBaseContent
 import com.dergoogler.mmrl.wx.util.setMyCrashHandler
@@ -45,7 +46,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.rememberWebUIState
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.registerLuaPlugin
 
 @AndroidEntryPoint
 class WebUIActivity : BaseActivity() {
@@ -144,15 +144,13 @@ class WebUIActivity : BaseActivity() {
                     }
                     .client { }
                     .chromeClient { }
+                    .luaPlugin()
                     .registerJavascriptInterface(KernelSUInterface::class.java)
                     .registerJavascriptInterface(ApplicationInterface::class.java) {
                         add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }
                     .registerJavascriptInterface(FileSystemInterface::class.java)
                     .registerPathHandler(WebrootPathHandler::class.java)
-                    .registerLuaPlugin {
-                        plugin("/data/adb/modules/${modId}/webroot/index.lua")
-                    }
                     .registerSuPathHandler("/.${modId}/", "/data/adb/modules/${modId}")
                     .registerSuPathHandler("/.adb/", "/data/adb")
                     .registerSuPathHandler("/.config/", "/data/adb/.config")
