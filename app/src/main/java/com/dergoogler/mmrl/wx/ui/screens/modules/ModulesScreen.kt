@@ -2,7 +2,6 @@ package com.dergoogler.mmrl.wx.ui.screens.modules
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -11,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
@@ -19,11 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
 import com.dergoogler.mmrl.ui.component.text.TextRow
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
@@ -37,6 +38,7 @@ import dev.mmrlx.compose.ui.text.rememberInputState
 import dev.mmrlx.compose.ui.toolbar.SearchableToolbar
 import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
 @Destination<RootGraph>(start = true)
@@ -44,55 +46,49 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
 fun ModulesScreen(
     viewModel: ModulesViewModel = hiltViewModel(),
 ) {
+    val prefs = LocalUserPreferences.current
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
-    val state by viewModel.screenState.collectAsStateWithLifecycle()
+
+    val screenState by viewModel.screenState.collectAsStateWithLifecycle()
     val list by viewModel.local.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isSearch by viewModel.isSearch.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         toolbar = {
             ModuleScreenToolbar(
-                isSearch = viewModel.isSearch,
+                isSearch = isSearch,
                 query = query,
                 onQueryChange = viewModel::search,
                 onOpenSearch = viewModel::openSearch,
                 onCloseSearch = viewModel::closeSearch,
                 setMenu = viewModel::setModulesMenu,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
         },
-        bottomBar = {
-            BottomNavigation()
-        },
+        bottomBar = { BottomNavigation() },
         floatingActionButton = {
-            if (viewModel.platform != Platform.NonRoot) return@Scaffold
-
+            if (prefs.workingMode != WorkingMode.MODE_NON_ROOT) return@Scaffold
             ModuleImporter()
         },
     ) {
-        if (isLoading) {
-            Loading()
-        }
-
-        if (list.isEmpty() && !isLoading) {
-            PageIndicator(
-                icon = if (viewModel.isSearch) R.drawable.mood_search else R.drawable.mood_cry,
-                text = if (viewModel.isSearch) R.string.search_empty else R.string.modules_empty,
+        when {
+            screenState.isFirstLoad -> Loading()
+            list.isEmpty() -> PageIndicator(
+                icon = if (isSearch) R.drawable.mood_search else R.drawable.mood_cry,
+                text = if (isSearch) R.string.search_empty else R.string.modules_empty,
             )
         }
 
         PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh = viewModel::getLocalAll
+            isRefreshing = screenState.isRefreshing && !screenState.isFirstLoad,
+            onRefresh = viewModel::refreshModules,
         ) {
             this@Scaffold.ModulesList(
                 list = list,
-                platform = viewModel.platform,
                 state = listState,
-                isProviderAlive = viewModel.isProviderAlive
             )
         }
     }
@@ -110,23 +106,17 @@ private fun ModuleScreenToolbar(
 ) {
     val state = rememberInputState(query)
 
-    LaunchedEffect(state.text) {
-        val text = state.text.toString()
-        if (text != query) {
-            onQueryChange(text)
-        }
+    LaunchedEffect(Unit) {
+        snapshotFlow { state.text.toString() }
+            .distinctUntilChanged()
+            .collect { text ->
+                if (text != query) onQueryChange(text)
+            }
     }
 
     LaunchedEffect(query) {
-        val current = state.text.toString()
-        if (current != query) {
+        if (state.text.toString() != query) {
             state.setTextAndPlaceCursorAtEnd(query)
-        }
-    }
-
-    LaunchedEffect(isSearch) {
-        if (!isSearch) {
-            state.clearText()
         }
     }
 
@@ -138,9 +128,9 @@ private fun ModuleScreenToolbar(
                 leadingContent = {
                     Icon(
                         modifier = Modifier.size(30.dp),
-                        painter = painterResource(id = R.drawable.launcher_outline),
+                        painter = painterResource(R.drawable.launcher_outline),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.surfaceTint
+                        tint = MaterialTheme.colorScheme.surfaceTint,
                     )
                 }
             ) {
@@ -148,23 +138,17 @@ private fun ModuleScreenToolbar(
             }
         },
         scrollBehavior = scrollBehavior,
-        onClose = {
-            onCloseSearch()
-            state.clearText()
-        },
+        onClose = onCloseSearch,
         actions = {
             if (!isSearch) {
                 IconButton(onClick = onOpenSearch) {
                     Icon(
-                        painter = painterResource(id = R.drawable.search),
-                        contentDescription = null
+                        painter = painterResource(R.drawable.search),
+                        contentDescription = null,
                     )
                 }
             }
-
-            ModulesMenu(
-                setMenu = setMenu
-            )
-        }
+            ModulesMenu(setMenu = setMenu)
+        },
     )
 }

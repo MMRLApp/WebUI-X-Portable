@@ -1,10 +1,24 @@
 package com.dergoogler.mmrl.wx.model.module
 
-import com.dergoogler.mmrl.platform.file.Path
+import dev.mmrlx.nio.Path
 import java.io.Serializable
 
-data class ModulePaths(
-    private val baseDir: String,
+data class AdbPath(
+    val baseDir: String,
+) : Serializable {
+    val configDir get() = Path.resolve(baseDir, HIDDEN_CONFIG_DIR)
+    val localDir get() = Path.resolve(baseDir, HIDDEN_LOCAL_DIR)
+    val modulesDir get() = Path.resolve(baseDir, MODULES_DIR)
+
+    companion object {
+        const val MODULES_DIR = "modules"
+        const val HIDDEN_CONFIG_DIR = ".config"
+        const val HIDDEN_LOCAL_DIR = ".local"
+    }
+}
+
+data class ModulePath(
+    private val adbPath: AdbPath,
     private val moduleId: String,
 ) : Serializable {
     val serviceFiles
@@ -32,18 +46,9 @@ data class ModulePaths(
                 updateFile,
             )
 
-    val adbDir get() = baseDir
-    val configDir get() = Path.resolve(adbDir, HIDDEN_CONFIG_DIR)
-    val moduleConfigDir get() = Path.resolve(configDir, moduleId)
-    val modulesDir get() = Path.resolve(adbDir, MODULES_DIR)
-    val moduleDir get() = Path.resolve(modulesDir, moduleId)
+    val configDir get() = Path.resolve(adbPath.configDir, moduleId)
+    val moduleDir get() = Path.resolve(adbPath.modulesDir, moduleId)
     val webrootDir get() = Path.resolve(moduleDir, WEBROOT_DIR)
-    val modconfDir get() = Path.resolve(moduleDir, MODCONF_DIR)
-    val modconfDependenciesDir
-        get() = Path.resolve(
-            modconfDir,
-            MODCONF_DEPENDENCIES_DIR
-        )
     val propFile get() = Path.resolve(moduleDir, PROP_FILE)
     val actionFile get() = Path.resolve(moduleDir, ACTION_FILE)
     val serviceFile get() = Path.resolve(moduleDir, SERVICE_FILE)
@@ -60,10 +65,6 @@ data class ModulePaths(
 
     companion object {
         const val WEBROOT_DIR = "webroot"
-        const val MODCONF_DIR = "modconf"
-        const val MODCONF_DEPENDENCIES_DIR = "dependencies"
-        const val MODULES_DIR = "modules"
-        const val HIDDEN_CONFIG_DIR = ".config"
 
         const val PROP_FILE = "module.prop"
 

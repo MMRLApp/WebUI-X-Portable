@@ -259,7 +259,7 @@ dependencies {
     implementation(libs.mmrlx.ui)
     implementation(libs.mmrlx.utilities)
     implementation(libs.mmrlx.webui.lua)
-//    implementation(libs.mmrlx.nio)
+    implementation(libs.mmrlx.nio)
 
     implementation("com.github.MMRLApp.RootThread:thread:0.0.3")
 }

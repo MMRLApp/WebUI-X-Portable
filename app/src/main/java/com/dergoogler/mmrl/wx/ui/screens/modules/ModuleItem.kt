@@ -1,7 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.content.Intent
-import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
@@ -19,11 +17,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
@@ -34,28 +30,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.ext.fadingEdge
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
-import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
-import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
-import com.dergoogler.mmrl.platform.model.ModId.Companion.adbDir
-import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
-import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
-import com.dergoogler.mmrl.ui.component.LocalCover
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.util.versionDisplay
-import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 import dev.mmrlx.compose.layout.flashlightCard
 import dev.mmrlx.compose.ui.AppAvatar
 import dev.mmrlx.compose.ui.HorizontalDivider
@@ -81,7 +65,7 @@ fun <T> produceRootCallableState(
 
 @Composable
 fun ModuleItem(
-    module: LocalModule,
+    module: Module,
     alpha: Float = 1f,
     decoration: TextDecoration = TextDecoration.None,
     indicator: @Composable() (() -> Unit?)? = null,
@@ -95,10 +79,10 @@ fun ModuleItem(
 
     val canWenUIAccessed =
         PlatformManager.isAlive && (module.hasWebUI) && module.state != State.REMOVE
-
-    val config = remember(module) {
-        module.config
-    }
+//
+//    val config = remember(module) {
+//        module.config
+//    }
 
     val toastStr = stringResource(R.string.unsupported_engine)
 
@@ -106,60 +90,60 @@ fun ModuleItem(
         modifier = Modifier
             .combinedClickable(
                 onLongClick = {
-                    navigator.navigate(FileExplorerScreenDestination(module))
+                  //  navigator.navigate(FileExplorerScreenDestination(module))
                 },
                 onClick = {
-                    if (canWenUIAccessed) {
-                        val baseDir = module.id.adbDir.toString()
-
-                        if (userPreferences.webuiEngine == WebUIEngine.MX) {
-                            val intent = Intent(context, WebUIActivity::class.java)
-                                .apply {
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-                                    putModId(module.id)
-                                    putBaseDir(baseDir)
-                                }
-
-                            context.startActivity(intent)
-                            return@combinedClickable
-                        }
-
-                        // TODO: deprecate WX engine, devtools are crashing currently!
-                        if (userPreferences.webuiEngine == WebUIEngine.WX) {
-                            context.launchWebUIX<com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity>(
-                                module.id,
-                                baseDir
-                            )
-                            return@combinedClickable
-                        }
-                    }
-
-                    Toast.makeText(
-                        context, toastStr, Toast.LENGTH_SHORT
-                    ).show()
+//                    if (canWenUIAccessed) {
+//                        val baseDir = module.id.adbDir.toString()
+//
+//                        if (userPreferences.webuiEngine == WebUIEngine.MX) {
+//                            val intent = Intent(context, WebUIActivity::class.java)
+//                                .apply {
+//                                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+//                                    putModId(module.id)
+//                                    putBaseDir(baseDir)
+//                                }
+//
+//                            context.startActivity(intent)
+//                            return@combinedClickable
+//                        }
+//
+//                        // TODO: deprecate WX engine, devtools are crashing currently!
+//                        if (userPreferences.webuiEngine == WebUIEngine.WX) {
+//                            context.launchWebUIX<com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity>(
+//                                module.id,
+//                                baseDir
+//                            )
+//                            return@combinedClickable
+//                        }
+//                    }
+//
+//                    Toast.makeText(
+//                        context, toastStr, Toast.LENGTH_SHORT
+//                    ).show()
                 }
             )
             .fillMaxWidth()
             .flashlightCard()
     ) {
-        config.cover?.let {
-            SuFile(it).exists { cover ->
-
-                LocalCover(
-                    modifier = Modifier.fadingEdge(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black,
-                            ),
-                            startY = Float.POSITIVE_INFINITY,
-                            endY = 0f
-                        ),
-                    ),
-                    inputStream = cover.inputStream(),
-                )
-            }
-        }
+//        config.cover?.let {
+//            SuFile(it).exists { cover ->
+//
+//                LocalCover(
+//                    modifier = Modifier.fadingEdge(
+//                        brush = Brush.verticalGradient(
+//                            colors = listOf(
+//                                Color.Transparent,
+//                                Color.Black,
+//                            ),
+//                            startY = Float.POSITIVE_INFINITY,
+//                            endY = 0f
+//                        ),
+//                    ),
+//                    inputStream = cover.inputStream(),
+//                )
+//            }
+//        }
 
         Column(
             modifier = Modifier.padding(16.dp),

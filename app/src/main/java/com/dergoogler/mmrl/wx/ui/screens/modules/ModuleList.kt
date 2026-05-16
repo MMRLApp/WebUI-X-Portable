@@ -1,7 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.R.attr.description
-import android.R.attr.onClick
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,31 +9,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.modconf.config.toModConfConfig
-import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasModConf
-import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
+import com.dergoogler.mmrl.platform.PlatformManager.platform
 import com.dergoogler.mmrl.platform.content.State
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
-import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
-import com.dergoogler.mmrl.ui.component.dialog.confirm
-import com.dergoogler.mmrl.webui.model.toWebUIConfig
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
+import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import dev.mmrlx.compose.ui.ext.with
-import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
-import java.io.File
-import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
 import dev.mmrlx.compose.ui.button.ButtonSize
@@ -44,14 +28,15 @@ import dev.mmrlx.compose.ui.dialog.Content
 import dev.mmrlx.compose.ui.dialog.Footer
 import dev.mmrlx.compose.ui.dialog.Title
 import dev.mmrlx.compose.ui.dialog.rememberDialog
-
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
+import java.io.File
 
 @Composable
 fun ScaffoldScope.ModulesList(
-    list: List<LocalModule>,
+    list: List<Module>,
     state: LazyListState,
-    platform: Platform,
-    isProviderAlive: Boolean,
 ) {
     LazyColumn(
         state = state,
@@ -69,9 +54,8 @@ fun ScaffoldScope.ModulesList(
             key = { it.id }
         ) { module ->
             ModuleItem(
-                platform = platform,
                 module = module,
-                isProviderAlive = isProviderAlive
+                placeholder = null
             )
         }
     }
@@ -84,9 +68,8 @@ fun ScaffoldScope.ModulesList(
 
 @Composable
 fun ModuleItem(
-    module: LocalModule,
-    platform: Platform,
-    isProviderAlive: Boolean,
+    module: Module,
+    placeholder: Nothing?,
 ) {
     val context = LocalContext.current
     val navigator = LocalDestinationsNavigator.current
@@ -107,7 +90,7 @@ fun ModuleItem(
         leadingButton = {
             ConfigButton(
                 onClick = {
-                    navigator.navigate(ConfigEditorScreenDestination(module))
+                    //   navigator.navigate(ConfigEditorScreenDestination(module))
                 },
                 enabled = module.state != State.REMOVE
             )
@@ -115,7 +98,6 @@ fun ModuleItem(
         trailingButton = {
             ShortcutAdd(
                 module = module,
-                enabled = isProviderAlive
             )
 
             if (platform.isNonRoot) {
@@ -146,10 +128,11 @@ fun ModuleItem(
             ) {
                 Text(stringResource(R.string.cancel))
             }
+
             Button(
                 variant = ButtonVariant.Destructive,
                 onClick = {
-                    val file = File(module.id.moduleDir.toString())
+                    val file = File(module.path.moduleDir)
 
                     if (file.deleteRecursively()) {
                         Toast.makeText(
@@ -178,8 +161,7 @@ fun ModuleItem(
 
 @Composable
 private fun ShortcutAdd(
-    module: LocalModule,
-    enabled: Boolean,
+    module: Module,
 ) {
 //    val webUiConfig = module.id.toWebUIConfig()
 //    val modConfConfig = module.id.toModConfConfig()
@@ -187,11 +169,6 @@ private fun ShortcutAdd(
 
     Button(
         onClick = {
-            if (module.hasModConf) {
-//                modConfConfig.createShortcut(context, ModConfActivity::class.java)
-                return@Button
-            }
-
             if (module.hasWebUI) {
 //                webUiConfig.createShortcut(context, WebUIActivity::class.java)
                 return@Button
@@ -207,14 +184,14 @@ private fun ShortcutAdd(
         variant = ButtonVariant.Outline,
         size = ButtonSize.Sm
     ) {
-        dev.mmrlx.compose.ui.icon.Icon(
+        Icon(
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.link),
             contentDescription = null
         )
 
         Spacer(modifier = Modifier.width(6.dp))
-        dev.mmrlx.compose.ui.Text(
+        Text(
             text = stringResource(id = R.string.add_shortcut)
         )
     }
@@ -231,7 +208,7 @@ private fun ConfigButton(
         variant = ButtonVariant.Outline,
         size = ButtonSize.Sm
     ) {
-        dev.mmrlx.compose.ui.icon.Icon(
+        Icon(
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.settings),
             contentDescription = null
@@ -251,7 +228,7 @@ private fun RemoveButton(
         variant = ButtonVariant.Destructive,
         size = ButtonSize.Sm
     ) {
-        dev.mmrlx.compose.ui.icon.Icon(
+        Icon(
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.trash),
             contentDescription = null

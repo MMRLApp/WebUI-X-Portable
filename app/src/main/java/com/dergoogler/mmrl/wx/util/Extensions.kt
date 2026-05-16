@@ -14,7 +14,6 @@ import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
@@ -24,6 +23,7 @@ import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import dev.mmrlx.thread.RootArgs
@@ -75,7 +75,7 @@ fun Context.extractZipFromAssets(
     }
 }
 
-val LocalModule.versionDisplay
+val Module.versionDisplay
     get(): String {
         val included = "\\(.*?${versionCode}.*?\\)".toRegex()
             .containsMatchIn(version)
