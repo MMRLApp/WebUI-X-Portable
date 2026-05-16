@@ -22,6 +22,9 @@ import androidx.core.net.toUri
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.SuFileInputStream
+import com.dergoogler.mmrl.platform.file.SuFileOutputStream
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
@@ -41,8 +44,8 @@ import com.dergoogler.mmrl.wx.util.setMyCrashHandler
 import dagger.hilt.android.AndroidEntryPoint
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.rememberWebUIState
-import dev.mmrlx.utilities.json.jsonObject
 import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.registerLuaPlugin
 
 @AndroidEntryPoint
 class WebUIActivity : BaseActivity() {
@@ -111,40 +114,53 @@ class WebUIActivity : BaseActivity() {
 
             var openDevTools by remember { mutableStateOf(false) }
             val wstate = rememberWebUIState(domain) {
-                it.settings {
-                    useDefaultApplicationInterface = false
-                    useDefaultFileSystem = false
-                    debug = isDebug
-                    forceKillProcess = prefs.forceKillWebUIProcess
-                    userAgentString = userAgent
-                    useConsoleInterceptor = !prefs.disableConsoleInterceptor
-                    darkMode = prefs.isDarkMode()
-                    extra = jsonObject {
-                        "moduleId" to modId.toString()
-                        "enableEruda" to prefs.enableErudaConsole
-                        "autoOpenEruda" to prefs.enableAutoOpenEruda
-                        "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm
-                        "isRootMode" to prefs.workingMode.isRoot
+                it
+                    .factories {
+                        inputStreamFactory { path ->
+                            SuFileInputStream(path)
+                        }
+                        outputStreamFactory { path ->
+                            SuFileOutputStream(path)
+                        }
+                        fileFactory { path ->
+                            SuFile(path)
+                        }
                     }
-                }
+                    .settings {
+                        useDefaultApplicationInterface = false
+                        useDefaultFileSystem = false
+                        debug = isDebug
+                        forceKillProcess = prefs.forceKillWebUIProcess
+                        userAgentString = userAgent
+                        useConsoleInterceptor = !prefs.disableConsoleInterceptor
+                        darkMode = prefs.isDarkMode()
+                        extra = mapOf(
+                            "moduleId" to modId.toString(),
+                            "enableEruda" to prefs.enableErudaConsole,
+                            "autoOpenEruda" to prefs.enableAutoOpenEruda,
+                            "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
+                            "isRootMode" to prefs.workingMode.isRoot,
+                        )
+                    }
                     .client { }
                     .chromeClient { }
                     .registerJavascriptInterface(KernelSUInterface::class.java)
                     .registerJavascriptInterface(ApplicationInterface::class.java) {
                         add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }
+                    .registerJavascriptInterface(FileSystemInterface::class.java)
+                    .registerPathHandler(WebrootPathHandler::class.java)
+                    .registerLuaPlugin {
+                        plugin("/data/adb/modules/${modId}/webroot/index.lua")
+                    }
                     .registerSuPathHandler("/.${modId}/", "/data/adb/modules/${modId}")
                     .registerSuPathHandler("/.adb/", "/data/adb")
                     .registerSuPathHandler("/.config/", "/data/adb/.config")
                     .registerSuPathHandler("/.local/", "/data/adb/.local")
-//                    .registerSuPathHandler("/", "/", "https://root.mmrl.dev")
                     .registerPathHandler(InternalPathHandler::class.java) {
                         add(ColorScheme::class.java to prefs.colorScheme(this@WebUIActivity))
                     }
-                    .registerJavascriptInterface(FileSystemInterface::class.java)
-                    .registerPathHandler(WebrootPathHandler::class.java)
             }
-
 
 //            // TODO: not a long term fix
 //            BackHandler {

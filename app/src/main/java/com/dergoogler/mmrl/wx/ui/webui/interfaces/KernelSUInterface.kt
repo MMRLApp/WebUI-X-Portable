@@ -58,7 +58,7 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     @JavascriptInterface
     fun toast(msg: String) {
         webview.post {
-            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+            Toast.makeText(kontext, msg, Toast.LENGTH_SHORT).show()
         }
     }
 

@@ -30,7 +30,7 @@ internal fun PathHandler.errorResponse(
     extraButtons: (DIV.(WebUI) -> Unit)? = null,
 ): WebResourceResponse {
     val str = buildString {
-        with(context) {
+        with(kontext) {
             appendHTML().html {
                 lang = "en"
                 head {

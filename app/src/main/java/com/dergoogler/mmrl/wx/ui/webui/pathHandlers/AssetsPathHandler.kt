@@ -12,7 +12,7 @@ class AssetsPathHandler(
 ) : PathHandler(webui) {
     override val id = ""
 
-    private val assets get() = context.assets
+    private val assets get() = kontext.assets
 
     override fun handle(
         request: WebUIResourceRequest,

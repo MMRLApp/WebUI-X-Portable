@@ -6,21 +6,22 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUISettings
+import dev.mmrlx.webui.extra
 import org.json.JSONObject
 
-val WebUI.modId: ModId get() = settings.extra.getString("moduleId").toModId()
+val WebUI.modId: ModId get() = settings.extra<String>("moduleId", "").toModId()
 
 val WebUISettings.enableErudaConsole: Boolean
-    get() = debug && extra.optBoolean("enableEruda", false)
+    get() = debug && extra<Boolean>("enableEruda", false)
 
 val WebUISettings.autoOpenEruda: Boolean
-    get() = enableErudaConsole && extra.optBoolean("autoOpenEruda", false)
+    get() = enableErudaConsole && extra<Boolean>("autoOpenEruda", false)
 
 val WebUISettings.disableGlobalExitConfirm: Boolean
-    get() = extra.optBoolean("disableGlobalExitConfirm", false)
+    get() = extra<Boolean>("disableGlobalExitConfirm", false)
 
 val WebUISettings.isRootMode: Boolean
-    get() = extra.optBoolean("isRootMode", false)
+    get() = extra<Boolean>("isRootMode", false)
 
 val WebUI.moduleConfig: JSONObject
     get() {
