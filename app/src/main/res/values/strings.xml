@@ -67,6 +67,7 @@
     <string name="settings_global_exit_confirm_desc">Disables the confirmation dialog when exiting the WebUI.</string>
     <string name="controlled_by_native">Controlled by Native</string>
     <string name="controlled_by_javascript">Controlled by JavaScript</string>
+    <string name="controlled_by_javascript_full">Fully controlled by JavaScript</string>
     <string name="delete">Delete</string>
     <string name="globally_disabled">Globally Disabled</string>
     <string name="webui_config">WebUI Config</string>

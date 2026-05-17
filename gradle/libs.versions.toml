@@ -1,9 +1,9 @@
 [versions]
 dexlib2 = "2.5.2"
-mmrlx = "1.0.90"
+mmrlx = "1.0.94"
 mmrl = "b6da2febe9"
 adaptiveAndroid = "1.1.0-rc01"
-androidGradlePlugin = "9.0.0"
+androidGradlePlugin = "9.0.1"
 androidxActivity = "1.9.3"
 androidxAnnotation = "1.9.1"
 androidxAppCompat = "1.7.0"
@@ -150,6 +150,8 @@ square-okhttp-dnsoverhttps = { group = "com.squareup.okhttp3", name = "okhttp-dn
 square-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "squareOkhttp" }
 square-moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "squareMoshi" }
 square-moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "squareMoshi" }
+kotlin-parcelize-compiler = { module = "org.jetbrains.kotlin:kotlin-parcelize-compiler", version.ref = "kotlin" }
+kotlin-parcelize-runtime = { module = "org.jetbrains.kotlin:kotlin-parcelize-runtime", version.ref = "kotlin" }
 
 dev-rikka-rikkax-parcelablelist = { module = "dev.rikka.rikkax.parcelablelist:parcelablelist", version.ref = "parcelablelist" }
 

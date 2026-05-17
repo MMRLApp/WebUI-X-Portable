@@ -3,19 +3,22 @@ package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 import android.util.Log
 import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
-import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
-import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
-import com.dergoogler.mmrl.webui.Injection
-import com.dergoogler.mmrl.webui.InjectionType
-import com.dergoogler.mmrl.webui.addInjection
-import com.dergoogler.mmrl.webui.asResponse
-import com.dergoogler.mmrl.webui.model.toWebUIConfig
+import com.dergoogler.mmrl.wx.model.module.autoStatusBarsStyle
+import com.dergoogler.mmrl.wx.model.module.caching
+import com.dergoogler.mmrl.wx.model.module.cachingMaxAge
+import com.dergoogler.mmrl.wx.model.module.contentSecurityPolicy
+import com.dergoogler.mmrl.wx.model.module.historyFallback
+import com.dergoogler.mmrl.wx.model.module.historyFallbackFile
 import com.dergoogler.mmrl.wx.ui.webui.autoOpenEruda
 import com.dergoogler.mmrl.wx.ui.webui.enableErudaConsole
-import com.dergoogler.mmrl.wx.ui.webui.modId
+import com.dergoogler.mmrl.wx.ui.webui.module
+import com.dergoogler.mmrl.wx.ui.webui.sufile
+import com.dergoogler.mmrl.wx.ui.webui.util.Injection
+import com.dergoogler.mmrl.wx.ui.webui.util.InjectionType
+import com.dergoogler.mmrl.wx.ui.webui.util.addInjection
+import com.dergoogler.mmrl.wx.ui.webui.util.asResponse
 import com.dergoogler.mmrl.wx.ui.webui.util.errorResponse
+import dev.mmrlx.nio.SuFile
 import dev.mmrlx.webui.ResponseStatus
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIInsets
@@ -33,22 +36,22 @@ class WebrootPathHandler(
 ) : PathHandler(webui) {
     override val id = "/"
 
-    private val configBase get() = modId.moduleConfigDir
-    private val configStyleBase get() = SuFile(configBase, "style")
-    private val configJsBase get() = SuFile(configBase, "js")
-    private val customJsHead get() = SuFile(configJsBase, "head")
-    private val customJsBody get() = SuFile(configJsBase, "body")
+    private val configBase get() = module.path.configDir
+    private val configStyleBase get() = sufile(configBase, "style")
+    private val configJsBase get() = sufile(configBase, "js")
+    private val customJsHead get() = sufile(configJsBase, "head")
+    private val customJsBody get() = sufile(configJsBase, "body")
 
-    private val config get() = modId.toWebUIConfig()
+    private val config get() = module.webrootConfig
 
-    private val directory: SuFile get() = SuFile(modId.webrootDir).getCanonicalDirPath().toSuFile()
+    private val directory get() = sufile(sufile(module.path.webrootDir).getCanonicalDirPath())
 
     init {
         SuFile.createDirectories(customJsHead, customJsBody, configStyleBase)
     }
 
     private val reversedPaths = listOf(
-        "mmrl/", "internal/", ".adb/", ".local/", ".config/", ".${modId.id}/", "__root__/"
+        "mmrl/", "internal/", ".adb/", ".local/", ".config/", ".${module.id}/", "__root__/"
     )
 
     private val jsExtensionRegex = Regex("^[cm]?js$")
@@ -61,8 +64,8 @@ class WebrootPathHandler(
         urlBase: String,
     ) {
         dir.exists { d ->
-            d.list()?.map { SuFile(d, it) }
-                ?.filter { it.exists() && jsExtensionRegex.matches(it.extension) }?.forEach {
+            d.list().map { sufile(d, it) }
+                .filter { it.exists() && jsExtensionRegex.matches(it.extension) }.forEach {
                     addInjection(type) {
                         append("<script data-user-extension src=\"$urlBase/${it.name}\"")
                         if (it.extension == "mjs") {
@@ -98,7 +101,7 @@ class WebrootPathHandler(
             }
 
             if (!file.exists() && config.historyFallback) {
-                val fallbackFile = SuFile(directory, config.historyFallbackFile)
+                val fallbackFile = sufile(directory, config.historyFallbackFile)
                 val fallbackResponse = fallbackFile.asResponse()
 
                 if (config.contentSecurityPolicy.isNotNullOrBlank()) {
@@ -151,22 +154,10 @@ class WebrootPathHandler(
 //                    }
 //                }
 
-                if (config.autoAddInsets) {
-                    addInjection {
-                        appendLine(
-                            """<script>
-                                document.documentElement.style.transform = `translateY(${insets.top}px)`;
-                                document.documentElement.style.transformOrigin = 'top left';
-                                document.documentElement.style.height = `calc(100vh - ${insets.top + insets.bottom}px)`;
-                            </script>""".trimIndent()
-                        )
-                    }
-                }
-
                 configStyleBase.exists {
                     it.listFiles { f -> f.exists() && f.extension == "css" }?.forEach { css ->
                         addInjection {
-                            appendLine("<link data-internal rel=\"stylesheet\" href=\"https://mui.kernelsu.org/.adb/.config/${modId.id}/style/${css.name}\" type=\"text/css\" />")
+                            appendLine("<link data-internal rel=\"stylesheet\" href=\"https://mui.kernelsu.org/.adb/.config/${module.id}/style/${css.name}\" type=\"text/css\" />")
                         }
                     }
                 }
@@ -182,12 +173,12 @@ class WebrootPathHandler(
                 addScriptInjections(
                     customJsHead,
                     InjectionType.HEAD,
-                    "https://mui.kernelsu.org/.adb/.config/${modId.id}/js/head"
+                    "https://mui.kernelsu.org/.adb/.config/${module.id}/js/head"
                 )
                 addScriptInjections(
                     customJsBody,
                     InjectionType.BODY,
-                    "https://mui.kernelsu.org/.adb/.config/${modId.id}/js/body"
+                    "https://mui.kernelsu.org/.adb/.config/${module.id}/js/body"
                 )
 
                 addInjection(insets.cssInject)

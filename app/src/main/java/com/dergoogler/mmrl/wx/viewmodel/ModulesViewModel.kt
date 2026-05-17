@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.InputStream
 import javax.inject.Inject
 
 data class ModulesScreenState(
@@ -202,19 +201,11 @@ class ModulesViewModel @Inject constructor(
             .map { dir ->
                 val props = SuFile.async(dir, "module.prop")
                     .inputStream()
-                    .use { readProps(it) }
+                    .use { Module.readProps(it) }
                 Module(adbPath, props)
             }
     }
 
-    private fun readProps(input: InputStream): Map<String, String> =
-        input.bufferedReader().useLines { lines ->
-            lines.mapNotNull { line ->
-                val idx = line.indexOf('=')
-                if (idx > 0) line.substring(0, idx).trim() to line.substring(idx + 1).trim()
-                else null
-            }.toMap()
-        }
 
     companion object {
         private const val TAG = "ModulesViewModel"

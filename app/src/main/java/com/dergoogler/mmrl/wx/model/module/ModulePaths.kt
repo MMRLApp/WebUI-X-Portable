@@ -1,11 +1,14 @@
 package com.dergoogler.mmrl.wx.model.module
 
 import dev.mmrlx.nio.Path
-import java.io.Serializable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
+@Parcelize
+@Serializable
 data class AdbPath(
     val baseDir: String,
-) : Serializable {
+) {
     val configDir get() = Path.resolve(baseDir, HIDDEN_CONFIG_DIR)
     val localDir get() = Path.resolve(baseDir, HIDDEN_LOCAL_DIR)
     val modulesDir get() = Path.resolve(baseDir, MODULES_DIR)
@@ -17,10 +20,12 @@ data class AdbPath(
     }
 }
 
+@Parcelize
+@Serializable
 data class ModulePath(
     private val adbPath: AdbPath,
     private val moduleId: String,
-) : Serializable {
+) {
     val serviceFiles
         get() =
             listOf(
@@ -49,6 +54,8 @@ data class ModulePath(
     val configDir get() = Path.resolve(adbPath.configDir, moduleId)
     val moduleDir get() = Path.resolve(adbPath.modulesDir, moduleId)
     val webrootDir get() = Path.resolve(moduleDir, WEBROOT_DIR)
+    val webrootConfig get() = Path.resolve(moduleDir, WEBROOT_DIR, "config.json")
+    val webrootLuaIndex get() = Path.resolve(moduleDir, WEBROOT_DIR, "index.lua")
     val propFile get() = Path.resolve(moduleDir, PROP_FILE)
     val actionFile get() = Path.resolve(moduleDir, ACTION_FILE)
     val serviceFile get() = Path.resolve(moduleDir, SERVICE_FILE)

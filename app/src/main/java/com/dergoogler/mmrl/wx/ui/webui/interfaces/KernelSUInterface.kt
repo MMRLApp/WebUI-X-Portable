@@ -9,9 +9,9 @@ import android.widget.Toast
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
+import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
 import com.dergoogler.mmrl.wx.ui.webui.isRootMode
-import com.dergoogler.mmrl.wx.ui.webui.modId
+import com.dergoogler.mmrl.wx.ui.webui.module
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
@@ -26,6 +26,8 @@ import java.util.concurrent.CompletableFuture
 
 class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     override var id: String = "ksu"
+
+    private val config get() = module.webrootConfig
 
     private val commands = if (!settings.isRootMode) arrayOf("sh") else arrayOf("su")
 
@@ -225,11 +227,11 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(PlatformManager.moduleManager.modules)
         val currentModuleInfo = JSONObject()
-        currentModuleInfo.put("moduleDir", modId.moduleDir)
+        currentModuleInfo.put("moduleDir", module.path.moduleDir)
         for (i in 0 until moduleInfos.length()) {
             val currentInfo = moduleInfos.getJSONObject(i)
 
-            if (currentInfo.getString("id") != modId.toString()) {
+            if (currentInfo.getString("id") != module.id) {
                 continue
             }
 
@@ -245,9 +247,9 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     override fun onStop() {
         super.onStop()
 
-//        if (config.killShellWhenBackground) {
-//            shell.close()
-//        }
+        if (config.killShellWhenBackground) {
+            shell.close()
+        }
     }
 
     override fun onDestroy() {
@@ -258,9 +260,9 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     override fun onResume() {
         super.onResume()
 
-//        if (config.killShellWhenBackground) {
-//            shell = createRootShell(true)
-//        }
+        if (config.killShellWhenBackground) {
+            shell = createRootShell(true)
+        }
     }
 
     private fun hideSystemUI(window: Window) =

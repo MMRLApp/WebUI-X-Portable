@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.self.hilt)
     alias(libs.plugins.licensee)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -188,6 +189,7 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.hiddenApiBypass)
+    implementation(libs.kotlin.parcelize.runtime)
 
     implementation(libs.semver)
     implementation(libs.coil.compose)

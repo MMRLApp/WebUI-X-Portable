@@ -1,5 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.content.Intent
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
@@ -35,7 +37,10 @@ import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
+import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
@@ -74,6 +79,7 @@ fun ModuleItem(
 ) {
     val navigator = LocalDestinationsNavigator.current
     val userPreferences = LocalUserPreferences.current
+    // TODO: add menu settings back
     val menu = userPreferences.modulesMenu
     val context = LocalContext.current
 
@@ -93,34 +99,33 @@ fun ModuleItem(
                   //  navigator.navigate(FileExplorerScreenDestination(module))
                 },
                 onClick = {
-//                    if (canWenUIAccessed) {
-//                        val baseDir = module.id.adbDir.toString()
-//
-//                        if (userPreferences.webuiEngine == WebUIEngine.MX) {
-//                            val intent = Intent(context, WebUIActivity::class.java)
-//                                .apply {
-//                                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-//                                    putModId(module.id)
-//                                    putBaseDir(baseDir)
-//                                }
-//
-//                            context.startActivity(intent)
-//                            return@combinedClickable
-//                        }
-//
-//                        // TODO: deprecate WX engine, devtools are crashing currently!
-//                        if (userPreferences.webuiEngine == WebUIEngine.WX) {
-//                            context.launchWebUIX<com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity>(
-//                                module.id,
-//                                baseDir
-//                            )
-//                            return@combinedClickable
-//                        }
-//                    }
-//
-//                    Toast.makeText(
-//                        context, toastStr, Toast.LENGTH_SHORT
-//                    ).show()
+                    if (canWenUIAccessed) {
+                        val baseDir = module.adbPath.baseDir
+
+                        if (userPreferences.webuiEngine == WebUIEngine.MX) {
+                            val intent = Intent(context, com.dergoogler.mmrl.wx.ui.webui.WebUIActivity::class.java)
+                                .apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                                    putExtra("MODULE_ID", module.id)
+                                }
+
+                            context.startActivity(intent)
+                            return@combinedClickable
+                        }
+
+                        // TODO: deprecate WX engine, devtools are crashing currently!
+                        if (userPreferences.webuiEngine == WebUIEngine.WX) {
+                            context.launchWebUIX<com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity>(
+                                module.id.toModId(baseDir),
+                                baseDir
+                            )
+                            return@combinedClickable
+                        }
+                    }
+
+                    Toast.makeText(
+                        context, toastStr, Toast.LENGTH_SHORT
+                    ).show()
                 }
             )
             .fillMaxWidth()
@@ -224,190 +229,9 @@ fun ModuleItem(
                     this()
                 }
             }
-
-            /*ProvideTextStyle(
-                MMRLXTheme.typography.labelSmall
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text("54")
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(module.size.toFormattedFileSize())
-                        Text(module.version)
-                    }
-                }*/
-
         }
     }
 }
-
-
-//
-//
-//    Card(
-//        onClick = clicker,
-//        onLongClick = {
-////            navigator.navigate(FileExplorerScreenDestination(module))
-//        }
-//    ) {
-//        Absolute(
-//            alignment = Alignment.Center,
-//        ) {
-//            indicator.nullable {
-//                it()
-//            }
-//        }
-//
-//        Column(
-//            modifier = Modifier.relative()
-//        ) {
-//            bannerByteArray?.let {
-//                LocalCover(
-//                    modifier = Modifier.fadingEdge(
-//                        brush = Brush.verticalGradient(
-//                            colors = listOf(
-//                                Color.Transparent,
-//                                Color.Black,
-//                            ),
-//                            startY = Float.POSITIVE_INFINITY,
-//                            endY = 0f
-//                        ),
-//                    ),
-//                    inputStream = it.inputStream(),
-//                )
-//            }
-//            /*  config.cover.nullable(menu.showCover) {
-//                  val file = SuFile(module.id.moduleDir, it)
-//
-//                  file.exists { i ->
-//                      LocalCover(
-//                          modifier = Modifier.fadingEdge(
-//                              brush = Brush.verticalGradient(
-//                                  colors = listOf(
-//                                      Color.Transparent,
-//                                      Color.Black,
-//                                  ),
-//                                  startY = Float.POSITIVE_INFINITY,
-//                                  endY = 0f
-//                              ),
-//                          ),
-//                          inputStream = i.newInputStream(),
-//                      )
-//                  }
-//              }*/
-//
-//            Row(
-//                modifier = Modifier.padding(all = 16.dp),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Column(
-//                    modifier = Modifier
-//                        .alpha(alpha = alpha)
-//                        .weight(1f),
-//                    verticalArrangement = Arrangement.spacedBy(2.dp)
-//                ) {
-//                    TextWithIcon(
-//                        text = /*config.name ?:*/ module.name!!,
-//                        //icon = module.hasModConf nullable R.drawable.brand_kotlin,
-//                        style = TextWithIconDefaults.style.copy(
-//                            overflow = TextOverflow.Ellipsis,
-//                            textStyle = MaterialTheme.typography.titleSmall,
-//                            maxLines = 2
-//                        )
-//                    )
-//
-//                    Text(
-//                        text = stringResource(
-//                            id = R.string.author,
-//                            "module.versionDisplay", module.author!!
-//                        ),
-//                        style = MaterialTheme.typography.bodySmall,
-//                        textDecoration = decoration,
-//                        color = MaterialTheme.colorScheme.onSurfaceVariant
-//                    )
-//
-//                    if (module.lastUpdated != 0L && menu.showUpdatedTime) {
-//                        Text(
-//                            text = stringResource(
-//                                id = R.string.update_on,
-//                                module.lastUpdated.toFormattedDateSafely
-//                            ),
-//                            style = MaterialTheme.typography.bodySmall,
-//                            textDecoration = decoration,
-//                            color = MaterialTheme.colorScheme.outline
-//                        )
-//                    }
-//                }
-//            }
-//
-//            Text(
-//                modifier = Modifier
-//                    .alpha(alpha = alpha)
-//                    .padding(horizontal = 16.dp),
-//                text = /*config.description ?:*/ module.description!!,
-//                style = MaterialTheme.typography.bodySmall,
-//                textDecoration = decoration,
-//                maxLines = 5,
-//                overflow = TextOverflow.Ellipsis,
-//                color = MaterialTheme.colorScheme.outline
-//            )
-//
-//            Row(
-//                modifier = Modifier
-//                    .padding(horizontal = 16.dp, vertical = 8.dp)
-//                    .fillMaxWidth(),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                userPreferences.developerMode.takeTrue {
-//                    LabelItem(
-//                        text = module.id.toString(),
-//                        upperCase = false
-//                    )
-//                }
-//
-//                LabelItem(
-//                    text = module.size.toFormattedFileSize(),
-//                    style = LabelItemDefaults.style.copy(
-//                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-//                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-//                    )
-//                )
-//            }
-//
-//            HorizontalDivider(
-//                thickness = 1.5.dp,
-//                color = MaterialTheme.colorScheme.surface,
-//                modifier = Modifier.padding(top = 8.dp)
-//            )
-//
-//            Row(
-//                modifier = Modifier
-//                    .padding(horizontal = 16.dp, vertical = 8.dp)
-//                    .fillMaxWidth(),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                leadingButton.nullply {
-//                    this()
-//                }
-//
-//                Spacer(modifier = Modifier.weight(1f))
-//
-//                trailingButton.nullply {
-//                    this()
-//                }
-//            }
-//        }
-//    }
 
 
 @Composable

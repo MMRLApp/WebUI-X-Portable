@@ -32,6 +32,7 @@ import dev.mmrlx.compose.ui.ext.with
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
 import java.io.File
+import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 
 @Composable
 fun ScaffoldScope.ModulesList(
@@ -90,7 +91,7 @@ fun ModuleItem(
         leadingButton = {
             ConfigButton(
                 onClick = {
-                    //   navigator.navigate(ConfigEditorScreenDestination(module))
+                       navigator.navigate(ConfigEditorScreenDestination(module.id))
                 },
                 enabled = module.state != State.REMOVE
             )

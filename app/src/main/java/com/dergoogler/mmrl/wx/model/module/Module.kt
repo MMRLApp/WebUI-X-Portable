@@ -1,13 +1,25 @@
 package com.dergoogler.mmrl.wx.model.module
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
-import java.io.Serializable
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import java.io.InputStream
 
+@Parcelize
+@Serializable
 data class Module(
-    private val adbPath: AdbPath,
+    val adbPath: AdbPath,
     private val properties: Map<String, String>,
-) : Serializable, Comparable<Module> {
+) : Comparable<Module> {
     val id: String = properties["id"].asOrDefault<String>("")
     val path: ModulePath = ModulePath(adbPath, id)
     val name: String = properties["name"].asOrDefault<String>("")
@@ -19,6 +31,9 @@ data class Module(
     val banner: String? = properties["banner"].asOrDefault<String?>(null)
     val iconPath: String? = properties["iconPath"].asOrDefault<String?>(null)
 
+    val webrootConfig: WebrootConfig = WebrootConfig(this)
+
+    @IgnoredOnParcel
     val hasWebUI: Boolean by lazy {
         val webroot = SuFile(path.webrootDir)
         val index = webroot.resolve("index.html")
@@ -42,6 +57,7 @@ data class Module(
 //    }
 
 
+    @IgnoredOnParcel
     val state: com.dergoogler.mmrl.platform.content.State by lazy {
         SuFile(path.removeFile).apply {
             if (exists()) return@lazy com.dergoogler.mmrl.platform.content.State.REMOVE
@@ -58,6 +74,7 @@ data class Module(
         return@lazy com.dergoogler.mmrl.platform.content.State.ENABLE
     }
 
+    @IgnoredOnParcel
     val lastUpdated: Long by lazy {
         path.files.map { SuFile(it) }.forEach {
             if (it.exists()) {
@@ -69,6 +86,7 @@ data class Module(
     }
 
 
+    @IgnoredOnParcel
     val size: Long by lazy {
         val directory = SuFile(adbPath.modulesDir, id)
         calculateSizeFast(directory)
@@ -96,4 +114,67 @@ data class Module(
     }
 
     override fun compareTo(other: Module): Int = id.compareTo(other.id)
+
+    companion object {
+        internal fun readProps(input: InputStream): Map<String, String> =
+            input.bufferedReader().useLines { lines ->
+                lines.mapNotNull { line ->
+                    val idx = line.indexOf('=')
+                    if (idx > 0) line.substring(0, idx).trim() to line.substring(idx + 1).trim()
+                    else null
+                }.toMap()
+            }
+        @Composable
+        fun rememberCreate(id: String): State<ModuleUIState> {
+            val prefs = LocalUserPreferences.current
+            val context = LocalContext.current
+
+            return produceState<ModuleUIState>(
+                initialValue = ModuleUIState.Loading,
+                id,
+                prefs.workingMode
+            ) {
+                val initialized = SuFile.AutoInit(context)
+
+                if (!initialized) {
+                    value = ModuleUIState.Error.SuInitFailed()
+                    return@produceState
+                }
+
+                val isNonRoot = prefs.workingMode == WorkingMode.MODE_NON_ROOT
+
+                val basePath =
+                    if (isNonRoot) context.filesDir.path else prefs.adbPath
+
+                if (basePath == null) {
+                    value = ModuleUIState.Error.MissingAdbPath()
+                    return@produceState
+                }
+
+                val adbPath = AdbPath(basePath)
+
+                val moduleDir = SuFile.async(adbPath.modulesDir, id)
+
+                if (!moduleDir.exists()) {
+                    value = ModuleUIState.Error.ModuleNotFound()
+                    return@produceState
+                }
+
+                val propsFile = SuFile.async(moduleDir, "module.prop")
+
+                if (!propsFile.exists()) {
+                    value = ModuleUIState.Error.InvalidModule()
+                    return@produceState
+                }
+
+                val props = propsFile.inputStream()
+                    .use { readProps(it) }
+
+                value = ModuleUIState.Ready(
+                    Module(adbPath, props)
+                )
+            }
+        }
+
+    }
 }

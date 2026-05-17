@@ -1,15 +1,13 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
-import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
-import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
+import com.dergoogler.mmrl.wx.model.module.Module
+import dev.mmrlx.nio.SuFile
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUISettings
 import dev.mmrlx.webui.extra
-import org.json.JSONObject
 
-val WebUI.modId: ModId get() = settings.extra<String>("moduleId", "").toModId()
+val WebUI.module: Module
+    get() = settings.extra<Module>("module") ?: throw IllegalStateException("Module not set")
 
 val WebUISettings.enableErudaConsole: Boolean
     get() = debug && extra<Boolean>("enableEruda", false)
@@ -23,15 +21,12 @@ val WebUISettings.disableGlobalExitConfirm: Boolean
 val WebUISettings.isRootMode: Boolean
     get() = extra<Boolean>("isRootMode", false)
 
-val WebUI.moduleConfig: JSONObject
-    get() {
-        val configFile = SuFile(modId.webrootDir, "config.json")
-        val configText = configFile.newInputStream().reader().use { it.readText() }
+fun WebUI.sufile(vararg paths: Any): SuFile {
+    val f = file(*paths)
 
-        return try {
-            JSONObject(configText)
-        } catch (e: Exception) {
-            console.error("Failed to parse config.json", e)
-            JSONObject()
-        }
+    if (f !is SuFile) {
+        throw IllegalArgumentException("Provided file factory is not a `dev.mmrlx.nio.SuFile`")
     }
+
+    return f
+}
