@@ -28,7 +28,7 @@ open class JavaScriptInterface(
     protected val activity: ComponentActivity,
     protected val view: HybridWebUI
 ) : ContextWrapper(activity) {
-    protected val context: Context get() = activity.baseContext
+    protected val context: Context get() = activity.applicationContext
 
     /**
      * The name of the entity.
