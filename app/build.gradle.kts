@@ -55,13 +55,41 @@ android {
         signingConfigs.getByName("debug")
     }
 
-    flavorDimensions += "distribution"
+    flavorDimensions += listOf("distribution", "testing")
 
     productFlavors {
         create("official") {
             dimension = "distribution"
             applicationId = basePackageName
             resValue("string", "app_name", baseAppName)
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("internal") {
+            dimension = "testing"
+            applicationId = "$basePackageName.internal"
+            resValue("string", "app_name", "[ᛁ] $baseAppName")
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("alpha") {
+            dimension = "testing"
+            applicationId = "$basePackageName.alpha"
+            resValue("string", "app_name", "[ᚨ] $baseAppName")
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("beta") {
+            dimension = "testing"
+            applicationId = "$basePackageName.beta"
+            resValue("string", "app_name", "[ᛒ] $baseAppName")
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("rc") {
+            dimension = "testing"
+            applicationId = "$basePackageName.rc"
+            resValue("string", "app_name", "[ᚱ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
