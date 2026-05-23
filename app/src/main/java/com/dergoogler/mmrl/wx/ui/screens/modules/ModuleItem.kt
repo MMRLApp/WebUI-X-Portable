@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
@@ -38,6 +40,7 @@ import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
+import com.dergoogler.mmrl.ui.component.LocalCover
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
@@ -55,6 +58,10 @@ import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
 import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
+import dev.mmrlx.compose.nio.rememberSuFile
+import dev.mmrlx.compose.ui.ext.fadingEdge
+import dev.mmrlx.nio.inputStream
+import org.apache.commons.compress.harmony.pack200.PackingUtils.config
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -97,14 +104,17 @@ fun ModuleItem(
         modifier = Modifier
             .combinedClickable(
                 onLongClick = {
-                  navigator.navigate(FileExplorerScreenDestination(module.id))
+                    navigator.navigate(FileExplorerScreenDestination(module.id))
                 },
                 onClick = {
                     if (canWenUIAccessed) {
                         val baseDir = module.adbPath.baseDir
 
                         if (userPreferences.webuiEngine == WebUIEngine.MX) {
-                            val intent = Intent(context, com.dergoogler.mmrl.wx.ui.webui.WebUIActivity::class.java)
+                            val intent = Intent(
+                                context,
+                                com.dergoogler.mmrl.wx.ui.webui.WebUIActivity::class.java
+                            )
                                 .apply {
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                                     putExtra("MODULE_ID", module.id)
@@ -132,9 +142,9 @@ fun ModuleItem(
             .fillMaxWidth()
             .flashlightCard()
     ) {
-//        config.cover?.let {
-//            SuFile(it).exists { cover ->
-//
+//        module.banner?.let {
+//            val file by rememberSuFile(it)
+//            file.exists { cover ->
 //                LocalCover(
 //                    modifier = Modifier.fadingEdge(
 //                        brush = Brush.verticalGradient(
@@ -165,8 +175,7 @@ fun ModuleItem(
                     ).uppercase(), size = 36.dp
                 )
 
-                Column() {
-
+                Column {
                     Text(
                         text = module.name,
                         style = MMRLXTheme.typography.titleSmall
@@ -177,7 +186,6 @@ fun ModuleItem(
                         style = MMRLXTheme.typography.labelSmall,
                         color = MMRLXTheme.colors.mutedForeground
                     )
-
                 }
             }
 
@@ -249,23 +257,3 @@ fun StateIndicator(
 
 private const val DefaultAspectRatio = 2.048f
 private val DefaultShape: RoundedCornerShape = RoundedCornerShape(0.dp)
-
-@Composable
-fun LocalCover(
-    modifier: Modifier = Modifier,
-    imageBitmap: ImageBitmap,
-    shape: RoundedCornerShape = DefaultShape,
-    aspectRatio: Float = DefaultAspectRatio,
-) {
-    Image(
-        painter = BitmapPainter(imageBitmap),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clip(shape)
-                .aspectRatio(aspectRatio)
-                .then(modifier),
-    )
-}

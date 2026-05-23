@@ -8,7 +8,6 @@ import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
-import dev.mmrlx.utilities.obj.asOrDefault
 import kotlinx.parcelize.IgnoredOnParcel
 import java.io.InputStream
 
@@ -16,16 +15,20 @@ data class Module(
     val adbPath: AdbPath,
     private val properties: Map<String, String>,
 ) : Comparable<Module> {
-    val id: String = properties["id"].asOrDefault<String>("")
+    val id: String = properties["id"] ?: "" // maybe better throw an error?
     val path: ModulePath = ModulePath(adbPath, id)
-    val name: String = properties["name"].asOrDefault<String>("")
-    val version: String = properties["version"].asOrDefault<String>("")
-    val versionCode: Int = properties["VersionCode"].asOrDefault<Int>(-1)
-    val author: String = properties["author"].asOrDefault<String>("")
-    val description: String = properties["description"].asOrDefault<String>("")
-    val metaModule: Boolean = properties["metamodule"].asOrDefault<Boolean>(false)
-    val banner: String? = properties["banner"].asOrDefault<String?>(null)
-    val iconPath: String? = properties["iconPath"].asOrDefault<String?>(null)
+    val name: String = properties["name"] ?: NA
+    val version: String = properties["version"] ?: NA
+    val versionCode: Int = properties["versionCode"].toIntOr(-1)
+    val author: String = properties["author"] ?: NA
+    val description: String = properties["description"] ?: NA
+
+    private val metaModuleBoolean = properties["metamodule"].toBoolOr(false)
+    private val metaModuleInt = properties["metamodule"].toIntOr(0)
+    val metaModule: Boolean = metaModuleBoolean || metaModuleInt != 0
+
+    val banner: String? = properties["banner"]
+    val iconPath: String? = properties["iconPath"]
 
     val webrootConfig: WebrootConfig = WebrootConfig(this)
 
@@ -111,7 +114,22 @@ data class Module(
 
     override fun compareTo(other: Module): Int = id.compareTo(other.id)
 
+    private fun String?.toIntOr(defaultValue: Int): Int {
+        if (this == null) return defaultValue
+        return runCatching {
+            toInt()
+        }.getOrDefault(defaultValue)
+    }
+
+    private fun String?.toBoolOr(defaultValue: Boolean): Boolean {
+        if (this == null) return defaultValue
+        return runCatching {
+            toBooleanStrict()
+        }.getOrDefault(defaultValue)
+    }
+
     companion object {
+        private const val NA = "N/A"
         internal fun readProps(input: InputStream): Map<String, String> =
             input.bufferedReader().useLines { lines ->
                 lines.mapNotNull { line ->
