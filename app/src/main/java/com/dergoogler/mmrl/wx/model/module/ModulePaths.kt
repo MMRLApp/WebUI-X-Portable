@@ -17,6 +17,8 @@ data class AdbPath(
         const val MODULES_DIR = "modules"
         const val HIDDEN_CONFIG_DIR = ".config"
         const val HIDDEN_LOCAL_DIR = ".local"
+
+        val Empty = AdbPath("/dev/null")
     }
 }
 

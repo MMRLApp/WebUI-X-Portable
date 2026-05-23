@@ -9,11 +9,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -28,6 +23,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -36,18 +32,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
-import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
-import com.dergoogler.mmrl.ui.component.dialog.ConfirmDialog
-import com.dergoogler.mmrl.ui.component.scaffold.Scaffold
-import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.component.LocalModule
+import com.dergoogler.mmrl.wx.ui.component.ModuleScope
+import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import dev.mmrlx.compose.ui.LocalTextStyle
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.button.Button
+import dev.mmrlx.compose.ui.button.ButtonVariant
+import dev.mmrlx.compose.ui.dialog.Content
+import dev.mmrlx.compose.ui.dialog.Footer
+import dev.mmrlx.compose.ui.dialog.Title
+import dev.mmrlx.compose.ui.dialog.rememberDialog
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.icon.IconButton
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.theme.Colors
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.SuFile.Companion.toSuFile
+import dev.mmrlx.nio.readText
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentListener
 import io.github.rosemoe.sora.widget.CodeEditor
@@ -83,7 +92,7 @@ import kotlinx.coroutines.launch
 data class CodeEditorState(
     private val scope: CoroutineScope,
     private val context: Context,
-    private val colorScheme: ColorScheme,
+    private val colors: Colors,
     private val darkMode: Boolean,
     private val initialFile: SuFile?,
     private val threadSafe: Boolean = true,
@@ -136,36 +145,41 @@ data class CodeEditorState(
 
     private fun init() {
         val scheme = FUCK_THIS_SHIT_EDITOR_COLOR_SCHEME(darkMode).apply {
-            setColor(ANNOTATION, colorScheme.background.lighten(0.1f))
-            setColor(FUNCTION_NAME, colorScheme.primary.darken(0.2f))
-            setColor(IDENTIFIER_NAME, colorScheme.primary.darken(0.1f))
-            setColor(IDENTIFIER_VAR, colorScheme.secondary.darken(0.15f))
-            setColor(LITERAL, colorScheme.tertiary.lighten(0.2f))
-            setColor(OPERATOR, colorScheme.primary.darken(0.3f))
-            setColor(COMMENT, colorScheme.outline.darken(0.1f))
-            setColor(KEYWORD, colorScheme.secondary.lighten(0.2f))
-            setColor(WHOLE_BACKGROUND, colorScheme.background)
-            setColor(TEXT_NORMAL, colorScheme.onBackground)
-            setColor(LINE_NUMBER_BACKGROUND, colorScheme.surface.darken(0.05f))
-            setColor(LINE_NUMBER, colorScheme.outlineVariant.lighten(0.0465f))
-            setColor(LINE_DIVIDER, colorScheme.outlineVariant)
-            setColor(SCROLL_BAR_THUMB, colorScheme.primary.copy(alpha = 0.4535f))
+            setColor(ANNOTATION, colors.background.lighten(0.1f))
+            setColor(FUNCTION_NAME, colors.primary.darken(0.2f))
+            setColor(IDENTIFIER_NAME, colors.primary.darken(0.1f))
+            setColor(IDENTIFIER_VAR, colors.secondary.darken(0.15f))
+            setColor(LITERAL, colors.accent.lighten(0.2f))
+            setColor(OPERATOR, colors.primary.darken(0.3f))
+            setColor(COMMENT, colors.border.darken(0.1f))
+            setColor(KEYWORD, colors.secondary.lighten(0.2f))
+            setColor(WHOLE_BACKGROUND, colors.background)
+            setColor(TEXT_NORMAL, colors.foreground)
+            setColor(LINE_NUMBER_BACKGROUND, colors.card.darken(0.05f))
+            setColor(LINE_NUMBER, colors.mutedForeground.lighten(0.0465f))
+            setColor(LINE_DIVIDER, colors.border)
+            setColor(SCROLL_BAR_THUMB, colors.primary.copy(alpha = 0.4535f))
             setColor(
                 SCROLL_BAR_THUMB_PRESSED,
-                colorScheme.primary.darken(0.1f).copy(alpha = 0.4535f)
+                colors.primary.darken(0.1f).copy(alpha = 0.4535f)
             )
-            setColor(SELECTED_TEXT_BACKGROUND, colorScheme.primaryContainer.lighten(0.15f))
-            setColor(MATCHED_TEXT_BACKGROUND, colorScheme.secondaryContainer.lighten(0.2f))
-            setColor(LINE_NUMBER_CURRENT, colorScheme.primary.darken(0.1f))
-            setColor(CURRENT_LINE, colorScheme.surfaceVariant.darken(0.05f))
-            setColor(SELECTION_INSERT, colorScheme.primary.lighten(0.1f))
-            setColor(SELECTION_HANDLE, colorScheme.primary.darken(0.1f))
-            setColor(BLOCK_LINE, colorScheme.outlineVariant.darken(0.05f))
-            setColor(BLOCK_LINE_CURRENT, colorScheme.onSurfaceVariant.darken(0.2f))
-            setColor(NON_PRINTABLE_CHAR, colorScheme.inverseOnSurface.darken(0.3f))
-            setColor(TEXT_SELECTED, colorScheme.onPrimary.darken(0.1f))
+            setColor(
+                SELECTED_TEXT_BACKGROUND,
+                colors.primary.lighten(0.15f).copy(alpha = 0.25f)
+            )
+            setColor(
+                MATCHED_TEXT_BACKGROUND,
+                colors.secondary.lighten(0.2f).copy(alpha = 0.25f)
+            )
+            setColor(LINE_NUMBER_CURRENT, colors.primary.darken(0.1f))
+            setColor(CURRENT_LINE, colors.muted.darken(0.05f))
+            setColor(SELECTION_INSERT, colors.primary.lighten(0.1f))
+            setColor(SELECTION_HANDLE, colors.primary.darken(0.1f))
+            setColor(BLOCK_LINE, colors.border.darken(0.05f))
+            setColor(BLOCK_LINE_CURRENT, colors.mutedForeground.darken(0.2f))
+            setColor(NON_PRINTABLE_CHAR, colors.popoverForeground.darken(0.3f))
+            setColor(TEXT_SELECTED, colors.primaryForeground.darken(0.1f))
         }
-        LocalFontFamilyResolver
 
         editor.apply {
             setText(content)
@@ -226,7 +240,7 @@ data class CodeEditorState(
 fun rememberCodeEditorState(
     file: SuFile? = null,
     threadSafe: Boolean = true,
-    colorScheme: ColorScheme = MaterialTheme.colorScheme,
+    colors: Colors = MMRLXTheme.colors,
     textStyle: TextStyle = LocalTextStyle.current.copy(
         fontFamily = FontFamily.Monospace,
         fontSize = 14.sp
@@ -242,7 +256,7 @@ fun rememberCodeEditorState(
         CodeEditorState(
             scope = scope,
             context = context,
-            colorScheme = colorScheme,
+            colors = colors,
             initialFile = file,
             threadSafe = threadSafe,
             textStyle = textStyle,
@@ -266,31 +280,27 @@ fun CodeEditor(
 
 @Destination<RootGraph>
 @Composable
-fun FileEditorScreen(module: LocalModule, path: String) {
+fun FileEditorScreen(moduleId: String, path: String) {
+    ModuleScope(moduleId) {
+        FileEditorContent(path)
+    }
+}
+
+@Composable
+fun FileEditorContent(path: String) {
+    val module = LocalModule.current
     val navigator = LocalDestinationsNavigator.current
     val file = remember(path) { path.toSuFile() }
     val state = rememberCodeEditorState(
         file = file,
     )
 
-    val confirmExit = rememberVisibleState {
-        ConfirmDialog(
-            title = "Unsaved",
-            description = "There'll unsaved changes in your file. Do you want exit?",
-            onConfirm = {
-                it.hide()
-                navigator.popBackStack()
-            },
-            onClose = {
-                it.hide()
-            }
-        )
-    }
+    val confirmExit = rememberDialog()
 
     val backClick: () -> Unit = remember {
         {
             if (state.isModified) {
-                confirmExit.show()
+                confirmExit.open()
             } else {
                 navigator.popBackStack()
             }
@@ -300,8 +310,8 @@ fun FileEditorScreen(module: LocalModule, path: String) {
     BackHandler(onBack = backClick)
 
     Scaffold(
-        topBar = {
-            NavigateUpTopBar(
+        toolbar = {
+            NavigateUpToolbar(
                 title = {
                     ToolbarTitle(
                         title = file.name,
@@ -325,13 +335,43 @@ fun FileEditorScreen(module: LocalModule, path: String) {
             )
         },
         contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
+    ) {
         CodeEditor(
             modifier = Modifier
-                .padding(innerPadding)
+                .padding(contentPadding)
                 .fillMaxSize(),
             state = state
         )
+    }
+
+    confirmExit {
+        Title {
+            Text("Unsaved")
+        }
+
+        Content {
+            Text("There'll unsaved changes in your file. Do you want exit?")
+        }
+
+        Footer {
+            Button(
+                onClick = {
+                    confirmExit.close()
+                },
+                variant = ButtonVariant.Outline
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+
+            Button(
+                onClick = {
+                    confirmExit.close()
+                    navigator.popBackStack()
+                },
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        }
     }
 }
 

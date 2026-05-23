@@ -120,6 +120,9 @@ data class Module(
                     else null
                 }.toMap()
             }
+
+        val Empty = Module(AdbPath.Empty, emptyMap())
+
         @Composable
         fun rememberCreate(id: String): State<ModuleUIState> {
             val prefs = LocalUserPreferences.current

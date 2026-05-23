@@ -52,10 +52,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dergoogler.mmrl.ext.iconSize
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.model.module.Module
-import com.dergoogler.mmrl.wx.model.module.ModuleUIState
-import com.dergoogler.mmrl.wx.ui.component.ErrorContent
-import com.dergoogler.mmrl.wx.ui.component.LoadingContent
+import com.dergoogler.mmrl.wx.ui.component.LocalModule
+import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
@@ -89,6 +87,7 @@ import dev.mmrlx.compose.ui.theme.ripple
 import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.toFormattedFileSize
+import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,31 +95,14 @@ import dev.mmrlx.nio.toFormattedFileSize
 fun FileExplorerScreen(
     moduleId: String,
 ) {
-    val state by Module.rememberCreate(moduleId)
-
-    when (state) {
-        ModuleUIState.Loading -> {
-            ContentWrapper("Loading...") {
-                LoadingContent()
-            }
-        }
-
-        is ModuleUIState.Error -> {
-            ContentWrapper("ERROR") {
-                val msg = (state as ModuleUIState.Error).message
-                ErrorContent(msg)
-            }
-        }
-
-        is ModuleUIState.Ready -> {
-            val module = (state as ModuleUIState.Ready).module
-            FileExplorerContent(module)
-        }
+    ModuleScope(moduleId) {
+        FileExplorerContent()
     }
 }
 
 @Composable
-fun FileExplorerContent(module: Module) {
+fun FileExplorerContent() {
+    val module = LocalModule.current
     val navigator = LocalDestinationsNavigator.current
     val viewModel = hiltViewModel<FileExplorerViewModel>()
     val state by viewModel.state.collectAsState()
@@ -380,12 +362,12 @@ fun FileExplorerContent(module: Module) {
                                         if (fileItem.isDirectory) {
                                             viewModel.navigateToDirectory(fileItem.file)
                                         } else {
-//                                            navigator.navigate(
-//                                                FileEditorScreenDestination(
-//                                                    module.id,
-//                                                    fileItem.file.path
-//                                                )
-//                                            )
+                                            navigator.navigate(
+                                                FileEditorScreenDestination(
+                                                    module.id,
+                                                    fileItem.file.path
+                                                )
+                                            )
                                         }
                                     }
                                 },
@@ -579,7 +561,12 @@ private fun DialogScope.CreateDialog(
         }
 
         Button(
-            onClick = { onConfirm(name.text.toString(), if (isFile) content.text.toString() else null) },
+            onClick = {
+                onConfirm(
+                    name.text.toString(),
+                    if (isFile) content.text.toString() else null
+                )
+            },
             enabled = name.text.isNotBlank(), variant = ButtonVariant.Default
         ) {
             Text("Create")
