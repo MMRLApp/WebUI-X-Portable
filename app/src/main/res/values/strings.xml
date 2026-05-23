@@ -65,9 +65,9 @@
     <string name="settings_date_pattern_dialog_desc">The date pattern will be parsed as:\n[color=primary]%1$s[/color]</string>
     <string name="settings_global_exit_confirm">Disable Exit Confirm</string>
     <string name="settings_global_exit_confirm_desc">Disables the confirmation dialog when exiting the WebUI.</string>
-    <string name="controlled_by_native">Controlled by Native</string>
-    <string name="controlled_by_javascript">Controlled by JavaScript</string>
-    <string name="controlled_by_javascript_full">Fully controlled by JavaScript</string>
+    <string name="controlled_by_native">Handled by the native app</string>
+    <string name="controlled_by_javascript">Controlled by JavaScript while still respecting WebView navigation history</string>
+    <string name="controlled_by_javascript_full">Fully controlled by JavaScript without WebView history protection</string>
     <string name="delete">Delete</string>
     <string name="globally_disabled">Globally Disabled</string>
     <string name="webui_config">WebUI Config</string>
@@ -149,4 +149,6 @@
     <string name="confirm">Confirm</string>
     <string name="learn_more">Learn more</string>
     <string name="unsupported_engine">Unsupported engine</string>
+    <string name="exit">Exit</string>
+    <string name="exit_desc">Are you sure that you want to exit this WebUI?</string>
 </resources>

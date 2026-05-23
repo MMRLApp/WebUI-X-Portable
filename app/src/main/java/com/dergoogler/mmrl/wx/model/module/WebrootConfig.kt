@@ -263,7 +263,7 @@ val WebrootConfig.refreshInterceptor
     get() = get<String?>("refreshInterceptor", null)
 
 val WebrootConfig.backInterceptor
-    get() = get<Any?>("backInterceptor", "native")
+    get() = get<String>("backInterceptor", "native")
 
 val WebrootConfig.backHandler
     get() = get<Boolean?>("backHandler", true)

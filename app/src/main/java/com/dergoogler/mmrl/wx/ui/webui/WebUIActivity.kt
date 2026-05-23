@@ -86,6 +86,10 @@ class WebUIActivity : BaseActivity() {
             val prefs = LocalUserPreferences.current
             val state by Module.rememberCreate(moduleId)
 
+            val colorScheme = remember {
+                prefs.colorScheme(this@WebUIActivity)
+            }
+
             when (state) {
                 ModuleUIState.Loading -> {
                     LoadingContent()
@@ -146,6 +150,7 @@ class WebUIActivity : BaseActivity() {
                                     "isRootMode" to prefs.workingMode.isRoot,
                                 )
                             }
+                            .backHandlers(colorScheme)
                             .client { }
                             .chromeClient { }
                             .luaPlugin()
@@ -156,8 +161,7 @@ class WebUIActivity : BaseActivity() {
                                 ApplicationInterface::class.java
                             ) {
                                 add(
-                                    ColorScheme::class.java to
-                                            prefs.colorScheme(this@WebUIActivity)
+                                    ColorScheme::class.java to colorScheme
                                 )
                             }
                             .registerJavascriptInterface(

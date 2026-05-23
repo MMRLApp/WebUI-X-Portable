@@ -202,7 +202,7 @@ fun ConfigEditorContent(
             enabled = backHandler,
             title = stringResource(R.string.webui_config_back_interceptor_title),
             desc = stringResource(R.string.webui_config_back_interceptor_desc),
-            value = config.backInterceptor as String?,
+            value = config.backInterceptor,
             options = context.interceptorList,
             onConfirm = {
                 if (it.value == null) {

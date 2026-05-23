@@ -18,6 +18,9 @@ val WebUISettings.autoOpenEruda: Boolean
 val WebUISettings.disableGlobalExitConfirm: Boolean
     get() = extra<Boolean>("disableGlobalExitConfirm", false)
 
+val WebUISettings.forceKillWebUIProcess: Boolean
+    get() = extra<Boolean>("forceKillWebUIProcess", true)
+
 val WebUISettings.isRootMode: Boolean
     get() = extra<Boolean>("isRootMode", false)
 
