@@ -72,6 +72,7 @@ class ModulesViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.Eagerly, ModulesScreenState(isFirstLoad = true))
 
     init {
+        viewModelScope.launch { SuFile.AutoInit(context) }
         providerObserver()
         dataObserver()
         keyObserver()
@@ -188,22 +189,44 @@ class ModulesViewModel @Inject constructor(
         val isNonRoot = prefs.workingMode == WorkingMode.MODE_NON_ROOT
 
         val basePath =
-            (if (isNonRoot) context.filesDir.path else prefs.adbPath) ?: return emptyList()
+            (if (isNonRoot) context.filesDir.path else prefs.adbPath)
+                ?: return emptyList()
+
         val adbPath = AdbPath(basePath)
-        val modulesDir = SuFile.async(adbPath.modulesDir)
+
+        Log.d(TAG, "BasePath=$basePath")
+        Log.d(TAG, "ModulesDir=${adbPath.modulesDir}")
+
+        val modulesDir = SuFile(adbPath.modulesDir)
 
         if (!modulesDir.exists()) {
-            modulesDir.mkdirs()
+            Log.e(TAG, "Modules directory does not exist")
+            return emptyList()
         }
 
-        return modulesDir
-            .listFiles()
-            .map { dir ->
-                val props = SuFile.async(dir, "module.prop")
-                    .inputStream()
-                    .use { Module.readProps(it) }
+        val dirs = modulesDir.listFiles() ?: run {
+            Log.e(TAG, "listFiles() returned null")
+            return emptyList()
+        }
+
+        return dirs.mapNotNull { dir ->
+            runCatching {
+                val propFile = SuFile(dir, "module.prop")
+
+                if (!propFile.exists()) {
+                    Log.w(TAG, "Missing module.prop in ${dir.path}")
+                    return@mapNotNull null
+                }
+
+                val props = propFile.inputStream().use {
+                    Module.readProps(it)
+                }
+
                 Module(adbPath, props)
-            }
+            }.onFailure {
+                Log.e(TAG, "Failed parsing module ${dir.path}", it)
+            }.getOrNull()
+        }
     }
 
 
