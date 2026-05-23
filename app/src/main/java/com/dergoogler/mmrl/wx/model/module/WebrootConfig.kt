@@ -2,21 +2,16 @@
 
 package com.dergoogler.mmrl.wx.model.module
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateMapOf
 import com.dergoogler.mmrl.webui.model.DexSourceType
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.readText
+import dev.mmrlx.nio.writeText
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Contextual
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -30,8 +25,6 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-@Parcelize
-@Serializable
 class WebrootConfig(
     private val module: Module,
 ) {
@@ -46,15 +39,14 @@ class WebrootConfig(
     private val destConfigFile: SuFile
         get() = SuFile(module.path.configDir, "config.webroot.json")
 
+    /**
+     * Compose observable map.
+     *
+     * Any reads inside composition automatically trigger recomposition
+     * when values change.
+     */
     @PublishedApi
-    internal val _map: MutableMap<String, JsonElement> = mutableMapOf()
-
-    var entries: Map<String, JsonElement> by mutableStateOf(emptyMap())
-        private set
-
-    private val _flow = MutableStateFlow<Map<String, JsonElement>>(emptyMap())
-
-    val flow: StateFlow<Map<String, JsonElement>> = _flow.asStateFlow()
+    internal val _map = mutableStateMapOf<String, JsonElement>()
 
     init {
         loadSync()
@@ -71,12 +63,11 @@ class WebrootConfig(
         @Suppress("UNCHECKED_CAST")
         return runCatching {
             when (T::class) {
-                // Structured JsonElement subtypes — return as-is when the element matches
+
                 JsonObject::class -> this as? JsonObject ?: return default
                 JsonArray::class -> this as? JsonArray ?: return default
                 JsonPrimitive::class -> this as? JsonPrimitive ?: return default
 
-                // Scalars — require a primitive leaf
                 String::class -> jsonPrimitive.content
                 Boolean::class -> jsonPrimitive.boolean
                 Int::class -> jsonPrimitive.int
@@ -93,7 +84,6 @@ class WebrootConfig(
 
     operator fun set(key: String, value: JsonElement) {
         _map[key] = value
-        publish()
         saveSync()
     }
 
@@ -113,10 +103,11 @@ class WebrootConfig(
 
     fun remove(key: String): JsonElement? {
         val prev = _map.remove(key)
+
         if (prev != null) {
-            publish()
             saveSync()
         }
+
         return prev
     }
 
@@ -125,13 +116,11 @@ class WebrootConfig(
     fun putAll(map: Map<String, JsonElement>) {
         _map.clear()
         _map.putAll(map)
-        publish()
         saveSync()
     }
 
     fun clear() {
         _map.clear()
-        publish()
         saveSync()
     }
 
@@ -146,20 +135,25 @@ class WebrootConfig(
     @PublishedApi
     internal fun resolvePath(path: String): JsonElement? {
         val segments = path.split(".")
-        if (segments.size == 1) return _map[path]
 
-        // Wrap _map in a JsonObject for uniform traversal at every level.
-        var current: JsonElement = JsonObject(_map)
+        if (segments.size == 1) {
+            return _map[path]
+        }
+
+        var current: JsonElement = JsonObject(_map.toMap())
 
         for (i in segments.indices) {
-            if (current !is JsonObject) return null
+            if (current !is JsonObject) {
+                return null
+            }
 
-            // Greedy: try the full remaining dotted key as a literal before descending.
             val remaining = segments.drop(i).joinToString(".")
-            val literal = current[remaining]
-            if (literal != null) return literal
 
-            // Consume exactly one segment and keep descending.
+            val literal = current[remaining]
+            if (literal != null) {
+                return literal
+            }
+
             current = current[segments[i]] ?: return null
         }
 
@@ -170,26 +164,32 @@ class WebrootConfig(
         runCatching {
             val merged = mutableMapOf<String, JsonElement>()
 
-            // Source first (lower priority — module defaults)
             val source = sourceConfigFile
+
             if (source.exists() && source.isFile) {
                 json.parseToJsonElement(source.readText())
                     .let { it as? JsonObject }
-                    ?.forEach { (key, value) -> merged[key] = value }
+                    ?.forEach { (key, value) ->
+                        merged[key] = value
+                    }
             }
 
-            // Dest on top (higher priority — user overrides win)
             val dest = destConfigFile
+
             if (dest.exists() && dest.isFile) {
                 json.parseToJsonElement(dest.readText())
                     .let { it as? JsonObject }
-                    ?.forEach { (key, value) -> merged[key] = value }
+                    ?.forEach { (key, value) ->
+                        merged[key] = value
+                    }
             }
 
             _map.clear()
             _map.putAll(merged)
+
+        }.onFailure {
+            it.printStackTrace()
         }
-        publish()
     }
 
     private fun saveSync() {
@@ -197,47 +197,79 @@ class WebrootConfig(
             val file = destConfigFile
 
             val parent = file.parentFile
+
             if (parent != null && !parent.exists()) {
                 parent.mkdirs()
             }
 
             val jsonObject = buildJsonObject {
-                _map.forEach { (k, v) -> put(k, v) }
+                _map.forEach { (k, v) ->
+                    put(k, v)
+                }
             }
 
             file.writeText(jsonObject.toString())
+        }.onFailure {
+            it.printStackTrace()
         }
-    }
-
-    private fun publish() {
-        val snapshot = _map.toMap()
-        entries = snapshot
-        _flow.value = snapshot
     }
 }
 
-val WebrootConfig.historyFallback get() = get("historyFallback", false)
-val WebrootConfig.historyFallbackFile get() = get("historyFallbackFile", "index.html")
+val WebrootConfig.historyFallback
+    get() = get("historyFallback", false)
+
+val WebrootConfig.historyFallbackFile
+    get() = get("historyFallbackFile", "index.html")
+
 val WebrootConfig.contentSecurityPolicy
     get() = get(
-        "contentSecurityPolicy", "default-src 'self' data: blob: {domain}; " +
+        "contentSecurityPolicy",
+        "default-src 'self' data: blob: {domain}; " +
                 "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
                 "style-src 'self' 'unsafe-inline' {domain}; connect-src *"
     )
-val WebrootConfig.autoStatusBarsStyle get() = get("autoStatusBarsStyle", true)
-val WebrootConfig.autoAddInsets get() = get("autoAddInsets", true)
-val WebrootConfig.windowResize get() = get("windowResize", true)
-val WebrootConfig.caching get() = get("caching", true)
-val WebrootConfig.exitConfirm get() = get("exitConfirm", true)
-val WebrootConfig.pullToRefresh get() = get("pullToRefresh", false)
-val WebrootConfig.cachingMaxAge get() = get("cachingMaxAge", 86400)
-val WebrootConfig.killShellWhenBackground get() = get("killShellWhenBackground", true)
-val WebrootConfig.title get() = get<String?>("title", null)
-val WebrootConfig.icon get() = get<String?>("icon", null)
-val WebrootConfig.refreshInterceptor get() = get<String?>("refreshInterceptor", null)
-val WebrootConfig.backInterceptor get() = get<Any?>("backInterceptor", "native")
-val WebrootConfig.backHandler get() = get<Boolean?>("backHandler", true)
-val WebrootConfig.permissions get() = get("permissions", JsonArray(emptyList()))
+
+val WebrootConfig.autoStatusBarsStyle
+    get() = get("autoStatusBarsStyle", true)
+
+val WebrootConfig.autoAddInsets
+    get() = get("autoAddInsets", true)
+
+val WebrootConfig.windowResize
+    get() = get("windowResize", true)
+
+val WebrootConfig.caching
+    get() = get("caching", true)
+
+val WebrootConfig.exitConfirm
+    get() = get("exitConfirm", true)
+
+val WebrootConfig.pullToRefresh
+    get() = get("pullToRefresh", false)
+
+val WebrootConfig.cachingMaxAge
+    get() = get("cachingMaxAge", 86400)
+
+val WebrootConfig.killShellWhenBackground
+    get() = get("killShellWhenBackground", true)
+
+val WebrootConfig.title
+    get() = get<String?>("title", null)
+
+val WebrootConfig.icon
+    get() = get<String?>("icon", null)
+
+val WebrootConfig.refreshInterceptor
+    get() = get<String?>("refreshInterceptor", null)
+
+val WebrootConfig.backInterceptor
+    get() = get<Any?>("backInterceptor", "native")
+
+val WebrootConfig.backHandler
+    get() = get<Boolean?>("backHandler", true)
+
+val WebrootConfig.permissions
+    get() = get("permissions", JsonArray(emptyList()))
 
 @Deprecated("Kept for backwards compatibility.")
 val WebrootConfig.dexFiles: List<WebUIConfigDexFile>
@@ -247,16 +279,21 @@ val WebrootConfig.dexFiles: List<WebUIConfigDexFile>
         return entries.map { e ->
             val entry = e as JsonObject
 
+            val type: DexSourceType =
+                when (entry["type"].getOrDefault<String?>(null)) {
+                    "apk" -> DexSourceType.APK
+                    "dex" -> DexSourceType.DEX
+                    else -> DexSourceType.DEX
+                }
 
-            val type: DexSourceType = when (entry["type"].getOrDefault<String?>(null)) {
-                "apk" -> DexSourceType.APK
-                "dex" -> DexSourceType.DEX
-                else -> DexSourceType.DEX
-            }
+            val path: String? =
+                entry["path"].getOrDefault(null)
 
-            val path: String? = entry["path"].getOrDefault(null)
-            val className: String? = entry["className"].getOrDefault(null)
-            val cache: Boolean = entry[""].getOrDefault(true)
+            val className: String? =
+                entry["className"].getOrDefault(null)
+
+            val cache: Boolean =
+                entry["cache"].getOrDefault(true)
 
             WebUIConfigDexFile(
                 type = type,

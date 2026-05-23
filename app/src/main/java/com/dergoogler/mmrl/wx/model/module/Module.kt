@@ -10,12 +10,8 @@ import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
 import kotlinx.parcelize.IgnoredOnParcel
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 import java.io.InputStream
 
-@Parcelize
-@Serializable
 data class Module(
     val adbPath: AdbPath,
     private val properties: Map<String, String>,
