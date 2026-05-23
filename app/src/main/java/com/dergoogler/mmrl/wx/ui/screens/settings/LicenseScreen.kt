@@ -2,7 +2,6 @@ package com.dergoogler.mmrl.wx.ui.screens.settings
 
 import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -99,12 +98,7 @@ private fun ScaffoldScope.LicensesContent(
                     it.scaffoldHazeSource("licenses")
                 }
                 .then(modifier),
-            contentPadding = PaddingValues(
-                top = this@LicensesContent.scaffoldTopPadding + 8.dp,
-                start = 8.dp,
-                end = 8.dp,
-                bottom = this@LicensesContent.scaffoldBottomPadding + 8.dp
-            ),
+            contentPadding = this@LicensesContent.contentPadding,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(list) {

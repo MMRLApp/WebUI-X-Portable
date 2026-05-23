@@ -8,15 +8,15 @@ import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
-import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.platform.file.SuFile.Companion.toSuFile
-import com.dergoogler.mmrl.platform.file.SuFileInputStream
-import com.dergoogler.mmrl.platform.file.SuFileOutputStream
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.util.wxContentResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.SuFile.Companion.toSuFile
+import dev.mmrlx.nio.SuFileInputStream
+import dev.mmrlx.nio.SuFileOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -156,7 +156,7 @@ class FileExplorerViewModel @Inject constructor(
 
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val newFolder = SuFile(currentPath, folderName)
+                    val newFolder = SuFile.async(currentPath, folderName)
                     if (newFolder.exists()) {
                         FileOperationResult.Error("Folder already exists")
                     } else if (newFolder.mkdirs()) {
@@ -202,7 +202,7 @@ class FileExplorerViewModel @Inject constructor(
 
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val newFile = SuFile(currentPath, fileName)
+                    val newFile = SuFile.async(currentPath, fileName)
                     if (newFile.exists()) {
                         FileOperationResult.Error("File already exists")
                     } else {

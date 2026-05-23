@@ -25,25 +25,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,38 +51,82 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.dergoogler.mmrl.ext.iconSize
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
-import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
-import com.dergoogler.mmrl.ui.component.listItem.dsl.List
-import com.dergoogler.mmrl.ui.component.listItem.dsl.ListScope
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Item
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Start
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
-import com.dergoogler.mmrl.ui.component.scaffold.Scaffold
-import com.dergoogler.mmrl.ui.component.toolbar.Toolbar
-import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.model.module.ModuleUIState
+import com.dergoogler.mmrl.wx.ui.component.ErrorContent
+import com.dergoogler.mmrl.wx.ui.component.LoadingContent
+import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.viewmodel.FileExplorerViewModel
 import com.dergoogler.mmrl.wx.viewmodel.FileItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
+import dev.mmrlx.compose.layout.card
+import dev.mmrlx.compose.ui.CircularProgressIndicator
+import dev.mmrlx.compose.ui.LocalTextStyle
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.button.Button
+import dev.mmrlx.compose.ui.button.ButtonVariant
+import dev.mmrlx.compose.ui.dialog.Content
+import dev.mmrlx.compose.ui.dialog.DialogScope
+import dev.mmrlx.compose.ui.dialog.Footer
+import dev.mmrlx.compose.ui.dialog.Title
+import dev.mmrlx.compose.ui.dialog.rememberDialog
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.icon.IconButton
+import dev.mmrlx.compose.ui.list.component.RawItem
+import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.Start
+import dev.mmrlx.compose.ui.list.component.item.Title
+import dev.mmrlx.compose.ui.text.OutlinedInput
+import dev.mmrlx.compose.ui.text.rememberInputState
+import dev.mmrlx.compose.ui.theme.LocalContentColor
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.compose.ui.theme.ripple
+import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.toFormattedFileSize
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FileExplorerScreen(
-    module: LocalModule,
+    moduleId: String,
 ) {
+    val state by Module.rememberCreate(moduleId)
+
+    when (state) {
+        ModuleUIState.Loading -> {
+            ContentWrapper("Loading...") {
+                LoadingContent()
+            }
+        }
+
+        is ModuleUIState.Error -> {
+            ContentWrapper("ERROR") {
+                val msg = (state as ModuleUIState.Error).message
+                ErrorContent(msg)
+            }
+        }
+
+        is ModuleUIState.Ready -> {
+            val module = (state as ModuleUIState.Ready).module
+            FileExplorerContent(module)
+        }
+    }
+}
+
+@Composable
+fun FileExplorerContent(module: Module) {
     val navigator = LocalDestinationsNavigator.current
     val viewModel = hiltViewModel<FileExplorerViewModel>()
     val state by viewModel.state.collectAsState()
-    val initialPath = SuFile(module.id.moduleDir)
+    val createDialog = rememberDialog()
+
+    val initialPath = SuFile(module.path.moduleDir)
     val snackbarHostState = remember { SnackbarHostState() }
 
     // FAB state management
@@ -135,7 +165,7 @@ fun FileExplorerScreen(
         }
     }
 
-    LaunchedEffect(module.id) {
+    LaunchedEffect(module) {
         viewModel.initialize(initialPath)
     }
 
@@ -151,7 +181,7 @@ fun FileExplorerScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
 
     val backClick: () -> Unit = remember(state, isSelectionMode) {
         {
@@ -169,12 +199,12 @@ fun FileExplorerScreen(
 
     BackHandler(onBack = backClick)
 
-    Scaffold(
+    dev.mmrlx.compose.ui.scaffold.Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            Toolbar(
+        toolbar = {
+            dev.mmrlx.compose.ui.toolbar.Toolbar(
                 title = {
-                    ToolbarTitle(
+                    dev.mmrlx.compose.ui.toolbar.ToolbarTitle(
                         titleContent = {
                             Text(
                                 text = if (isSelectionMode) "${selectedFiles.size} selected" else module.name,
@@ -235,7 +265,7 @@ fun FileExplorerScreen(
                             Icon(
                                 painter = painterResource(R.drawable.trash),
                                 contentDescription = "Delete selected",
-                                tint = MaterialTheme.colorScheme.error
+                                tint = MMRLXTheme.colors.destructive
                             )
                         }
                     } else {
@@ -259,12 +289,12 @@ fun FileExplorerScreen(
                     onExpandedChange = { isFabExpanded = it },
                     onCreateFolder = {
                         createDialogType = CreateType.FOLDER
-                        showCreateDialog = true
+                        createDialog.open()
                         isFabExpanded = false
                     },
                     onCreateFile = {
                         createDialogType = CreateType.FILE
-                        showCreateDialog = true
+                        createDialog.open()
                         isFabExpanded = false
                     },
                     onImportFile = {
@@ -280,44 +310,37 @@ fun FileExplorerScreen(
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
+    ) {
         Box {
-            List(
-                modifier = Modifier.padding(innerPadding),
-            ) {
-                // Error message
+            dev.mmrlx.compose.ui.list.List {
                 state.errorMessage?.let { error ->
-                    Card(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .card()
+                            .background(MMRLXTheme.colors.destructive)
                             .padding(bottom = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
                     ) {
                         Text(
                             text = error,
                             modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer
+                            color = MMRLXTheme.colors.destructiveForeground
                         )
                     }
                 }
 
-                // Success message
                 state.successMessage?.let { success ->
-                    Card(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .card()
+                            .background(MMRLXTheme.colors.primary)
                             .padding(bottom = 8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
                     ) {
                         Text(
                             text = success,
                             modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MMRLXTheme.colors.primaryForeground
                         )
                     }
                 }
@@ -331,6 +354,11 @@ fun FileExplorerScreen(
                     }
                 } else {
                     LazyColumn(
+                        modifier = Modifier
+                            .with(this@Scaffold) {
+                                it.scaffoldHazeSource("licenses")
+                            },
+                        contentPadding = this@Scaffold.contentPadding,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         items(state.fileItems) { fileItem ->
@@ -352,12 +380,12 @@ fun FileExplorerScreen(
                                         if (fileItem.isDirectory) {
                                             viewModel.navigateToDirectory(fileItem.file)
                                         } else {
-                                            navigator.navigate(
-                                                FileEditorScreenDestination(
-                                                    module,
-                                                    fileItem.file.path
-                                                )
-                                            )
+//                                            navigator.navigate(
+//                                                FileEditorScreenDestination(
+//                                                    module.id,
+//                                                    fileItem.file.path
+//                                                )
+//                                            )
                                         }
                                     }
                                 },
@@ -384,22 +412,41 @@ fun FileExplorerScreen(
             }
         }
 
-        // Create dialog
-        if (showCreateDialog) {
+        createDialog {
             CreateDialog(
                 type = createDialogType,
-                onDismiss = { showCreateDialog = false },
+                onDismiss = { createDialog.close() },
                 onConfirm = { name, content ->
                     when (createDialogType) {
                         CreateType.FOLDER -> viewModel.createFolder(name)
                         CreateType.FILE -> viewModel.createFile(name, content ?: "")
                     }
-                    showCreateDialog = false
+                    createDialog.close()
                 }
             )
         }
     }
 }
+
+
+@Composable
+private fun ContentWrapper(
+    title: String = "Error",
+    content: @Composable dev.mmrlx.compose.ui.scaffold.ScaffoldScope.() -> Unit,
+) {
+    val navigator = LocalDestinationsNavigator.current
+    dev.mmrlx.compose.ui.scaffold.Scaffold(
+        toolbar = {
+            NavigateUpToolbar(
+                title = title,
+                onBack = { navigator.popBackStack() },
+            )
+        },
+        contentWindowInsets = WindowInsets.none,
+        content = content
+    )
+}
+
 
 @Composable
 private fun ExpandableFab(
@@ -433,11 +480,8 @@ private fun ExpandableFab(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                    Box(
+                        modifier = Modifier.card()
                     ) {
                         Text(
                             text = label,
@@ -445,10 +489,9 @@ private fun ExpandableFab(
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                    SmallFloatingActionButton(
+
+                    dev.mmrlx.compose.ui.fab.SmallFloatingActionButton(
                         onClick = action,
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     ) {
                         Icon(
                             painter = painterResource(icon),
@@ -460,7 +503,7 @@ private fun ExpandableFab(
         }
 
         // Main FAB
-        ExtendedFloatingActionButton(
+        dev.mmrlx.compose.ui.fab.ExtendedFloatingActionButton(
             onClick = { onExpandedChange(!isExpanded) },
             text = {
                 Text(
@@ -493,57 +536,55 @@ enum class CreateType {
 }
 
 @Composable
-private fun CreateDialog(
+private fun DialogScope.CreateDialog(
     type: CreateType,
     onDismiss: () -> Unit,
     onConfirm: (String, String?) -> Unit,
 ) {
-    var name by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
+
+    val name = rememberInputState("")
+    val content = rememberInputState("")
     val isFile = type == CreateType.FILE
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(text = "Create ${if (isFile) "File" else "Folder"}")
-        },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("${if (isFile) "File" else "Folder"} name") },
-                    singleLine = !isFile,
-                    modifier = Modifier.fillMaxWidth()
-                )
+    Title {
+        Text(text = "Create ${if (isFile) "File" else "Folder"}")
+    }
 
-                if (isFile) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = content,
-                        onValueChange = { content = it },
-                        label = { Text("Content (optional)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        maxLines = 5
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onConfirm(name, if (isFile) content else null) },
-                enabled = name.isNotBlank()
-            ) {
-                Text("Create")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+    Content {
+        Column {
+            OutlinedInput(
+                label = { Text("${if (isFile) "File" else "Folder"} name") },
+                state = name,
+                modifier = Modifier
+                    .fillMaxWidth(),
+                lineLimits = TextFieldLineLimits.SingleLine,
+            )
+
+            if (isFile) {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedInput(
+                    label = { Text("Content (optional)") },
+                    state = content,
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    lineLimits = TextFieldLineLimits.MultiLine(3, 5),
+                )
             }
         }
-    )
+    }
+
+    Footer {
+        Button(onClick = onDismiss, variant = ButtonVariant.Outline) {
+            Text("Cancel")
+        }
+
+        Button(
+            onClick = { onConfirm(name.text.toString(), if (isFile) content.text.toString() else null) },
+            enabled = name.text.isNotBlank(), variant = ButtonVariant.Default
+        ) {
+            Text("Create")
+        }
+    }
 }
 
 @Composable
@@ -554,7 +595,6 @@ private fun PathBreadcrumb(
     val pathParts = mutableListOf<SuFile>()
     var tempPath: SuFile? = currentPath
 
-    // Build path hierarchy
     while (tempPath != null) {
         pathParts.add(0, tempPath)
         tempPath = tempPath.parentSuFile
@@ -568,10 +608,11 @@ private fun PathBreadcrumb(
         itemsIndexed(
             items = pathParts,
             key = { index, item -> item.path + index }
-
         ) { index, path ->
+
             val density = LocalDensity.current
             val textStyle = LocalTextStyle.current
+
             val iconSize = Modifier.iconSize(
                 density = density,
                 textStyle = textStyle,
@@ -583,18 +624,22 @@ private fun PathBreadcrumb(
                     painter = painterResource(R.drawable.chevron_right),
                     contentDescription = null,
                     modifier = iconSize,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MMRLXTheme.colors.mutedForeground
                 )
 
                 Spacer(Modifier.width(4.dp))
             }
 
             Text(
-                text = if (index == 0 && path.name.isEmpty()) "Root" else path.name,
-                color = if (index == pathParts.lastIndex) {
-                    MaterialTheme.colorScheme.primary
+                text = if (index == 0 && path.name.isEmpty()) {
+                    "Root"
                 } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
+                    path.name
+                },
+                color = if (index == pathParts.lastIndex) {
+                    MMRLXTheme.colors.primary
+                } else {
+                    MMRLXTheme.colors.mutedForeground
                 },
                 modifier = Modifier.clickable {
                     if (index != pathParts.lastIndex) {
@@ -607,7 +652,7 @@ private fun PathBreadcrumb(
 }
 
 @Composable
-private fun ListScope.FileItemRow(
+private fun dev.mmrlx.compose.ui.list.ListScope.FileItemRow(
     fileItem: FileItem,
     isSelected: Boolean = false,
     isSelectionMode: Boolean = false,
@@ -616,8 +661,27 @@ private fun ListScope.FileItemRow(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    Item(
+    val titleColor = when {
+        isSelected -> MMRLXTheme.colors.primary
+        else -> MMRLXTheme.colors.foreground
+    }
+
+    val descriptionColor = MMRLXTheme.colors.mutedForeground
+
+    val iconTint = when {
+        isSelected -> MMRLXTheme.colors.primary
+        fileItem.isDirectory -> MMRLXTheme.colors.primary
+        else -> MMRLXTheme.colors.mutedForeground
+    }
+
+    val itemBackground = when {
+        isSelected -> MMRLXTheme.colors.accent
+        else -> Color.Transparent
+    }
+
+    RawItem(
         modifier = Modifier
+            .background(itemBackground)
             .combinedClickable(
                 enabled = true,
                 interactionSource = interactionSource,
@@ -625,7 +689,8 @@ private fun ListScope.FileItemRow(
                 indication = ripple(),
                 onClick = onClick,
                 onLongClick = onLongClick
-            ),
+            )
+            .contentPadding(),
     ) {
         Start {
             Box {
@@ -633,11 +698,7 @@ private fun ListScope.FileItemRow(
                     painter = painterResource(fileItem.icon),
                     contentDescription = null,
                     modifier = Modifier.size(32.dp),
-                    tint = when {
-                        isSelected -> MaterialTheme.colorScheme.primary
-                        fileItem.isDirectory -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    tint = iconTint
                 )
 
                 if (isSelected) {
@@ -647,7 +708,7 @@ private fun ListScope.FileItemRow(
                         modifier = Modifier
                             .size(16.dp)
                             .align(Alignment.BottomEnd),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MMRLXTheme.colors.primary
                     )
                 }
             }
@@ -656,11 +717,15 @@ private fun ListScope.FileItemRow(
         Title {
             Text(
                 text = fileItem.name,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MMRLXTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                fontWeight = if (fileItem.isDirectory) FontWeight.Medium else FontWeight.Normal,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                fontWeight = if (fileItem.isDirectory) {
+                    FontWeight.Medium
+                } else {
+                    FontWeight.Normal
+                },
+                color = titleColor
             )
         }
 
@@ -671,15 +736,15 @@ private fun ListScope.FileItemRow(
                 if (!fileItem.isDirectory && fileItem.size > 0) {
                     Text(
                         text = fileItem.size.toFormattedFileSize(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        style = MMRLXTheme.typography.bodySmall,
+                        color = descriptionColor
                     )
                 }
 
                 Text(
                     text = fileItem.lastModified.toFormattedDateSafely,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MMRLXTheme.typography.bodySmall,
+                    color = descriptionColor
                 )
             }
         }

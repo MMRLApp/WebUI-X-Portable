@@ -54,6 +54,7 @@ import dev.mmrlx.compose.ui.text.FormatText
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
+import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -96,7 +97,7 @@ fun ModuleItem(
         modifier = Modifier
             .combinedClickable(
                 onLongClick = {
-                  //  navigator.navigate(FileExplorerScreenDestination(module))
+                  navigator.navigate(FileExplorerScreenDestination(module.id))
                 },
                 onClick = {
                     if (canWenUIAccessed) {
