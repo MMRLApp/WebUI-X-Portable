@@ -8,11 +8,11 @@ import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
-import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.util.wxContentResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.mmrlx.compose.ui.filetree.material.MaterialIconResolver
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFile.Companion.toSuFile
 import dev.mmrlx.nio.SuFileInputStream
@@ -555,23 +555,17 @@ class FileExplorerViewModel @Inject constructor(
 
     @DrawableRes
     private fun getFileIcon(file: SuFile): Int {
-        return if (file.isDirectory()) {
-            R.drawable.folder
-        } else {
-            when (file.extension.lowercase()) {
-                "jpg", "jpeg", "png", "gif", "bmp", "webp" -> R.drawable.photo
-                "mp4", "avi", "mkv", "mov", "wmv", "flv" -> R.drawable.movie
-                "mp3", "wav", "flac", "aac", "ogg", "m4a" -> R.drawable.headphones
-                "pdf" -> R.drawable.file_type_pdf
-                "mjs", "cjs", "js" -> R.drawable.file_type_js
-                "htm", "html", "htmlx" -> R.drawable.file_type_html
-                "bash", "sh" -> R.drawable.terminal
-                "css" -> R.drawable.file_type_css
-                "txt", "md", "log" -> R.drawable.file_text
-                "zip", "rar", "7z", "tar", "gz" -> R.drawable.file_zip
-                "apk" -> com.dergoogler.mmrl.ui.R.drawable.brand_android
-                else -> R.drawable.file
-            }
+        val fallbackRes = when {
+            file.isDirectory -> dev.mmrlx.ui.R.drawable.folder
+            else -> dev.mmrlx.ui.R.drawable.file
         }
+
+        val resId = if (file.isDirectory) {
+            MaterialIconResolver.resolveFolderDrawable(file.name, false)
+        } else {
+            MaterialIconResolver.resolveFileDrawable(file.name)
+        }
+
+        return resId ?: fallbackRes
     }
 }

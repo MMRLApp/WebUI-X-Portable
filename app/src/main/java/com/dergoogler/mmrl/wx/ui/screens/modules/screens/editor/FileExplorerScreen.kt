@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -61,6 +62,7 @@ import com.dergoogler.mmrl.wx.viewmodel.FileExplorerViewModel
 import com.dergoogler.mmrl.wx.viewmodel.FileItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
 import dev.mmrlx.compose.layout.card
 import dev.mmrlx.compose.ui.CircularProgressIndicator
 import dev.mmrlx.compose.ui.LocalTextStyle
@@ -87,7 +89,6 @@ import dev.mmrlx.compose.ui.theme.ripple
 import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.toFormattedFileSize
-import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
 
 @Destination<RootGraph>
 @OptIn(ExperimentalMaterial3Api::class)
@@ -655,12 +656,6 @@ private fun dev.mmrlx.compose.ui.list.ListScope.FileItemRow(
 
     val descriptionColor = MMRLXTheme.colors.mutedForeground
 
-    val iconTint = when {
-        isSelected -> MMRLXTheme.colors.primary
-        fileItem.isDirectory -> MMRLXTheme.colors.primary
-        else -> MMRLXTheme.colors.mutedForeground
-    }
-
     val itemBackground = when {
         isSelected -> MMRLXTheme.colors.accent
         else -> Color.Transparent
@@ -681,11 +676,10 @@ private fun dev.mmrlx.compose.ui.list.ListScope.FileItemRow(
     ) {
         Start {
             Box {
-                Icon(
+                Image(
                     painter = painterResource(fileItem.icon),
                     contentDescription = null,
                     modifier = Modifier.size(32.dp),
-                    tint = iconTint
                 )
 
                 if (isSelected) {
