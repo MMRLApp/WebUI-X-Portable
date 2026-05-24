@@ -110,8 +110,6 @@ fun ModuleItem(
     )
 
     removeDialog {
-
-
         Title {
             Text("Remove ${module.name}?")
         }
