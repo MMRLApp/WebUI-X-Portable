@@ -11,9 +11,9 @@ import com.dergoogler.mmrl.webui.InjectionType
 import com.dergoogler.mmrl.webui.addInjection
 import com.dergoogler.mmrl.webui.asResponse
 import com.dergoogler.mmrl.webui.util.WebUIOptions
-import dev.mmrlx.hybridwebui.HybridWebUI
-import dev.mmrlx.hybridwebui.HybridWebUIInsets
-import dev.mmrlx.hybridwebui.HybridWebUIResourceRequest
+import com.dergoogler.mmrl.hybridwebui.HybridWebUI
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIInsets
+import com.dergoogler.mmrl.hybridwebui.HybridWebUIResourceRequest
 import java.io.IOException
 
 

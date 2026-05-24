@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.managerVersion
+import com.dergoogler.mmrl.hybridwebui.interfaces.prebuilt.FileChooserInterface
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.confirm
@@ -33,14 +34,10 @@ import com.dergoogler.mmrl.wx.ui.component.devtools.DevTools
 import com.dergoogler.mmrl.wx.util.initPlatform
 import com.dergoogler.mmrl.wx.util.setMyCrashHandler
 import dagger.hilt.android.AndroidEntryPoint
-import dev.mmrlx.hybridwebui.interfaces.prebuilt.FileChooserInterface
-import dev.mmrlx.hybridwebui.registerHybridWebUIEvenEmitter
-import dev.mmrlx.hybridwebui.registerHybridWebUIKeyboardObserver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
-
 
 @AndroidEntryPoint
 class WebUIActivity : WXActivity() {
@@ -144,10 +141,6 @@ class WebUIActivity : WXActivity() {
         this@WebUIActivity.view = WebUIXView(options).apply {
             with(wx) {
                 onReady {
-                    val config = options.config
-                    this@WebUIActivity.registerHybridWebUIEvenEmitter(this)
-                    this@WebUIActivity.registerHybridWebUIKeyboardObserver(this, config.windowResize)
-
                     addJavascriptInterface<KernelSUInterface>()
                     // only adds file chooser and file save event
                     addJavascriptInterface<FileChooserInterface>()

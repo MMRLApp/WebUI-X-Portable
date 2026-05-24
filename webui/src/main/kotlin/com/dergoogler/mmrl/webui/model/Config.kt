@@ -38,7 +38,7 @@ import com.squareup.moshi.JsonClass
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
-import dev.mmrlx.hybridwebui.interfaces.JavaScriptInterfaceImplementation
+import com.dergoogler.mmrl.hybridwebui.interfaces.JavaScriptInterfaceImplementation
 import kotlinx.coroutines.flow.StateFlow
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.iface.instruction.ReferenceInstruction

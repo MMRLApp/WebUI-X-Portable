@@ -56,10 +56,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.webui.view.WXView
 import com.dergoogler.mmrl.wx.R
-import dev.mmrlx.hybridwebui.ConsoleEntry
-import dev.mmrlx.hybridwebui.PrimitiveKind
-import dev.mmrlx.hybridwebui.ResultNode
-import dev.mmrlx.hybridwebui.wrapConsoleEvalResult
+import com.dergoogler.mmrl.hybridwebui.ConsoleEntry
+import com.dergoogler.mmrl.hybridwebui.PrimitiveKind
+import com.dergoogler.mmrl.hybridwebui.ResultNode
+import com.dergoogler.mmrl.hybridwebui.wrapConsoleEvalResult
 import org.json.JSONObject
 
 private sealed class LogEntry {
