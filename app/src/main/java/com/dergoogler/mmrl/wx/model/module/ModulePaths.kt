@@ -1,8 +1,10 @@
 package com.dergoogler.mmrl.wx.model.module
 
+import com.dergoogler.mmrl.wx.util.PathVarArgFunction
 import dev.mmrlx.nio.Path
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.luaj.LuaTable
 
 @Parcelize
 @Serializable
@@ -19,6 +21,18 @@ data class AdbPath(
         const val HIDDEN_LOCAL_DIR = ".local"
 
         val Empty = AdbPath("/dev/null")
+    }
+
+    fun toLuaTable(): LuaTable {
+        val table = LuaTable()
+
+        table.set("baseDir", baseDir)
+        table.set("configDir", configDir)
+        table.set("localDir", localDir)
+        table.set("modulesDir", modulesDir)
+        table.set("resolve", PathVarArgFunction(baseDir))
+
+        return table
     }
 }
 
@@ -71,6 +85,34 @@ data class ModulePath(
     val disableFile get() = Path.resolve(moduleDir, DISABLE_FILE)
     val removeFile get() = Path.resolve(moduleDir, REMOVE_FILE)
     val updateFile get() = Path.resolve(moduleDir, UPDATE_FILE)
+
+    fun toLuaTable(): LuaTable {
+        val table = LuaTable()
+
+        table.set("moduleId", moduleId)
+        table.set("configDir", configDir)
+        table.set("moduleDir", moduleDir)
+        table.set("webrootDir", webrootDir)
+        table.set("webrootConfig", webrootConfig)
+        table.set("webrootLuaIndex", webrootLuaIndex)
+        table.set("propFile", propFile)
+        table.set("actionFile", actionFile)
+        table.set("serviceFile", serviceFile)
+        table.set("postFsDataFile", postFsDataFile)
+        table.set("postMountFile", postMountFile)
+        table.set("systemPropFile", systemPropFile)
+        table.set("bootCompletedFile", bootCompletedFile)
+        table.set("sepolicyFile", sepolicyFile)
+        table.set("uninstallFile", uninstallFile)
+        table.set("systemDir", systemDir)
+        table.set("disableFile", disableFile)
+        table.set("removeFile", removeFile)
+        table.set("updateFile", updateFile)
+        table.set("webroot", PathVarArgFunction(webrootDir))
+        table.set("mod", PathVarArgFunction(moduleDir))
+
+        return table
+    }
 
     companion object {
         const val WEBROOT_DIR = "webroot"

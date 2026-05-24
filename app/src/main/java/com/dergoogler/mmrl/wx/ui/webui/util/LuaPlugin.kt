@@ -13,5 +13,6 @@ fun WebUI.luaPlugin(): WebUI {
 
     return registerLuaPlugin {
         plugin(indexLuaFile.path)
+        global["mod"] = module.toLuaTable()
     }
 }

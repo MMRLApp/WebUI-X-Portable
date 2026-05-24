@@ -26,10 +26,15 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
+import dev.mmrlx.nio.Path
 import dev.mmrlx.thread.RootArgs
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.RootThread
 import kotlinx.coroutines.CoroutineScope
+import org.luaj.LuaTable
+import org.luaj.LuaValue
+import org.luaj.Varargs
+import org.luaj.lib.VarArgFunction
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -271,3 +276,21 @@ fun <T> RootCallable<T>.sync(args: Map<String, Any?>? = null): T = rootSync(args
 
 fun File.inputStream0(): InputStream =
     rootSync { FileInputStream(this).use { readBytes() } }.inputStream()
+
+fun LuaTable.set(key: String, value: Boolean) = set(key, LuaValue.valueOf(value))
+
+inline fun <T> Varargs.map(transform: (LuaValue) -> T): List<T> =
+    (1..this.narg()).map { transform(this.arg(it)) }
+
+inline fun <T : Any> Varargs.mapNotLuaNil(transform: (LuaValue) -> T?): List<T> =
+    (1..this.narg())
+        .map { this.arg(it) }
+        .filterNot { it.isnil() }
+        .mapNotNull { transform(it) }
+
+class PathVarArgFunction(private val basePath: String) : VarArgFunction() {
+    override fun invoke(args: Varargs): LuaValue {
+        val elements = args.mapNotLuaNil { it.checkjstring() }.toTypedArray()
+        return valueOf(Path.parse(basePath, *elements))
+    }
+}

@@ -7,10 +7,12 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.util.set
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
 import kotlinx.parcelize.IgnoredOnParcel
+import org.luaj.LuaTable
 import java.io.InputStream
 
 data class Module(
@@ -130,6 +132,26 @@ data class Module(
         }
 
         return defaultValue
+    }
+
+    fun toLuaTable(): LuaTable {
+        val table = LuaTable()
+
+        table.set("adbPath", adbPath.toLuaTable())
+        table.set("id", id)
+        table.set("name", name)
+        table.set("version", version)
+        table.set("versionCode", versionCode)
+        table.set("author", author)
+        table.set("description", description)
+        table.set("metamodule", metaModule)
+        table.set("hasWebUI", hasWebUI)
+        table.set("path", path.toLuaTable())
+        // table.set("banner", banner)
+        // table.set("icon", icon)
+        // table.set("webrootConfig", webrootConfig.toLuaTable())
+
+        return table
     }
 
     companion object {
