@@ -41,6 +41,14 @@ data class UserPreferences(
     @ProtoNumber(42) val disableConsoleInterceptor: Boolean = false,
     @ProtoNumber(43) val adbPath: String = "/data/adb",
 ) {
+    fun getAdbPath(context: Context): String {
+        if (workingMode == WorkingMode.MODE_NON_ROOT) {
+            return context.filesDir.path
+        }
+
+        return adbPath
+    }
+
     fun isDarkMode() = when (darkMode) {
         DarkMode.AlwaysOff -> false
         DarkMode.AlwaysOn -> true

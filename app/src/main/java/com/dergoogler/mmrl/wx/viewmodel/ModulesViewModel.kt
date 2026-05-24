@@ -10,7 +10,6 @@ import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.datastore.model.Option
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.AdbPath
 import com.dergoogler.mmrl.wx.model.module.Module
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -146,9 +145,7 @@ class ModulesViewModel @Inject constructor(
 
     suspend fun getLocalModules(): List<Module> {
         val prefs = userPreferencesRepository.data.first()
-        val isNonRoot = prefs.workingMode == WorkingMode.MODE_NON_ROOT
-        val basePath =
-            (if (isNonRoot) context.filesDir.path else prefs.adbPath) ?: return emptyList()
+        val basePath = prefs.getAdbPath(context)
         val adbPath = AdbPath(basePath)
 
         Log.d(TAG, "BasePath=$basePath")
