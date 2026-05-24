@@ -34,6 +34,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.AdbPath
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
@@ -57,50 +58,64 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFile.Companion.toSuFile
 import dev.mmrlx.nio.readText
+import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
+import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
+import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.GrammarRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.ThemeRegistry
+import io.github.rosemoe.sora.langs.textmate.registry.model.ThemeModel
 import io.github.rosemoe.sora.text.Content
 import io.github.rosemoe.sora.text.ContentListener
 import io.github.rosemoe.sora.widget.CodeEditor
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.ANNOTATION
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.BLOCK_LINE
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.BLOCK_LINE_CURRENT
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.COMMENT
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.CURRENT_LINE
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.FUNCTION_NAME
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.IDENTIFIER_NAME
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.IDENTIFIER_VAR
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.KEYWORD
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.LINE_DIVIDER
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.LINE_NUMBER
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.LINE_NUMBER_BACKGROUND
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.LINE_NUMBER_CURRENT
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.LITERAL
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.MATCHED_TEXT_BACKGROUND
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.NON_PRINTABLE_CHAR
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.OPERATOR
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.SCROLL_BAR_THUMB
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.SCROLL_BAR_THUMB_PRESSED
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.SELECTED_TEXT_BACKGROUND
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.SELECTION_HANDLE
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.SELECTION_INSERT
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.TEXT_NORMAL
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.TEXT_SELECTED
-import io.github.rosemoe.sora.widget.schemes.EditorColorScheme.WHOLE_BACKGROUND
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.eclipse.tm4e.core.registry.IThemeSource
+
+object TextMateManager {
+
+    private var initialized = false
+
+    fun initialize(debug: Boolean, adbPath: AdbPath) {
+        if (initialized) return
+
+        initialized = true
+
+        FileProviderRegistry
+            .getInstance()
+            .addFileProvider(
+                AdbPathFileResolver(debug, adbPath)
+            )
+
+        GrammarRegistry
+            .getInstance()
+            .loadGrammars("textmate/languages.json")
+    }
+}
 
 data class CodeEditorState(
     private val scope: CoroutineScope,
+    private val adbPath: AdbPath,
     private val context: Context,
     private val colors: Colors,
     private val darkMode: Boolean,
+    private val debug: Boolean,
     private val initialFile: SuFile?,
     private val threadSafe: Boolean = true,
     private val textStyle: TextStyle,
     private val typeface: Typeface,
 ) {
+
+    val editor = CodeEditor(context)
+
+    var isSaveAllowed by mutableStateOf(true)
+
     val file: SuFile? by lazy {
-        if (initialFile == null) return@lazy null
+
+        if (initialFile == null) {
+            isSaveAllowed = false
+            return@lazy null
+        }
 
         val f = SuFile(initialFile.path)
 
@@ -114,126 +129,389 @@ data class CodeEditorState(
             return@lazy null
         }
 
-        return@lazy f
+        f
     }
 
-    var isSaveAllowed by mutableStateOf(true)
-    var content by mutableStateOf(Content(file?.readText(), threadSafe))
+    var content by mutableStateOf(
+        Content(
+            file?.readText(),
+            threadSafe
+        )
+    )
+
     var isModified by mutableStateOf(false)
-    val editor = CodeEditor(context)
 
-    fun saveFile() {
-        if (!isModified) return
+    init {
+        initialize()
+    }
 
-        if (!isSaveAllowed) {
-            Toast.makeText(context, "Cannot save", Toast.LENGTH_SHORT).show()
-            return
-        }
+    private fun Color.darken(fraction: Float) = lerp(this, Color.Black, fraction)
+    private fun Color.lighten(fraction: Float) = lerp(this, Color.White, fraction)
 
-        val myFile =
-            file ?: run {
-                Toast.makeText(context, "Cannot save", Toast.LENGTH_SHORT).show()
-                return
+    private fun buildTextMateTheme(): String {
+        val comment = if (darkMode) "#8B949E" else "#6B7280"
+        val keyword = if (darkMode) "#FF7B72" else "#C0392B"
+        val string = if (darkMode) "#A5D6FF" else "#1155A3"
+        val function = if (darkMode) "#D2A8FF" else "#7C3AED"
+        val variable = if (darkMode) "#FFA657" else "#B45309"
+        val type = if (darkMode) "#7EE787" else "#166534"
+        val constant = if (darkMode) "#79C0FF" else "#0369A1"
+        val tag = if (darkMode) "#7EE787" else "#166534"
+        val attribute = if (darkMode) "#FFA657" else "#9A6700"
+        val property = if (darkMode) "#79C0FF" else "#0E7490"
+        val number = if (darkMode) "#79C0FF" else "#047857"
+        val punctuation = if (darkMode) "#C9D1D9" else "#374151"
+        val cssValue = if (darkMode) "#A5D6FF" else "#1155A3"
+
+        return """
+{
+  "name": "Sora GitHub Contrast",
+  "type": "${if (darkMode) "dark" else "light"}",
+  "tokenColors": [
+    {
+      "name": "Comments",
+      "scope": [
+        "comment",
+        "comment.line",
+        "comment.block",
+        "punctuation.definition.comment"
+      ],
+      "settings": {
+        "foreground": "$comment"
+      }
+    },
+    {
+      "name": "Keywords",
+      "scope": [
+        "keyword",
+        "keyword.control",
+        "keyword.operator.word",
+        "storage",
+        "storage.type",
+        "storage.modifier"
+      ],
+      "settings": {
+        "foreground": "$keyword"
+      }
+    },
+    {
+      "name": "Operators / punctuation",
+      "scope": [
+        "keyword.operator",
+        "punctuation",
+        "meta.brace",
+        "meta.delimiter"
+      ],
+      "settings": {
+        "foreground": "$punctuation"
+      }
+    },
+    {
+      "name": "Strings",
+      "scope": [
+        "string",
+        "string.quoted",
+        "punctuation.definition.string"
+      ],
+      "settings": {
+        "foreground": "$string"
+      }
+    },
+    {
+      "name": "Numbers / constants",
+      "scope": [
+        "constant.numeric",
+        "constant.language",
+        "constant.character.escape",
+        "constant"
+      ],
+      "settings": {
+        "foreground": "$number"
+      }
+    },
+    {
+      "name": "Functions",
+      "scope": [
+        "entity.name.function",
+        "support.function",
+        "meta.function-call",
+        "variable.function"
+      ],
+      "settings": {
+        "foreground": "$function"
+      }
+    },
+    {
+      "name": "Variables",
+      "scope": [
+        "variable",
+        "variable.other",
+        "variable.parameter"
+      ],
+      "settings": {
+        "foreground": "$variable"
+      }
+    },
+    {
+      "name": "Types / classes",
+      "scope": [
+        "entity.name.type",
+        "entity.name.class",
+        "support.type",
+        "support.class",
+        "storage.type.java"
+      ],
+      "settings": {
+        "foreground": "$type"
+      }
+    },
+    {
+      "name": "HTML/XML tag",
+      "scope": [
+        "entity.name.tag",
+        "punctuation.definition.tag",
+        "meta.tag"
+      ],
+      "settings": {
+        "foreground": "$tag"
+      }
+    },
+    {
+      "name": "HTML/XML attributes",
+      "scope": [
+        "entity.other.attribute-name",
+        "entity.other.attribute-name.html",
+        "entity.other.attribute-name.css"
+      ],
+      "settings": {
+        "foreground": "$attribute"
+      }
+    },
+    {
+      "name": "CSS property names",
+      "scope": [
+        "support.type.property-name.css",
+        "meta.property-name",
+        "variable.property",
+        "meta.object-literal.key"
+      ],
+      "settings": {
+        "foreground": "$property"
+      }
+    },
+    {
+      "name": "CSS values",
+      "scope": [
+        "support.constant.property-value",
+        "meta.property-value",
+        "string.unquoted",
+        "entity.other.attribute-name.id.css",
+        "entity.other.attribute-name.class.css"
+      ],
+      "settings": {
+        "foreground": "$cssValue"
+      }
+    },
+    {
+      "name": "Regex",
+      "scope": [
+        "string.regexp",
+        "source.regexp"
+      ],
+      "settings": {
+        "foreground": "$string"
+      }
+    },
+    {
+      "name": "Links / markup",
+      "scope": [
+        "markup.underline.link",
+        "constant.other.reference.link"
+      ],
+      "settings": {
+        "foreground": "$constant",
+        "fontStyle": "underline"
+      }
+    }
+  ]
+}
+""".trimIndent()
+    }
+
+    private fun buildColorScheme(colors: Colors): EditorColorScheme {
+        val themeRegistry = ThemeRegistry.getInstance()
+
+        // Build and register a dynamic theme from our Colors
+        val themeJson = buildTextMateTheme()
+        val themeModel = ThemeModel(
+            IThemeSource.fromString(IThemeSource.ContentType.JSON, themeJson),
+            "dynamic"
+        )
+
+        runCatching { themeRegistry.loadTheme(themeModel) }
+        themeRegistry.setTheme("dynamic")
+
+        return object : TextMateColorScheme(themeRegistry, themeModel) {
+            override fun getColor(type: Int): Int {
+                val color: Color? = when (type) {
+                    // syntax
+                    ANNOTATION -> colors.mutedForeground.lighten(0.1f)
+                    FUNCTION_NAME -> colors.primary.darken(0.2f)
+                    IDENTIFIER_NAME -> colors.foreground
+                    IDENTIFIER_VAR -> colors.secondary.darken(0.15f)
+                    LITERAL -> colors.accent
+                    OPERATOR -> colors.mutedForeground
+                    COMMENT -> colors.mutedForeground.lighten(0.15f)
+                    KEYWORD -> colors.accent.darken(0.1f)
+
+                    // editor chrome
+                    WHOLE_BACKGROUND -> colors.background
+                    TEXT_NORMAL -> colors.foreground
+                    TEXT_SELECTED -> colors.primaryForeground
+
+                    // line numbers
+                    LINE_NUMBER_BACKGROUND -> colors.card.darken(0.05f)
+                    LINE_NUMBER -> colors.mutedForeground
+                    LINE_NUMBER_CURRENT -> colors.primary.darken(0.1f)
+
+                    // lines / blocks
+                    LINE_DIVIDER -> colors.border
+                    CURRENT_LINE -> colors.muted.darken(0.05f)
+                    BLOCK_LINE -> colors.border
+                    BLOCK_LINE_CURRENT -> colors.border.darken(0.15f)
+
+                    // selection / search
+                    SELECTED_TEXT_BACKGROUND -> colors.primary.lighten(0.15f).copy(alpha = 0.25f)
+                    MATCHED_TEXT_BACKGROUND -> colors.primary.lighten(0.3f).copy(alpha = 0.2f)
+                    SELECTION_INSERT -> colors.primary.lighten(0.1f)
+                    SELECTION_HANDLE -> colors.primary.darken(0.1f)
+
+                    // scroll
+                    SCROLL_BAR_THUMB -> colors.primary.copy(alpha = 0.45f)
+                    SCROLL_BAR_THUMB_PRESSED -> colors.primary.darken(0.1f).copy(alpha = 0.45f)
+
+                    // misc
+                    NON_PRINTABLE_CHAR -> colors.mutedForeground.darken(0.1f)
+
+                    else -> null
+                }
+                return color?.toArgb() ?: super.getColor(type)
             }
-
-        scope.launch {
-            myFile.writeText(editor.text.toString())
-            isModified = false
-            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun init() {
-        val scheme = FUCK_THIS_SHIT_EDITOR_COLOR_SCHEME(darkMode).apply {
-            setColor(ANNOTATION, colors.background.lighten(0.1f))
-            setColor(FUNCTION_NAME, colors.primary.darken(0.2f))
-            setColor(IDENTIFIER_NAME, colors.primary.darken(0.1f))
-            setColor(IDENTIFIER_VAR, colors.secondary.darken(0.15f))
-            setColor(LITERAL, colors.accent.lighten(0.2f))
-            setColor(OPERATOR, colors.primary.darken(0.3f))
-            setColor(COMMENT, colors.border.darken(0.1f))
-            setColor(KEYWORD, colors.secondary.lighten(0.2f))
-            setColor(WHOLE_BACKGROUND, colors.background)
-            setColor(TEXT_NORMAL, colors.foreground)
-            setColor(LINE_NUMBER_BACKGROUND, colors.card.darken(0.05f))
-            setColor(LINE_NUMBER, colors.mutedForeground.lighten(0.0465f))
-            setColor(LINE_DIVIDER, colors.border)
-            setColor(SCROLL_BAR_THUMB, colors.primary.copy(alpha = 0.4535f))
-            setColor(
-                SCROLL_BAR_THUMB_PRESSED,
-                colors.primary.darken(0.1f).copy(alpha = 0.4535f)
-            )
-            setColor(
-                SELECTED_TEXT_BACKGROUND,
-                colors.primary.lighten(0.15f).copy(alpha = 0.25f)
-            )
-            setColor(
-                MATCHED_TEXT_BACKGROUND,
-                colors.secondary.lighten(0.2f).copy(alpha = 0.25f)
-            )
-            setColor(LINE_NUMBER_CURRENT, colors.primary.darken(0.1f))
-            setColor(CURRENT_LINE, colors.muted.darken(0.05f))
-            setColor(SELECTION_INSERT, colors.primary.lighten(0.1f))
-            setColor(SELECTION_HANDLE, colors.primary.darken(0.1f))
-            setColor(BLOCK_LINE, colors.border.darken(0.05f))
-            setColor(BLOCK_LINE_CURRENT, colors.mutedForeground.darken(0.2f))
-            setColor(NON_PRINTABLE_CHAR, colors.popoverForeground.darken(0.3f))
-            setColor(TEXT_SELECTED, colors.primaryForeground.darken(0.1f))
+    // ---------------------------------------------------------------------------
+    // Initialisation
+    // ---------------------------------------------------------------------------
+
+    private fun initialize() {
+        TextMateManager.initialize(debug, adbPath)
+
+        val scopeName = when (file?.extension) {
+            "kt" -> "source.kotlin"
+            "kts" -> "source.kotlin"
+            "java" -> "source.java"
+            "js" -> "source.js"
+            "ts" -> "source.ts"
+            "json" -> "source.json"
+            "xml" -> "text.xml"
+            "html" -> "text.html.basic"
+            "css" -> "source.css"
+            "sh" -> "source.shell"
+            "lua" -> "source.lua"
+            "py" -> "source.python"
+            "cpp" -> "source.cpp"
+            "c" -> "source.c"
+            "rs" -> "source.rust"
+            else -> null
         }
+
+        val scheme = buildColorScheme(colors)
 
         editor.apply {
             setText(content)
             setTextSize(textStyle.fontSize.value)
-            setColorScheme(scheme)
             setTypefaceText(typeface)
+            scopeName?.let {
+                setEditorLanguage(
+                    TextMateLanguage.create(it, true)
+                )
+            }
+            colorScheme = scheme
             setHighlightCurrentLine(true)
             setEditable(true)
+            isWordwrap = false
+            setUndoEnabled(true)
         }
 
         content.addContentListener(contentListener)
     }
 
-    init {
-        init()
+    fun saveFile() {
+
+        if (!isModified) return
+
+        val target =
+            file ?: run {
+                Toast
+                    .makeText(
+                        context,
+                        "Cannot save",
+                        Toast.LENGTH_SHORT
+                    )
+                    .show()
+
+                return
+            }
+
+        scope.launch {
+
+            target.writeText(
+                editor.text.toString()
+            )
+
+            isModified = false
+
+            Toast
+                .makeText(
+                    context,
+                    "Saved",
+                    Toast.LENGTH_SHORT
+                )
+                .show()
+        }
     }
 
     private val contentListener
-        get() = object : ContentListener {
-            override fun beforeReplace(content: Content) {
-                isModified = true
+        get() =
+            object : ContentListener {
+
+                override fun beforeReplace(content: Content) {
+                    isModified = true
+                }
+
+                override fun afterInsert(
+                    content: Content,
+                    startLine: Int,
+                    startColumn: Int,
+                    endLine: Int,
+                    endColumn: Int,
+                    insertedContent: CharSequence,
+                ) {
+                    isModified = true
+                }
+
+                override fun afterDelete(
+                    content: Content,
+                    startLine: Int,
+                    startColumn: Int,
+                    endLine: Int,
+                    endColumn: Int,
+                    deletedContent: CharSequence,
+                ) {
+                    isModified = true
+                }
             }
-
-            override fun afterInsert(
-                content: Content,
-                startLine: Int,
-                startColumn: Int,
-                endLine: Int,
-                endColumn: Int,
-                insertedContent: CharSequence,
-            ) {
-                isModified = true
-            }
-
-            override fun afterDelete(
-                content: Content,
-                startLine: Int,
-                startColumn: Int,
-                endLine: Int,
-                endColumn: Int,
-                deletedContent: CharSequence,
-            ) {
-                isModified = true
-            }
-        }
-
-
-    private inner class FUCK_THIS_SHIT_EDITOR_COLOR_SCHEME(
-        private val darkMode: Boolean,
-    ) : EditorColorScheme(darkMode) {
-        fun Color.darken(fraction: Float) = lerp(this, Color.Black, fraction)
-        fun Color.lighten(fraction: Float) = lerp(this, Color.White, fraction)
-        fun setColor(type: Int, color: Color) = super.setColor(type, color.toArgb())
-    }
 }
 
 @Composable
@@ -246,22 +524,24 @@ fun rememberCodeEditorState(
         fontSize = 14.sp
     ),
 ): CodeEditorState {
-    val context = LocalContext.current
     val prefs = LocalUserPreferences.current
-
+    val module = LocalModule.current
+    val context = LocalContext.current
     val typeface by rememberTypefaceFrom(textStyle)
     val scope = rememberCoroutineScope()
 
-    return remember(prefs) {
+    return remember {
         CodeEditorState(
             scope = scope,
             context = context,
             colors = colors,
+            darkMode = true,
             initialFile = file,
             threadSafe = threadSafe,
             textStyle = textStyle,
-            darkMode = prefs.isDarkMode(),
             typeface = typeface,
+            adbPath = module.adbPath,
+            debug = prefs.developerMode
         )
     }
 }
@@ -373,38 +653,6 @@ fun FileEditorContent(path: String) {
             }
         }
     }
-}
-
-
-interface VisibleState {
-    val isVisible: Boolean
-    fun show()
-    fun hide()
-}
-
-@Composable
-fun rememberVisibleState(
-    initialState: Boolean = false,
-    content: @Composable (VisibleState) -> Unit,
-): VisibleState {
-    var visible by remember { mutableStateOf(initialState) }
-
-    val obj = remember(visible) {
-        object : VisibleState {
-            override val isVisible = visible
-            override fun show() {
-                visible = true
-            }
-
-            override fun hide() {
-                visible = false
-            }
-        }
-    }
-
-    if (visible) content(obj)
-
-    return obj
 }
 
 @Composable

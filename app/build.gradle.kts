@@ -163,15 +163,22 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    packaging.resources.excludes += setOf(
-        "META-INF/**",
-        "okhttp3/**",
-        //"kotlin/**",
-        "org/**",
-        "**.properties",
-        "**.bin",
-        "**/*.proto"
-    )
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/**",
+                "okhttp3/**",
+                //"kotlin/**",
+                "org/**",
+                "**.properties",
+                "**.bin",
+                "**/*.proto"
+            )
+            pickFirsts += listOf(
+                "tables/**"
+            )
+        }
+    }
 
     dependenciesInfo {
         includeInApk = false
