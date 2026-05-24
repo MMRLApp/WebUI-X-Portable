@@ -44,6 +44,8 @@ fun Context.extractZipFromAssets(
     assetName: String,
     outputDir: File,
 ) {
+    if (outputDir.exists()) return
+
     if (!outputDir.exists()) {
         outputDir.mkdirs()
     }

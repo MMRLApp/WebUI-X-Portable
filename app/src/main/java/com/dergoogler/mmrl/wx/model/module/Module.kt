@@ -1,10 +1,11 @@
+@file:Suppress("RedundantNullableReturnType")
+
 package com.dergoogler.mmrl.wx.model.module
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
@@ -223,10 +224,7 @@ data class Module(
                     return@produceState
                 }
 
-                val isNonRoot = prefs.workingMode == WorkingMode.MODE_NON_ROOT
-
-                val basePath =
-                    if (isNonRoot) context.filesDir.path else prefs.adbPath
+                val basePath: String? = prefs.getAdbPath(context)
 
                 if (basePath == null) {
                     value = ModuleUIState.Error.MissingAdbPath()

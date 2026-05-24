@@ -1,11 +1,9 @@
 package com.dergoogler.mmrl.wx.ui.webui.util
 
 import android.webkit.WebResourceResponse
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.dergoogler.mmrl.webui.MimeUtil
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.inputStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -20,14 +18,6 @@ enum class ResponseStatus(val code: Int, val reasonPhrase: String) {
 }
 
 private fun SuFile.checkStatus(): ResponseStatus {
-    val dir = getCanonicalDirPath()
-
-    for (forbiddenPath in listOf("/data/data", "/data/system")) {
-        if (dir.startsWith(forbiddenPath)) {
-            return ResponseStatus.FORBIDDEN
-        }
-    }
-
     if (!exists()) return ResponseStatus.NOT_FOUND
 
     return ResponseStatus.OK
@@ -127,20 +117,17 @@ fun SuFile.asResponse(injects: List<Injection>? = null): WebResourceResponse {
         ResponseStatus.FORBIDDEN -> err
 
         ResponseStatus.OK -> {
-            var stream by mutableStateOf(newInputStream())
-
-            if (injects != null) {
-                for (inject in injects) {
-                    stream = when (inject.type) {
-                        InjectionType.HEAD -> stream.headInject(inject.code)
-                        InjectionType.BODY -> stream.bodyInject(inject.code)
-                    }
+            val stream = inputStream() as InputStream
+            val modifiedStream = injects?.fold(stream) { currentStream, inject ->
+                when (inject.type) {
+                    InjectionType.HEAD -> currentStream.headInject(inject.code)
+                    InjectionType.BODY -> currentStream.bodyInject(inject.code)
                 }
-            }
+            } ?: stream
 
-            val `is` = handleSvgzStream(stream)
+            val `is` = handleSvgzStream(modifiedStream)
 
-            return WebResourceResponse(
+            WebResourceResponse(
                 mimeType,
                 encoding,
                 status.code,

@@ -149,18 +149,24 @@ class ModulesViewModel @Inject constructor(
         val adbPath = AdbPath(basePath)
 
         Log.d(TAG, "BasePath=$basePath")
-        Log.d(TAG, "ModulesDir=${adbPath.modulesDir}")
+//        Log.d(TAG, "ModulesDir=${adbPath.modulesDir}")
 
         val modulesDir = SuFile(adbPath.modulesDir)
+
         if (!modulesDir.exists()) {
             Log.e(TAG, "Modules directory does not exist")
             return emptyList()
         }
 
+        Log.d(TAG, "ModulesDir=${modulesDir}")
+
         val dirs = modulesDir.listFiles() ?: run {
             Log.e(TAG, "listFiles() returned null")
             return emptyList()
         }
+
+        Log.d(TAG, "Dirs=${dirs}")
+
 
         return dirs.mapNotNull { dir ->
             runCatching {
@@ -169,7 +175,7 @@ class ModulesViewModel @Inject constructor(
                     Log.w(TAG, "Missing module.prop in ${dir.path}")
                     return@mapNotNull null
                 }
-                Module(adbPath, propFile.inputStream().use { Module.readProps(it) })
+                Module(adbPath, Module.readProps(propFile.inputStream()))
             }.onFailure {
                 Log.e(TAG, "Failed parsing module ${dir.path}", it)
             }.getOrNull()

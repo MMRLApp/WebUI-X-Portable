@@ -3,6 +3,7 @@ package com.dergoogler.mmrl.wx.ui.screens.modules
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -92,6 +93,7 @@ fun ModulesScreen(
         },
     ) {
         PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
             state = ptrState,
             isRefreshing = isRefreshing && isLoaded,
             onRefresh = viewModel::refreshModules,
@@ -107,7 +109,9 @@ fun ModulesScreen(
         ) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.with(this@Scaffold) { it.scaffoldHazeSource() },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .with(this@Scaffold) { it.scaffoldHazeSource() },
                 contentPadding = PaddingValues(
                     top = this@Scaffold.scaffoldTopPadding + 8.dp,
                     start = 8.dp,
@@ -120,6 +124,7 @@ fun ModulesScreen(
                     !isLoaded -> {
                         items(6) { SkeletonModuleItem() }
                     }
+
                     modules.isEmpty() -> {
                         item {
                             PageIndicator(
@@ -128,6 +133,7 @@ fun ModulesScreen(
                             )
                         }
                     }
+
                     else -> {
                         items(
                             items = modules.filter { it.hasWebUI },
