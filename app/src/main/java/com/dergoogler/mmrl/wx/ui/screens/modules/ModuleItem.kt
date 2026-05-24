@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,13 +23,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,12 +37,12 @@ import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
-import com.dergoogler.mmrl.ui.component.LocalCover
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.ui.component.LocalCover
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.versionDisplay
 import dev.mmrlx.compose.layout.flashlightCard
@@ -64,7 +59,6 @@ import dev.mmrlx.compose.nio.rememberSuFile
 import dev.mmrlx.compose.ui.Skeleton
 import dev.mmrlx.compose.ui.ext.fadingEdge
 import dev.mmrlx.nio.inputStream
-import org.apache.commons.compress.harmony.pack200.PackingUtils.config
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -145,24 +139,23 @@ fun ModuleItem(
             .fillMaxWidth()
             .flashlightCard()
     ) {
-//        module.banner?.let {
-//            val file by rememberSuFile(it)
-//            file.exists { cover ->
-//                LocalCover(
-//                    modifier = Modifier.fadingEdge(
-//                        brush = Brush.verticalGradient(
-//                            colors = listOf(
-//                                Color.Transparent,
-//                                Color.Black,
-//                            ),
-//                            startY = Float.POSITIVE_INFINITY,
-//                            endY = 0f
-//                        ),
-//                    ),
-//                    inputStream = cover.inputStream(),
-//                )
-//            }
-//        }
+        module.banner?.let {
+            it.exists { cover ->
+                LocalCover(
+                    modifier = Modifier.fadingEdge(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black,
+                            ),
+                            startY = Float.POSITIVE_INFINITY,
+                            endY = 0f
+                        ),
+                    ),
+                    inputStream = cover.inputStream(),
+                )
+            }
+        }
 
         Column(
             modifier = Modifier.padding(16.dp),

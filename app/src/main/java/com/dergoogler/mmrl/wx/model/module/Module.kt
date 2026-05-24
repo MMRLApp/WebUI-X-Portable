@@ -8,27 +8,28 @@ import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
+import dev.mmrlx.utilities.obj.asOrDefault
 import kotlinx.parcelize.IgnoredOnParcel
 import java.io.InputStream
 
 data class Module(
     val adbPath: AdbPath,
-    private val properties: Map<String, String>,
+    private val properties: Map<String, Any>,
 ) : Comparable<Module> {
-    val id: String = properties["id"] ?: "" // maybe better throw an error?
+    val id: String = properties.get("", "id")
     val path: ModulePath = ModulePath(adbPath, id)
-    val name: String = properties["name"] ?: NA
-    val version: String = properties["version"] ?: NA
-    val versionCode: Int = properties["versionCode"].toIntOr(-1)
-    val author: String = properties["author"] ?: NA
-    val description: String = properties["description"] ?: NA
+    val name: String = properties.get(NA, "name")
+    val version: String = properties.get(NA, "version")
+    val versionCode: Int = properties.get(-1, "versionCode")
+    val author: String = properties.get(NA, "author")
+    val description: String = properties.get(NA, "description")
 
-    private val metaModuleBoolean = properties["metamodule"].toBoolOr(false)
-    private val metaModuleInt = properties["metamodule"].toIntOr(0)
+    private val metaModuleBoolean = properties.get(false, "metamodule")
+    private val metaModuleInt = properties.get(0, "metamodule")
     val metaModule: Boolean = metaModuleBoolean || metaModuleInt != 0
 
-    val banner: String? = properties["banner"]
-    val iconPath: String? = properties["iconPath"]
+    val banner: SuFile? = properties.get<String?>(null, "banner", "cover").relativeModuleDir
+    val icon: SuFile? = properties.get<String?>(null, "webuiIcon", "icon").relativeModuleDir
 
     val webrootConfig: WebrootConfig = WebrootConfig(this)
 
@@ -114,30 +115,94 @@ data class Module(
 
     override fun compareTo(other: Module): Int = id.compareTo(other.id)
 
-    private fun String?.toIntOr(defaultValue: Int): Int {
-        if (this == null) return defaultValue
-        return runCatching {
-            toInt()
-        }.getOrDefault(defaultValue)
-    }
+    private val String?.relativeModuleDir: SuFile?
+        get() = this?.let { SuFile(path.moduleDir, it) }
 
-    private fun String?.toBoolOr(defaultValue: Boolean): Boolean {
-        if (this == null) return defaultValue
-        return runCatching {
-            toBooleanStrict()
-        }.getOrDefault(defaultValue)
+    private inline fun <reified T> Map<String, Any>.get(
+        defaultValue: T,
+        vararg aliases: String,
+    ): T {
+        if (aliases.size == 1) return this[aliases.first()].asOrDefault(defaultValue)
+        for (alias in aliases) {
+            val value = this[alias]
+            if (value != null) return value.asOrDefault(defaultValue)
+        }
+
+        return defaultValue
     }
 
     companion object {
         private const val NA = "N/A"
-        internal fun readProps(input: InputStream): Map<String, String> =
+        internal fun readProps(input: InputStream): Map<String, Any> {
+            val result = linkedMapOf<String, Any>()
+
             input.bufferedReader().useLines { lines ->
-                lines.mapNotNull { line ->
-                    val idx = line.indexOf('=')
-                    if (idx > 0) line.substring(0, idx).trim() to line.substring(idx + 1).trim()
-                    else null
-                }.toMap()
+                lines.forEach { raw ->
+                    val line = raw.trim()
+
+                    if (line.isEmpty()) return@forEach
+                    if (line.startsWith("#") || line.startsWith("!")) return@forEach
+
+                    var separatorIndex = -1
+                    var escaped = false
+
+                    for (i in line.indices) {
+                        val c = line[i]
+
+                        if (escaped) {
+                            escaped = false
+                            continue
+                        }
+
+                        if (c == '\\') {
+                            escaped = true
+                            continue
+                        }
+
+                        if (c == '=' || c == ':') {
+                            separatorIndex = i
+                            break
+                        }
+                    }
+
+                    val key: String
+                    val rawValue: String
+
+                    if (separatorIndex >= 0) {
+                        key = line.substring(0, separatorIndex)
+                            .replace("\\=", "=")
+                            .replace("\\:", ":")
+                            .trim()
+
+                        rawValue = line.substring(separatorIndex + 1).trim()
+                    } else {
+                        key = line
+                        rawValue = ""
+                    }
+
+                    result[key] = parseValue(rawValue)
+                }
             }
+
+            return result
+        }
+
+        private fun parseValue(value: String): Any {
+            val v = value.trim()
+
+            return when {
+                v.equals("true", ignoreCase = true) -> true
+                v.equals("false", ignoreCase = true) -> false
+
+                v.toIntOrNull() != null -> v.toInt()
+
+                v.toLongOrNull() != null -> v.toLong()
+
+                v.toDoubleOrNull() != null -> v.toDouble()
+
+                else -> v
+            }
+        }
 
         val Empty = Module(AdbPath.Empty, emptyMap())
 
@@ -192,6 +257,5 @@ data class Module(
                 )
             }
         }
-
     }
 }
