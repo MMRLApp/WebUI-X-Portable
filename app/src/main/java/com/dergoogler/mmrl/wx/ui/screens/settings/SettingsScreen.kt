@@ -150,7 +150,6 @@ fun SettingsScreen() {
 
                     val date = System.currentTimeMillis().toFormattedDateSafely(it.value)
                     DialogDescription(R.string.settings_date_pattern_dialog_desc, date)
-                    Supporting() { }
                 }
 
                 NavButton(

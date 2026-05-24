@@ -4,10 +4,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -51,6 +51,12 @@ class SettingsViewModel @Inject constructor(
     fun setDatePattern(value: String) {
         viewModelScope.launch {
             userPreferencesRepository.setDatePattern(value)
+        }
+    }
+
+    fun setAdbPath(value: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAdbPath(value)
         }
     }
 

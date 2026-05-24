@@ -151,4 +151,7 @@
     <string name="unsupported_engine">Unsupported engine</string>
     <string name="exit">Exit</string>
     <string name="exit_desc">Are you sure that you want to exit this WebUI?</string>
+    <string name="settings_custom_adb_path">Custom ADB Path</string>
+    <string name="settings_custom_adb_path_desc">Select a custom ADB Path where modules should be loaded from</string>
+    <string name="settings_custom_adb_path_dialog_desc">The new ADB Path must contain a `modules` folder in order to load modules from there</string>
 </resources>

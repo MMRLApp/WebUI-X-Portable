@@ -55,6 +55,14 @@ class UserPreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun setAdbPath(value: String) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                adbPath = value
+            )
+        }
+    }
+
     suspend fun setWebUiDevUrl(value: String) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
             it.copy(

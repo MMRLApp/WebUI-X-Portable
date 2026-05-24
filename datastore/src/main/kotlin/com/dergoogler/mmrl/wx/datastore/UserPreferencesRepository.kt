@@ -2,8 +2,8 @@ package com.dergoogler.mmrl.wx.datastore
 
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +23,8 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setThemeColor(value: Int) = userPreferencesDataSource.setThemeColor(value)
 
     suspend fun setDatePattern(value: String) = userPreferencesDataSource.setDatePattern(value)
+
+    suspend fun setAdbPath(value: String) = userPreferencesDataSource.setAdbPath(value)
 
     suspend fun setWebUiDevUrl(value: String) =
         userPreferencesDataSource.setWebUiDevUrl(value)
