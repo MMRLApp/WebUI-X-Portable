@@ -59,6 +59,7 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFile.Companion.toSuFile
 import dev.mmrlx.nio.readText
+import dev.mmrlx.nio.writeText
 import io.github.rosemoe.sora.langs.textmate.TextMateColorScheme
 import io.github.rosemoe.sora.langs.textmate.TextMateLanguage
 import io.github.rosemoe.sora.langs.textmate.registry.FileProviderRegistry
