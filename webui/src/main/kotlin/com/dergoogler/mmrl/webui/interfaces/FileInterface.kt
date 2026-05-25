@@ -4,6 +4,8 @@ import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.file.readText
+import com.dergoogler.mmrl.platform.file.writeText
 
 @Keep
 class FileInterface(
