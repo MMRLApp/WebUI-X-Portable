@@ -4,6 +4,7 @@ package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
 
 import android.content.Context
 import android.graphics.Typeface
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
@@ -432,10 +433,12 @@ data class CodeEditorState(
             setText(content)
             setTextSize(textStyle.fontSize.value)
             setTypefaceText(typeface)
-            scopeName?.let {
+            scopeName?.runCatching {
                 setEditorLanguage(
-                    TextMateLanguage.create(it, true)
+                    TextMateLanguage.create(this, true)
                 )
+            }?.onFailure {
+                Log.e("CodeEditor", "Failed to set language: $it")
             }
             colorScheme = scheme
             setHighlightCurrentLine(true)
