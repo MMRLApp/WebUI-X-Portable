@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.platform.PlatformManager.platform
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import dev.mmrlx.compose.ui.Text
@@ -73,6 +74,7 @@ fun ModuleItem(
     placeholder: Nothing?,
 ) {
     val context = LocalContext.current
+    val prefs = LocalUserPreferences.current
     val navigator = LocalDestinationsNavigator.current
 
     val removeDialog = rememberDialog()
@@ -91,7 +93,7 @@ fun ModuleItem(
         leadingButton = {
             ConfigButton(
                 onClick = {
-                       navigator.navigate(ConfigEditorScreenDestination(module.id))
+                    navigator.navigate(ConfigEditorScreenDestination(module.id))
                 },
                 enabled = module.state != State.REMOVE
             )
@@ -101,7 +103,7 @@ fun ModuleItem(
                 module = module,
             )
 
-            if (platform.isNonRoot) {
+            if (prefs.isNonRoot) {
                 RemoveButton {
                     removeDialog.open()
                 }

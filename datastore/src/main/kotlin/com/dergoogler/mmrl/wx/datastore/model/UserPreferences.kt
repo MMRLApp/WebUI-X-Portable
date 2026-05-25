@@ -49,6 +49,9 @@ data class UserPreferences(
         return adbPath
     }
 
+    val isNonRoot: Boolean
+        get() = workingMode == WorkingMode.MODE_NON_ROOT
+
     fun isDarkMode() = when (darkMode) {
         DarkMode.AlwaysOff -> false
         DarkMode.AlwaysOn -> true
