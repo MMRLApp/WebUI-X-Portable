@@ -68,12 +68,12 @@ fun SettingsScreen() {
             Section(
                 title = stringResource(R.string.general)
             ) {
-                NavButton(
-                    route = AppThemeScreenDestination,
-                    icon = R.drawable.color_swatch,
-                    title = R.string.settings_app_theme,
-                    desc = R.string.settings_app_theme_desc
-                )
+//                NavButton(
+//                    route = AppThemeScreenDestination,
+//                    icon = R.drawable.color_swatch,
+//                    title = R.string.settings_app_theme,
+//                    desc = R.string.settings_app_theme_desc
+//                )
 
                 NavButton(
                     route = BehaviorScreenDestination,
