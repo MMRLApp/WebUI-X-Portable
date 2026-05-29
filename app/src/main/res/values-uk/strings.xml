@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="modules_empty">Жодного модуля не знайдено</string>
+    <string name="settings_app_theme">Тема застосунку</string>
+    <string name="settings_date_pattern">Формат дати</string>
+    <string name="settings_date_pattern_desc">Використовувати власний формат дати</string>
+    <string name="settings_developer_mode">Режим розробника</string>
+    <string name="settings_webui_remote_url">Віддалена URL-адреса WebUI</string>
+    <string name="settings_webui_remote_url_desc">Щоби спростити налагодження, надайте локальний домен, наприклад http://localhost. Дивіться сповіщення вище для отримання додаткової інформації.</string>
+    <string name="app_theme_palette">Палітра теми</string>
+    <string name="app_theme_dark_theme">Темна тема</string>
+    <string name="app_theme_dark_theme_auto">Авто</string>
+    <string name="app_theme_dark_theme_light">Світла</string>
+    <string name="app_theme_dark_theme_dark">Темна</string>
+    <string name="menu_advanced_menu">Розширене меню</string>
+    <string name="menu_sort_mode">Режим сортування</string>
+    <string name="menu_sort_option_name">Назва</string>
+    <string name="menu_sort_option_updated">Час оновлення</string>
+    <string name="menu_descending">За спаданням</string>
+    <string name="menu_pin_enabled">Закріпити активовані</string>
+    <string name="menu_pin_action">Закріпити дію</string>
+    <string name="menu_pin_webui">Закріпити WebUI</string>
+    <string name="menu_show_updated">Показувати час оновлення</string>
+    <string name="menu_show_antifeatures">Показувати антифункції</string>
+    <string name="search_empty">Порожній список</string>
+    <string name="search_placeholder">Пошук…</string>
+</resources>
