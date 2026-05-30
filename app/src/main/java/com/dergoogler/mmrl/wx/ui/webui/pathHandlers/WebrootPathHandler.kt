@@ -207,7 +207,7 @@ class WebrootPathHandler(
         } catch (e: IOException) {
             console.debugError("Error opening webroot path: $path", e)
             return errorResponse(
-                title = "Faild",
+                title = "Failed",
                 description = {
                     +e.message.toString()
                 },
