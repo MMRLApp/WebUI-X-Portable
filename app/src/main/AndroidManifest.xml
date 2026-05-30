@@ -72,13 +72,9 @@
 
         <activity
             android:name="${__packageName__}.ui.activity.CrashHandlerActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
 
         <activity
