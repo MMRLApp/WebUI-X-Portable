@@ -145,7 +145,7 @@ fun SuFile.asResponse(injects: List<Injection>? = null): WebResourceResponse {
 fun SuFile.handleSvgzStream(
     stream: InputStream,
 ): InputStream {
-    return if (extension === "svgz") GZIPInputStream(stream) else stream
+    return if (extension == "svgz") GZIPInputStream(stream) else stream
 }
 
 fun String.asStyleResponse(): WebResourceResponse {
