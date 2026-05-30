@@ -13,7 +13,7 @@ object PermissionParser {
             is String -> {
                 val trimmed = input.trim()
 
-                when {
+                val mode = when {
                     // symbolic form: rwxr-xr-x
                     trimmed.length == 9 && trimmed.all { it in "rwx-" } ->
                         symbolicToInt(trimmed)
@@ -24,6 +24,9 @@ object PermissionParser {
 
                     else -> error("Unknown permission format: $input")
                 }
+
+                validateMode(mode)
+                mode
             }
 
             else -> error("Unsupported type: ${input::class}")
