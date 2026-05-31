@@ -22,7 +22,7 @@ class WebUIActivity : BaseActivity() {
             ?: throw BrickException("moduleId cannot be null or empty")
 
         setBaseContent {
-            ModuleScope(moduleId) {
+            ModuleScope(moduleId, toolbar = false) {
                 WebUIScreen()
             }
         }

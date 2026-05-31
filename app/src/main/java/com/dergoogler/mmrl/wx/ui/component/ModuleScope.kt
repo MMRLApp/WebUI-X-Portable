@@ -15,18 +15,22 @@ import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
 val LocalModule = compositionLocalOf { Module.Empty }
 
 @Composable
-fun ModuleScope(moduleId: String, content: @Composable () -> Unit) {
+fun ModuleScope(
+    moduleId: String,
+    toolbar: Boolean = true,
+    content: @Composable () -> Unit,
+) {
     val state by Module.rememberCreate(moduleId)
 
     when (state) {
         ModuleUIState.Loading -> {
-            ContentWrapper("Loading...") {
+            ContentWrapper(toolbar, "Loading...") {
                 LoadingContent()
             }
         }
 
         is ModuleUIState.Error -> {
-            ContentWrapper("ERROR") {
+            ContentWrapper(toolbar, "ERROR") {
                 val msg = (state as ModuleUIState.Error).message
                 ErrorContent(msg)
             }
@@ -44,12 +48,15 @@ fun ModuleScope(moduleId: String, content: @Composable () -> Unit) {
 
 @Composable
 private fun ContentWrapper(
+    toolbar: Boolean,
     title: String = "Error",
     content: @Composable ScaffoldScope.() -> Unit,
 ) {
     val navigator = LocalDestinationsNavigator.current
     Scaffold(
         toolbar = {
+            if (!toolbar) return@Scaffold
+
             NavigateUpToolbar(
                 title = title,
                 onBack = { navigator.popBackStack() },
