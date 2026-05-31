@@ -27,15 +27,29 @@ enum class WorkingMode {
             FIRST_SETUP -> Platform.NonRoot
         }
 
+    val toString: String
+        get() = when (this) {
+            FIRST_SETUP -> "First Setup"
+            MODE_MAGISK -> "Magisk"
+            MODE_KERNEL_SU -> "KernelSU"
+            MODE_KERNEL_SU_NEXT -> "KsuNext"
+            MODE_APATCH -> "APatch"
+            MODE_SUKISU -> "SukiSu"
+            MODE_RKSU -> "RKSU"
+            MODE_MKSU -> "MKSU"
+            MODE_NON_ROOT -> "Non-Root"
+        }
+
     companion object {
-        val WorkingMode.isRoot get() =
-            this == MODE_MAGISK ||
-                    this == MODE_KERNEL_SU ||
-                    this == MODE_KERNEL_SU_NEXT ||
-                    this == MODE_APATCH ||
-                    this == MODE_SUKISU ||
-                    this == MODE_RKSU ||
-                    this == MODE_MKSU
+        val WorkingMode.isRoot
+            get() =
+                this == MODE_MAGISK ||
+                        this == MODE_KERNEL_SU ||
+                        this == MODE_KERNEL_SU_NEXT ||
+                        this == MODE_APATCH ||
+                        this == MODE_SUKISU ||
+                        this == MODE_RKSU ||
+                        this == MODE_MKSU
         val WorkingMode.isNonRoot get() = this == MODE_NON_ROOT
         val WorkingMode.isSetup get() = this == FIRST_SETUP
     }

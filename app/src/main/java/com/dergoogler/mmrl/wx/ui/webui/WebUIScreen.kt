@@ -23,6 +23,9 @@ import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.KernelSUInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileInputInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileOutputInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.ModuleInterface
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
@@ -91,7 +94,9 @@ fun WebUIScreen() {
                 }
 
                 outputStreamFactory { paths ->
-                    SuFileOutputStream(paths.first)
+                    val path = paths.first
+                    val append = paths.append
+                    SuFileOutputStream(path, append)
                 }
 
                 fileFactory { paths ->
@@ -115,8 +120,14 @@ fun WebUIScreen() {
                     "autoOpenEruda" to prefs.enableAutoOpenEruda,
                     "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
                     "isRootMode" to prefs.workingMode.isRoot,
+                    "workingMode" to prefs.workingMode
                 )
             }
+            // legacy interfaces
+            .registerJavascriptInterface(ModuleInterface::class.java)
+            .registerJavascriptInterface(FileInputInterface::class.java)
+            .registerJavascriptInterface(FileOutputInterface::class.java)
+            // end
             .backHandlers(colorScheme)
             .client { }
             .chromeClient { }
