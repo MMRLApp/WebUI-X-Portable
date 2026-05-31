@@ -67,28 +67,28 @@ android {
 
         create("internal") {
             dimension = "testing"
-            applicationId = "$basePackageName.internal"
+            applicationIdSuffix  = ".internal"
             resValue("string", "app_name", "[ᛁ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
         create("alpha") {
             dimension = "testing"
-            applicationId = "$basePackageName.alpha"
+            applicationIdSuffix  = ".alpha"
             resValue("string", "app_name", "[ᚨ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
         create("beta") {
             dimension = "testing"
-            applicationId = "$basePackageName.beta"
+            applicationIdSuffix  = ".beta"
             resValue("string", "app_name", "[ᛒ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
         create("rc") {
             dimension = "testing"
-            applicationId = "$basePackageName.rc"
+            applicationIdSuffix  = ".rc"
             resValue("string", "app_name", "[ᚱ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
@@ -114,7 +114,6 @@ android {
             buildConfigField("Boolean", "IS_GOOGLE_PLAY_BUILD", "false")
             isDebuggable = false
             isJniDebuggable = false
-            versionNameSuffix = "-release"
             renderscriptOptimLevel = 3
             multiDexEnabled = true
 
@@ -132,7 +131,6 @@ android {
             buildConfigField("Boolean", "IS_DEV_VERSION", "true")
             buildConfigField("Boolean", "IS_GOOGLE_PLAY_BUILD", "false")
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
             isJniDebuggable = true
             isDebuggable = true
             renderscriptOptimLevel = 0
@@ -193,16 +191,17 @@ licensee {
 
 androidComponents {
     onVariants { variant ->
+        val testingFlavor = variant.productFlavors
+            .firstOrNull { it.first == "testing" }
+            ?.second
+
         variant.outputs.filterIsInstance<VariantOutputImpl>().forEach { output ->
             output.outputFileName.set(
                 output.versionName.map { vName ->
-                    "WebUI-X-${vName}-${variant.buildType ?: variant.name}.apk"
+                    "WebUI-X-$vName-${variant.buildType}-$testingFlavor.apk"
                 }
             )
         }
-    }
-    onVariants(selector().withBuildType("release")) {
-        it.packaging.resources.excludes.add("META-INF/**")
     }
 }
 
