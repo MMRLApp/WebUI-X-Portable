@@ -13,7 +13,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
@@ -50,17 +49,7 @@ fun WebUIScreen() {
     val userAgent = remember {
         val mmrlVersion = context.managerVersion.second
 
-        val platform = when (prefs.workingMode) {
-            WorkingMode.MODE_NON_ROOT -> "NonRoot"
-            WorkingMode.MODE_MAGISK -> "Magisk"
-            WorkingMode.MODE_KERNEL_SU -> "KernelSU"
-            WorkingMode.MODE_KERNEL_SU_NEXT -> "KsuNext"
-            WorkingMode.MODE_APATCH -> "APatch"
-            WorkingMode.MODE_MKSU -> "MKSU"
-            WorkingMode.MODE_RKSU -> "RKSU"
-            WorkingMode.MODE_SUKISU -> "SukiSu"
-            else -> "Unknown"
-        }
+        val platform = prefs.workingMode.toString
 
         val platformVersion = PlatformManager.get(-1) {
             moduleManager.versionCode

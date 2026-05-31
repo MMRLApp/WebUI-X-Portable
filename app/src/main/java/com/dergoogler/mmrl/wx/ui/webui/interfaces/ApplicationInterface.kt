@@ -5,7 +5,6 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.core.content.pm.PackageInfoCompat
 import com.dergoogler.mmrl.wx.ui.webui.alerts.MXConfirm
 import com.dergoogler.mmrl.wx.ui.webui.alerts.MXPrompt
 import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Confirm
@@ -33,19 +32,6 @@ class ApplicationInterface(
             "name" to settings.workingMode.toString
             "versionName" to "-1"
             "versionCode" to -1
-        }
-    }
-
-    @ExportMethod
-    fun getCurrentApplication(): JSONObject {
-        val packageInfo = kontext.packageManager.getPackageInfo(kontext.packageName, 0)
-        val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
-        val versionName = packageInfo.versionName ?: "unknown"
-
-        return jsonObject {
-            "name" to packageInfo.packageName
-            "versionName" to versionName
-            "versionCode" to versionCode
         }
     }
 
