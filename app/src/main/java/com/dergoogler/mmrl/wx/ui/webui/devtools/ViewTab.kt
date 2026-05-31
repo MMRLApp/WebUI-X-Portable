@@ -4,8 +4,7 @@ import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -17,11 +16,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,6 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.compose.ui.HorizontalDivider
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.icon.IconButton
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import kotlinx.coroutines.launch
 
 @Composable
@@ -55,46 +54,27 @@ fun ViewTab(
         )
     }
 
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            DevToolsTabRow(
-                modifier = Modifier
-                    .padding(top = statusBarHeight)
-                    .weight(1f),
-                selectedTabIndex = state.currentPage,
-                indicator = { tabPositions ->
-                    AnimatedIndicator(
-                        tabPositions = tabPositions,
-                        selectedTabIndex = state.currentPage
-                    )
-                },
-                divider = {}
+    DevToolsTabRow(
+        modifier = Modifier
+            .background(MMRLXTheme.colors.card)
+            .padding(top = statusBarHeight),
+        selectedTabIndex = state.currentPage,
+        indicator = { tabPositions ->
+            AnimatedIndicator(
+                tabPositions = tabPositions,
+                selectedTabIndex = state.currentPage
+            )
+        },
+        divider = {
+            HorizontalDivider(
+                thickness = 0.3.dp,
+            )
+        },
+        endContent = {
+            IconButton(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                onClick = onDismissRequest
             ) {
-                pages.forEachIndexed { index, text ->
-                    Tab(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        selected = state.currentPage == index,
-                        onClick = {
-                            scope.launch {
-                                state.animateScrollToPage(index)
-                            }
-                        },
-                        selectedContentColor = MaterialTheme.colorScheme.primary,
-                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ) {
-                        Text(
-                            text = stringResource(text),
-                            style = MaterialTheme.typography.labelLarge,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-            }
-
-            IconButton(onClick = onDismissRequest) {
                 Icon(
                     painter = painterResource(R.drawable.x),
                     contentDescription = "Close DevTools",
@@ -102,10 +82,27 @@ fun ViewTab(
                 )
             }
         }
-
-        HorizontalDivider(
-            thickness = 0.3.dp,
-        )
+    ) {
+        pages.forEachIndexed { index, text ->
+            Tab(
+                modifier = Modifier.padding(vertical = 12.dp),
+                selected = state.currentPage == index,
+                onClick = {
+                    scope.launch {
+                        state.animateScrollToPage(index)
+                    }
+                },
+                selectedContentColor = MMRLXTheme.colors.primary,
+                unselectedContentColor = MMRLXTheme.colors.mutedForeground
+            ) {
+                Text(
+                    text = stringResource(text),
+                    style = MMRLXTheme.typography.labelLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
@@ -159,7 +156,7 @@ private fun AnimatedIndicator(tabPositions: List<TabPosition>, selectedTabIndex:
     }
 
     Indicator(
-        color = MaterialTheme.colorScheme.primary,
+        color = MMRLXTheme.colors.primary,
         modifier = Modifier
             .wrapContentSize(align = Alignment.BottomStart)
             .offset(x = indicatorStart)

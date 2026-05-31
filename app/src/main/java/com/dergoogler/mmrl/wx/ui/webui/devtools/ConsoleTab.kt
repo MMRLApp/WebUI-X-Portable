@@ -21,13 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -55,6 +49,21 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.util.badgeDebugBackground
+import com.dergoogler.mmrl.wx.util.badgeDebugForeground
+import com.dergoogler.mmrl.wx.util.badgeErrorBackground
+import com.dergoogler.mmrl.wx.util.badgeErrorForeground
+import com.dergoogler.mmrl.wx.util.badgeInfoBackground
+import com.dergoogler.mmrl.wx.util.badgeInfoForeground
+import com.dergoogler.mmrl.wx.util.badgeWarnBackground
+import com.dergoogler.mmrl.wx.util.badgeWarnForeground
+import dev.mmrlx.compose.ui.HorizontalDivider
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.VerticalDivider
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.icon.IconButton
+import dev.mmrlx.compose.ui.theme.LocalContentColor
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.console.ConsoleEntry
 import dev.mmrlx.webui.console.PrimitiveKind
@@ -96,6 +105,7 @@ private sealed class FlatRow {
 @Composable
 fun ConsoleTab() {
     val webui = LocalWebUI.current
+    val colors = MMRLXTheme.colors
 
     val richLogs by webui.console.flow.collectAsState()
     val evalEntries = remember { mutableStateListOf<LogEntry>() }
@@ -157,7 +167,7 @@ fun ConsoleTab() {
             }
         )
 
-        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(thickness = 0.5.dp, color = colors.border)
 
         if (filtered.isEmpty()) {
             Box(
@@ -169,8 +179,8 @@ fun ConsoleTab() {
                 Text(
                     text = if (allEntries.isEmpty()) "No console output."
                     else "No results for current filter.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MMRLXTheme.typography.bodySmall,
+                    color = colors.foreground
                 )
             }
         } else {
@@ -184,13 +194,13 @@ fun ConsoleTab() {
                     }
                     HorizontalDivider(
                         thickness = 0.3.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        color = colors.border.copy(alpha = 0.5f)
                     )
                 }
             }
         }
 
-        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(thickness = 0.5.dp, color = colors.border)
 
         JsInputBar(
             value = jsInput,
@@ -261,27 +271,27 @@ private fun ConsoleRow(entry: ConsoleEntry) {
     val colors = consoleColors()
     val rowStyle = when (entry.level) {
         ConsoleMessage.MessageLevel.ERROR -> ConsoleRowStyle(
-            colors.error.copy(alpha = 0.08f), colors.error,
-            colors.error.copy(alpha = 0.7f), R.drawable.exclamation_circle
+            colors.error.second, colors.error.first,
+            colors.error.first, R.drawable.exclamation_circle
         )
 
         ConsoleMessage.MessageLevel.WARNING -> ConsoleRowStyle(
-            colors.warn.copy(alpha = 0.08f), colors.warn,
-            colors.warn.copy(alpha = 0.7f), R.drawable.alert_triangle_filled
+            colors.warn.second, colors.warn.first,
+            colors.warn.first, R.drawable.alert_triangle_filled
         )
 
         ConsoleMessage.MessageLevel.TIP -> ConsoleRowStyle(
-            colors.tip.copy(alpha = 0.06f), colors.tip,
-            colors.tip.copy(alpha = 0.6f), R.drawable.bulb
+            colors.tip.second, colors.tip.first,
+            colors.tip.first, R.drawable.bulb
         )
 
         ConsoleMessage.MessageLevel.DEBUG -> ConsoleRowStyle(
-            Color.Transparent, colors.debug,
-            Color.Transparent, R.drawable.bug
+            colors.debug.second, colors.debug.first,
+            colors.debug.first, R.drawable.bug
         )
 
         else -> ConsoleRowStyle(
-            Color.Transparent, MaterialTheme.colorScheme.onSurface,
+            Color.Transparent, MMRLXTheme.colors.card,
             Color.Transparent, null
         )
     }
@@ -312,7 +322,7 @@ private fun ConsoleRow(entry: ConsoleEntry) {
                     is ResultNode.Primitive -> {
                         Text(
                             text = node.value,
-                            style = MaterialTheme.typography.bodySmall.copy(
+                            style = MMRLXTheme.typography.bodySmall.copy(
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace
                             ),
@@ -330,7 +340,7 @@ private fun ConsoleRow(entry: ConsoleEntry) {
             if (entry.source.isNotBlank()) {
                 Text(
                     text = "${entry.source.substringAfterLast("/")}:${entry.line}",
-                    style = MaterialTheme.typography.labelSmall.copy(
+                    style = MMRLXTheme.typography.labelSmall.copy(
                         fontSize = 10.sp,
                         fontFamily = FontFamily.Monospace
                     ),
@@ -348,26 +358,26 @@ private fun EvalInputRow(code: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.06f))
+            .background(MMRLXTheme.colors.card.copy(alpha = 0.06f))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.Top
     ) {
         Text(
             text = ">",
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = MMRLXTheme.typography.bodySmall.copy(
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             ),
-            color = MaterialTheme.colorScheme.primary
+            color = MMRLXTheme.colors.cardForeground
         )
         Text(
             text = code,
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = MMRLXTheme.typography.bodySmall.copy(
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             ),
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MMRLXTheme.colors.mutedForeground,
             softWrap = true
         )
     }
@@ -379,8 +389,8 @@ private fun EvalErrorRow(message: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.error.copy(alpha = 0.06f))
-            .drawLeftBorder(colors.error.copy(alpha = 0.5f), 2.dp)
+            .background(colors.error.second)
+            .drawLeftBorder(colors.error.first, 2.dp)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.Top
@@ -391,16 +401,16 @@ private fun EvalErrorRow(message: String) {
             modifier = Modifier
                 .size(12.dp)
                 .padding(top = 2.dp),
-            tint = colors.error.copy(alpha = 0.7f)
+            tint = colors.error.second.copy(alpha = 0.7f)
         )
         Text(
             text = "✗ $message",
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = MMRLXTheme.typography.bodySmall.copy(
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,
                 lineHeight = 16.sp
             ),
-            color = colors.error,
+            color = colors.error.first,
             softWrap = true
         )
     }
@@ -506,7 +516,7 @@ private fun EvalNodeRow(
                             append(displayValue)
                         }
                     },
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    style = MMRLXTheme.typography.bodySmall.copy(fontSize = 11.sp),
                     softWrap = true
                 )
             }
@@ -589,7 +599,7 @@ private fun EvalNodeRow(
             ) {
                 Text(
                     text = node.token,
-                    style = MaterialTheme.typography.bodySmall.copy(
+                    style = MMRLXTheme.typography.bodySmall.copy(
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
                         color = punctColor
@@ -610,13 +620,13 @@ private fun ConsoleToolbar(
     warnCount: Int,
     onClear: () -> Unit,
 ) {
-    val dividerColor = MaterialTheme.colorScheme.outlineVariant
-    val colors = consoleColors()
+    val colors = MMRLXTheme.colors
+    val consoleColors = consoleColors()
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.tonalSurface)
+            .background(colors.card)
             .padding(horizontal = 6.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -626,11 +636,11 @@ private fun ConsoleToolbar(
                 painter = painterResource(R.drawable.x),
                 contentDescription = "Clear console",
                 modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = colors.primary
             )
         }
 
-        VerticalDivider(modifier = Modifier.height(16.dp), color = dividerColor)
+        VerticalDivider(modifier = Modifier.height(16.dp), color = colors.border)
 
         BasicTextField(
             value = searchQuery,
@@ -638,15 +648,15 @@ private fun ConsoleToolbar(
             modifier = Modifier
                 .weight(1f)
                 .background(
-                    MaterialTheme.colorScheme.surface,
+                    colors.muted,
                     shape = MaterialTheme.shapes.small
                 )
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             singleLine = true,
-            textStyle = MaterialTheme.typography.bodySmall.copy(
+            textStyle = MMRLXTheme.typography.bodySmall.copy(
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurface
+                color = colors.mutedForeground
             ),
             decorationBox = { inner ->
                 if (searchQuery.isEmpty()) {
@@ -656,26 +666,21 @@ private fun ConsoleToolbar(
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = colors.mutedForeground
                     )
                 }
                 inner()
             }
         )
 
-        VerticalDivider(modifier = Modifier.height(16.dp), color = dividerColor)
+        VerticalDivider(modifier = Modifier.height(16.dp), color = colors.border)
 
         LevelFilterChip(
-            icon = {
-                Icon(
-                    painterResource(R.drawable.exclamation_circle),
-                    null,
-                    modifier = Modifier.size(13.dp)
-                )
-            },
+            iconRes = R.drawable.exclamation_circle,
             label = if (errorCount > 0) "$errorCount" else null,
             selected = filterLevel == ConsoleMessage.MessageLevel.ERROR,
-            selectedColor = colors.error,
+            selectedFgColor = consoleColors.error.first,
+            selectedBgColor = consoleColors.error.second,
             onClick = {
                 onFilterChange(
                     if (filterLevel == ConsoleMessage.MessageLevel.ERROR) null
@@ -684,16 +689,11 @@ private fun ConsoleToolbar(
             }
         )
         LevelFilterChip(
-            icon = {
-                Icon(
-                    painterResource(R.drawable.alert_triangle_filled),
-                    null,
-                    modifier = Modifier.size(13.dp)
-                )
-            },
+            iconRes = R.drawable.alert_triangle_filled,
             label = if (warnCount > 0) "$warnCount" else null,
             selected = filterLevel == ConsoleMessage.MessageLevel.WARNING,
-            selectedColor = colors.warn,
+            selectedFgColor = consoleColors.warn.first,
+            selectedBgColor = consoleColors.warn.second,
             onClick = {
                 onFilterChange(
                     if (filterLevel == ConsoleMessage.MessageLevel.WARNING) null
@@ -702,16 +702,11 @@ private fun ConsoleToolbar(
             }
         )
         LevelFilterChip(
-            icon = {
-                Icon(
-                    painterResource(R.drawable.info_circle),
-                    null,
-                    modifier = Modifier.size(13.dp)
-                )
-            },
+            iconRes = R.drawable.info_circle,
             label = null,
             selected = filterLevel == ConsoleMessage.MessageLevel.LOG,
-            selectedColor = MaterialTheme.colorScheme.primary,
+            selectedFgColor = colors.mutedForeground,
+            selectedBgColor = colors.muted,
             onClick = {
                 onFilterChange(
                     if (filterLevel == ConsoleMessage.MessageLevel.LOG) null
@@ -720,16 +715,11 @@ private fun ConsoleToolbar(
             }
         )
         LevelFilterChip(
-            icon = {
-                Icon(
-                    painterResource(R.drawable.bulb),
-                    null,
-                    modifier = Modifier.size(13.dp)
-                )
-            },
+            iconRes = R.drawable.bulb,
             label = null,
             selected = filterLevel == ConsoleMessage.MessageLevel.TIP,
-            selectedColor = colors.tip,
+            selectedFgColor = consoleColors.tip.first,
+            selectedBgColor = consoleColors.tip.second,
             onClick = {
                 onFilterChange(
                     if (filterLevel == ConsoleMessage.MessageLevel.TIP) null
@@ -738,10 +728,11 @@ private fun ConsoleToolbar(
             }
         )
         LevelFilterChip(
-            icon = { Icon(painterResource(R.drawable.bug), null, modifier = Modifier.size(13.dp)) },
+            iconRes = R.drawable.bug,
             label = null,
             selected = filterLevel == ConsoleMessage.MessageLevel.DEBUG,
-            selectedColor = colors.debug,
+            selectedFgColor = consoleColors.debug.first,
+            selectedBgColor = consoleColors.debug.second,
             onClick = {
                 onFilterChange(
                     if (filterLevel == ConsoleMessage.MessageLevel.DEBUG) null
@@ -754,28 +745,35 @@ private fun ConsoleToolbar(
 
 @Composable
 private fun LevelFilterChip(
-    icon: @Composable () -> Unit,
+    @DrawableRes iconRes: Int,
     label: String?,
     selected: Boolean,
-    selectedColor: Color,
+    selectedFgColor: Color,
+    selectedBgColor: Color,
     onClick: () -> Unit,
 ) {
-    val bg = if (selected) selectedColor.copy(alpha = 0.15f) else Color.Transparent
-    val tint = if (selected) selectedColor else MaterialTheme.colorScheme.onSurfaceVariant
+    val bg = if (selected) selectedBgColor else Color.Transparent
+    val tint = if (selected) selectedFgColor else MMRLXTheme.colors.cardForeground
     Row(
         modifier = Modifier
-            .background(bg, shape = MaterialTheme.shapes.small)
+            .background(bg, shape = MMRLXTheme.shapes.small)
             .padding(horizontal = 2.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         CompositionLocalProvider(LocalContentColor provides tint) {
-            IconButton(onClick = onClick, modifier = Modifier.size(22.dp)) { icon() }
+            IconButton(onClick = onClick, modifier = Modifier.size(22.dp)) {
+                Icon(
+                    painter = painterResource(iconRes),
+                    tint = tint,
+                    modifier = Modifier.size(13.dp)
+                )
+            }
         }
         if (label != null) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                style = MMRLXTheme.typography.labelSmall.copy(fontSize = 10.sp),
                 color = tint,
                 modifier = Modifier.padding(end = 4.dp)
             )
@@ -792,7 +790,7 @@ private fun JsInputBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.tonalSurface)
+            .background(MMRLXTheme.colors.card)
             .navigationBarsPadding()
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -800,11 +798,11 @@ private fun JsInputBar(
     ) {
         Text(
             text = ">",
-            style = MaterialTheme.typography.bodySmall.copy(
+            style = MMRLXTheme.typography.bodySmall.copy(
                 fontSize = 12.sp,
                 fontFamily = FontFamily.Monospace
             ),
-            color = MaterialTheme.colorScheme.primary
+            color = MMRLXTheme.colors.mutedForeground
         )
         BasicTextField(
             value = value,
@@ -820,20 +818,20 @@ private fun JsInputBar(
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(onDone = { onRun() }),
-            textStyle = MaterialTheme.typography.bodySmall.copy(
+            textStyle = MMRLXTheme.typography.bodySmall.copy(
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MMRLXTheme.colors.cardForeground
             ),
             decorationBox = { inner ->
                 if (value.isEmpty()) {
                     Text(
                         text = "Evaluate JavaScript...",
-                        style = MaterialTheme.typography.bodySmall.copy(
+                        style = MMRLXTheme.typography.bodySmall.copy(
                             fontSize = 11.sp,
                             fontFamily = FontFamily.Monospace
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        color = MMRLXTheme.colors.cardForeground.copy(alpha = 0.6f)
                     )
                 }
                 inner()
@@ -849,7 +847,7 @@ private fun JsInputBar(
                 contentDescription = "Run",
                 modifier = Modifier.size(14.dp),
                 tint = if (value.trim().isNotEmpty())
-                    MaterialTheme.colorScheme.primary
+                    MMRLXTheme.colors.primary
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
             )
@@ -865,18 +863,18 @@ private data class ConsoleRowStyle(
 )
 
 private data class ConsoleColorTokens(
-    val error: Color,
-    val warn: Color,
-    val tip: Color,
-    val debug: Color,
+    val error: Pair<Color, Color>,
+    val warn: Pair<Color, Color>,
+    val tip: Pair<Color, Color>,
+    val debug: Pair<Color, Color>,
 )
 
 @Composable
 private fun consoleColors() = ConsoleColorTokens(
-    error = MaterialTheme.colorScheme.error,
-    warn = Color(0xFFF59E0B),
-    tip = Color(0xFF22C55E),
-    debug = MaterialTheme.colorScheme.onSurfaceVariant,
+    error = MMRLXTheme.colors.badgeErrorForeground to MMRLXTheme.colors.badgeErrorBackground,
+    warn = MMRLXTheme.colors.badgeWarnForeground to MMRLXTheme.colors.badgeWarnBackground,
+    tip = MMRLXTheme.colors.badgeInfoForeground to MMRLXTheme.colors.badgeInfoBackground,
+    debug = MMRLXTheme.colors.badgeDebugForeground to MMRLXTheme.colors.badgeDebugBackground,
 )
 
 private fun Modifier.drawLeftBorder(color: Color, width: Dp): Modifier =

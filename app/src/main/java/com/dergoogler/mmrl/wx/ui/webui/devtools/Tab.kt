@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProvideTextStyle
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -21,6 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import dev.mmrlx.compose.ui.ProvideTextStyle
+import dev.mmrlx.compose.ui.theme.LocalContentColor
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.compose.ui.theme.ripple
 
 @Composable
 fun Tab(
@@ -36,7 +36,7 @@ fun Tab(
     val ripple = ripple(bounded = false, color = selectedContentColor)
 
     TabTransition(selectedContentColor, unselectedContentColor, selected) {
-        ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
+        ProvideTextStyle(value = MMRLXTheme.typography.titleSmall) {
             Column(
                 modifier =
                     Modifier

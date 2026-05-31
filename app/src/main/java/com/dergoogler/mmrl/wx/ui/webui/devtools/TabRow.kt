@@ -4,14 +4,14 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -25,25 +25,32 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFold
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
+import dev.mmrlx.compose.ui.HorizontalDivider
+import dev.mmrlx.compose.ui.Surface
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
 @Composable
 fun DevToolsTabRow(
     selectedTabIndex: Int,
     modifier: Modifier = Modifier,
-    containerColor: Color = TabRowDefaults.primaryContainerColor,
-    contentColor: Color = TabRowDefaults.primaryContentColor,
+    containerColor: Color = MMRLXTheme.colors.card,
+    contentColor: Color = MMRLXTheme.colors.cardForeground,
     indicator: @Composable (tabPositions: List<TabPosition>) -> Unit =
         { tabPositions ->
             if (selectedTabIndex < tabPositions.size) {
-                TabRowDefaults.SecondaryIndicator(
-                    Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex])
+                Box(
+                    Modifier
+                        .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                        .fillMaxWidth()
+                        .height(3.0.dp)
+                        .background(color = MMRLXTheme.colors.primary)
                 )
             }
         },
     divider: @Composable () -> Unit = { HorizontalDivider() },
+    endContent: (@Composable () -> Unit)? = null,
     tabs: @Composable () -> Unit,
 ) {
     TabRowWithSubcomposeImpl(
@@ -52,12 +59,14 @@ fun DevToolsTabRow(
         contentColor,
         indicator,
         divider,
-        tabs
+        tabs,
+        endContent
     )
 }
 
 private enum class TabSlots {
     Tabs,
+    EndContent,
     Divider,
     Indicator
 }
@@ -66,7 +75,7 @@ private enum class TabSlots {
 class TabPosition internal constructor(
     val left: Dp,
     val width: Dp,
-    val contentWidth: Dp
+    val contentWidth: Dp,
 ) {
     val right: Dp get() = left + width
 }
@@ -79,6 +88,7 @@ private fun TabRowWithSubcomposeImpl(
     indicator: @Composable (tabPositions: List<TabPosition>) -> Unit,
     divider: @Composable () -> Unit,
     tabs: @Composable () -> Unit,
+    endContent: (@Composable () -> Unit)? = null,
 ) {
     Surface(
         modifier = modifier.selectableGroup(),
@@ -89,6 +99,16 @@ private fun TabRowWithSubcomposeImpl(
 
             val paddingPx = 8.dp.roundToPx()
 
+            // Measure end content first
+            val endPlaceables = endContent?.let {
+                subcompose(TabSlots.EndContent, it).map {
+                    it.measure(constraints.copy(minWidth = 0))
+                }
+            }.orEmpty()
+
+            val endWidth = endPlaceables.sumOf { it.width }
+
+            // Measure tabs
             val tabMeasurables = subcompose(TabSlots.Tabs, tabs)
 
             val tabPlaceables = tabMeasurables.fastMap {
@@ -101,9 +121,10 @@ private fun TabRowWithSubcomposeImpl(
             }
 
             val tabRowHeight =
-                tabPlaceables.fastFold(0) { max, curr ->
-                    maxOf(curr.height, max)
-                }
+                maxOf(
+                    tabPlaceables.maxOfOrNull { it.height } ?: 0,
+                    endPlaceables.maxOfOrNull { it.height } ?: 0
+                )
 
             var xPosition = 0
 
@@ -125,6 +146,7 @@ private fun TabRowWithSubcomposeImpl(
 
             layout(layoutWidth, tabRowHeight) {
 
+                // Tabs from start
                 var x = 0
 
                 tabPlaceables.fastForEach { placeable ->
@@ -133,6 +155,17 @@ private fun TabRowWithSubcomposeImpl(
                         0
                     )
                     x += placeable.width + paddingPx * 2
+                }
+
+                // End content from right
+                var endX = layoutWidth - endWidth
+
+                endPlaceables.forEach { placeable ->
+                    placeable.placeRelative(
+                        endX,
+                        (tabRowHeight - placeable.height) / 2
+                    )
+                    endX += placeable.width
                 }
 
                 subcompose(TabSlots.Divider, divider).fastForEach {

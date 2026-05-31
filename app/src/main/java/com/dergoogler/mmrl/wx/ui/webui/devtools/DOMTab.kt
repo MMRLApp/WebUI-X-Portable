@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -373,7 +374,7 @@ fun DomTab() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.tonalSurface)
+                .background(MMRLXTheme.colors.card)
                 .padding(horizontal = 6.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -383,20 +384,20 @@ fun DomTab() {
                     painter = painterResource(com.dergoogler.mmrl.webui.R.drawable.refresh),
                     contentDescription = "Refresh DOM",
                     modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurface
+                    tint = MMRLXTheme.colors.primary
                 )
             }
             Text(
                 text = "${nodes.size} nodes",
-                style = MaterialTheme.typography.labelSmall.copy(
+                style = MMRLXTheme.typography.labelSmall.copy(
                     fontSize = 10.sp,
                     fontFamily = FontFamily.Monospace
                 ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MMRLXTheme.colors.cardForeground
             )
         }
 
-        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(thickness = 0.5.dp, color = MMRLXTheme.colors.border)
 
         when {
             isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -406,8 +407,8 @@ fun DomTab() {
             error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     error!!,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    style = MMRLXTheme.typography.bodySmall,
+                    color = MMRLXTheme.colors.destructive
                 )
             }
 
@@ -417,8 +418,8 @@ fun DomTab() {
             ) {
                 Text(
                     "No DOM nodes found.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MMRLXTheme.typography.bodySmall,
+                    color = MMRLXTheme.colors.foreground
                 )
             }
 
@@ -436,7 +437,7 @@ fun DomTab() {
                         )
                         HorizontalDivider(
                             thickness = 0.3.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            color = MMRLXTheme.colors.border.copy(alpha = 0.3f)
                         )
                     }
                 }
@@ -895,18 +896,22 @@ private fun RenderEntryRow(
     onToggle: (Int) -> Unit,
     onLongPress: (DomNode) -> Unit,
 ) {
+    val darkMode = MMRLXTheme.colors.isDark
+
     val indentPerLevel = 12.dp
-    val tagColor = MaterialTheme.colorScheme.primary
-    val attrNameColor = MaterialTheme.colorScheme.tertiary
-    val attrValueColor = Color(0xFFE07B54)
-    val textColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val punctColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-    val stringColor = Color(0xFF22C55E)
+
+    // GitHub syntax colors
+    val tagColor = Color(if (darkMode) 0xFF7EE787 else 0xFF166534)
+    val attrNameColor = Color(if (darkMode) 0xFFFFA657 else 0xFF9A6700)
+    val attrValueColor = Color(if (darkMode) 0xFFA5D6FF else 0xFF1155A3)
+    val punctColor = Color(if (darkMode) 0xFFC9D1D9 else 0xFF374151)
+    val textNodeColor = Color(if (darkMode) 0xFFA5D6FF else 0xFF1155A3)
 
     when (entry) {
         is RenderEntry.Open -> {
             val node = entry.node
             val isCollapsed = collapsedIds.contains(node.id)
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -925,59 +930,106 @@ private fun RenderEntryRow(
             ) {
                 if (node.hasChildren) {
                     Icon(
-                        painter = painterResource(if (isCollapsed) R.drawable.chevron_right else R.drawable.chevron_down),
+                        painter = painterResource(
+                            if (isCollapsed)
+                                R.drawable.chevron_right
+                            else
+                                R.drawable.chevron_down
+                        ),
                         contentDescription = null,
                         modifier = Modifier.size(10.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        tint = punctColor
                     )
                 } else {
                     Spacer(modifier = Modifier.size(10.dp))
                 }
+
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = punctColor)) { append("<") }
+                        withStyle(SpanStyle(color = punctColor)) {
+                            append("<")
+                        }
+
                         withStyle(
                             SpanStyle(
                                 color = tagColor,
                                 fontFamily = FontFamily.Monospace
                             )
-                        ) { append(node.tag) }
+                        ) {
+                            append(node.tag)
+                        }
+
                         node.attributes.forEach { (name, value) ->
                             append(" ")
+
                             withStyle(
                                 SpanStyle(
                                     color = attrNameColor,
                                     fontFamily = FontFamily.Monospace
                                 )
-                            ) { append(name) }
-                            withStyle(SpanStyle(color = punctColor)) { append("=\"") }
+                            ) {
+                                append(name)
+                            }
+
+                            withStyle(SpanStyle(color = punctColor)) {
+                                append("=\"")
+                            }
+
                             withStyle(
                                 SpanStyle(
                                     color = attrValueColor,
                                     fontFamily = FontFamily.Monospace
                                 )
                             ) {
-                                append(if (value.length > 60) value.take(60) + "…" else value)
+                                append(
+                                    if (value.length > 60)
+                                        value.take(60) + "…"
+                                    else
+                                        value
+                                )
                             }
-                            withStyle(SpanStyle(color = punctColor)) { append("\"") }
+
+                            withStyle(SpanStyle(color = punctColor)) {
+                                append("\"")
+                            }
                         }
+
                         when {
-                            !node.hasChildren -> withStyle(SpanStyle(color = punctColor)) { append("/>") }
+                            !node.hasChildren -> {
+                                withStyle(SpanStyle(color = punctColor)) {
+                                    append("/>")
+                                }
+                            }
+
                             isCollapsed -> {
-                                withStyle(SpanStyle(color = punctColor)) { append(">…</") }
+                                withStyle(SpanStyle(color = punctColor)) {
+                                    append(">…</")
+                                }
+
                                 withStyle(
                                     SpanStyle(
                                         color = tagColor,
                                         fontFamily = FontFamily.Monospace
                                     )
-                                ) { append(node.tag) }
-                                withStyle(SpanStyle(color = punctColor)) { append(">") }
+                                ) {
+                                    append(node.tag)
+                                }
+
+                                withStyle(SpanStyle(color = punctColor)) {
+                                    append(">")
+                                }
                             }
 
-                            else -> withStyle(SpanStyle(color = punctColor)) { append(">") }
+                            else -> {
+                                withStyle(SpanStyle(color = punctColor)) {
+                                    append(">")
+                                }
+                            }
                         }
                     },
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp
+                    ),
                     softWrap = true
                 )
             }
@@ -996,16 +1048,26 @@ private fun RenderEntryRow(
             ) {
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = punctColor)) { append("</") }
+                        withStyle(SpanStyle(color = punctColor)) {
+                            append("</")
+                        }
+
                         withStyle(
                             SpanStyle(
                                 color = tagColor,
                                 fontFamily = FontFamily.Monospace
                             )
-                        ) { append(entry.tag) }
-                        withStyle(SpanStyle(color = punctColor)) { append(">") }
+                        ) {
+                            append(entry.tag)
+                        }
+
+                        withStyle(SpanStyle(color = punctColor)) {
+                            append(">")
+                        }
                     },
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp
+                    )
                 )
             }
         }
@@ -1022,11 +1084,23 @@ private fun RenderEntryRow(
                     )
             ) {
                 Text(
-                    text = if (entry.text.length > 120) entry.text.take(120) + "…" else entry.text,
+                    text = buildAnnotatedString {
+                        withStyle(
+                            SpanStyle(
+                                color = textNodeColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        ) {
+                            append(
+                                if (entry.text.length > 120)
+                                    entry.text.take(120) + "…"
+                                else
+                                    entry.text
+                            )
+                        }
+                    },
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 11.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = stringColor
+                        fontSize = 11.sp
                     ),
                     softWrap = true
                 )

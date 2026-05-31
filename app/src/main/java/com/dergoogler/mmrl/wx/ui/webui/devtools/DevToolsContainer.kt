@@ -10,13 +10,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -26,6 +22,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
 @Composable
 fun DevToolsContainer(
@@ -34,7 +31,7 @@ fun DevToolsContainer(
     dragHandle: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val borderColor = MaterialTheme.colorScheme.outlineVariant
+    val colors = MMRLXTheme.colors
 
     Box(
         modifier = Modifier
@@ -74,14 +71,14 @@ fun DevToolsContainer(
                         val y = strokeWidth / 2f
 
                         drawLine(
-                            color = borderColor,
+                            color = colors.border,
                             start = Offset(0f, y),
                             end = Offset(size.width, y),
                             strokeWidth = strokeWidth
                         )
                     }
                     .clickable(enabled = false) { },
-                color = MaterialTheme.colorScheme.surface,
+                color = colors.background,
                 tonalElevation = 1.dp
             ) {
                 Column {
