@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WebUI X</string>
+    <string name="missing_mod_id">모듈 ID가 유효하지 않습니다</string>
+    <string name="empty">비어있음</string>
+    <string name="author">%1$s by %2$s</string>
+</resources>

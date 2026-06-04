@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="requireNewVersion_cannot_load_webui">WebUI X를 로드할 수 없습니다</string>
+    <string name="requireNewVersion_require_text">최소 %1$s이상의 버전이 필요합니다</string>
+    <string name="requireNewVersion_try_the_following">다음을 시도해 보세요:</string>
+</resources>
