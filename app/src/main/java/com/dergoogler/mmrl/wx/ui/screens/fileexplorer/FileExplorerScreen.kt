@@ -146,8 +146,11 @@ fun FileExplorerContent() {
         }
     }
 
-    LaunchedEffect(basePath) {
-        viewModel.initialize(SuFile(basePath, "modules"))
+    LaunchedEffect(basePath, state.currentPath) {
+        // Only initialize on first load, not when returning from other screens
+        if (state.currentPath == null) {
+            viewModel.initialize(SuFile(basePath, "modules"))
+        }
     }
 
     // Show snackbar for messages

@@ -59,11 +59,15 @@ class FileExplorerViewModel @Inject constructor(
     val state: StateFlow<FileExplorerState> = _state.asStateFlow()
 
     fun initialize(initialPath: SuFile) {
-        _state.value = _state.value.copy(
-            currentPath = initialPath,
-            isLoading = true
-        )
-        loadFiles(initialPath)
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                currentPath = initialPath,
+                isLoading = true,
+                errorMessage = null,
+                successMessage = null
+            )
+            loadFiles(initialPath)
+        }
     }
 
     fun navigateToDirectory(directory: SuFile) {
@@ -75,7 +79,13 @@ class FileExplorerViewModel @Inject constructor(
         }
 
         val currentState = _state.value
-        val currentPath = currentState.currentPath ?: return
+        val currentPath = currentState.currentPath
+        if (currentPath == null) {
+            _state.value = _state.value.copy(
+                errorMessage = "Current path is invalid"
+            )
+            return
+        }
 
         _state.value = currentState.copy(
             currentPath = directory,
@@ -90,7 +100,12 @@ class FileExplorerViewModel @Inject constructor(
 
     fun navigateBack() {
         val currentState = _state.value
-        if (currentState.pathHistory.isEmpty()) return
+        if (currentState.pathHistory.isEmpty()) {
+            _state.value = _state.value.copy(
+                errorMessage = "Cannot navigate back - already at root"
+            )
+            return
+        }
 
         val previousPath = currentState.pathHistory.last()
         val newHistory = currentState.pathHistory.dropLast(1)
@@ -109,7 +124,13 @@ class FileExplorerViewModel @Inject constructor(
 
     fun navigateToPath(path: SuFile) {
         val currentState = _state.value
-        val currentPath = currentState.currentPath ?: return
+        val currentPath = currentState.currentPath
+        if (currentPath == null) {
+            _state.value = _state.value.copy(
+                errorMessage = "Current path is invalid"
+            )
+            return
+        }
 
         _state.value = currentState.copy(
             currentPath = path,
