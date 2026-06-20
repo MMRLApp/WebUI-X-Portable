@@ -260,7 +260,7 @@ val WebrootConfig.icon
     get() = get<String?>("icon", null)
 
 val WebrootConfig.refreshInterceptor
-    get() = get<String?>("refreshInterceptor", null)
+    get() = get<String?>("refreshInterceptor", "native")
 
 val WebrootConfig.backInterceptor
     get() = get<String>("backInterceptor", "native")
