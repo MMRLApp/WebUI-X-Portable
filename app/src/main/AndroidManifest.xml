@@ -76,8 +76,8 @@
         <activity
             android:name="${__packageName__}.ui.activity.FileExplorerActivity"
             android:exported="true"
-            android:icon="@drawable/minecraft"
-            android:label="Explorer"
+            android:icon="@mipmap/launcher_explorer"
+            android:label="WX Explorer"
             android:launchMode="standard"
             android:resizeableActivity="true"
             android:taskAffinity="${__packageName__}.task.explorer"
