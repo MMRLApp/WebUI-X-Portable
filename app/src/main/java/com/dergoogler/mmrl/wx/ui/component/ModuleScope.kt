@@ -11,8 +11,44 @@ import com.dergoogler.mmrl.wx.model.module.ModuleUIState
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.utilities.io.NullSuFile
 
 val LocalModule = compositionLocalOf { Module.Empty }
+val LocalBasePath = compositionLocalOf<SuFile> { NullSuFile() }
+
+@Composable
+fun BasePathScope(
+    toolbar: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    val state by Module.rememberBasePath()
+
+    when (state) {
+        ModuleUIState.Loading -> {
+            ContentWrapper(toolbar, "Loading...") {
+                LoadingContent()
+            }
+        }
+
+        is ModuleUIState.Error -> {
+            ContentWrapper(toolbar, "ERROR") {
+                val msg = (state as ModuleUIState.Error).message
+                ErrorContent(msg)
+            }
+        }
+
+        is ModuleUIState.ReadyBasePath -> {
+            val module = (state as ModuleUIState.ReadyBasePath).file
+
+            CompositionLocalProvider(LocalBasePath provides module) {
+                content()
+            }
+        }
+
+        else -> {}
+    }
+}
 
 @Composable
 fun ModuleScope(
@@ -43,6 +79,8 @@ fun ModuleScope(
                 content()
             }
         }
+
+        else -> {}
     }
 }
 

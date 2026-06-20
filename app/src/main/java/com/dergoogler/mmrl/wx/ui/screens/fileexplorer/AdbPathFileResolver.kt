@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
+package com.dergoogler.mmrl.wx.ui.screens.fileexplorer
 
 import android.util.Log
 import com.dergoogler.mmrl.wx.model.module.AdbPath

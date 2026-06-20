@@ -1,6 +1,6 @@
 @file:Suppress("CanBeParameter", "ClassName")
 
-package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
+package com.dergoogler.mmrl.wx.ui.screens.fileexplorer
 
 import android.content.Context
 import android.graphics.Typeface
@@ -36,12 +36,12 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.AdbPath
+import com.dergoogler.mmrl.wx.ui.component.BasePathScope
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
-import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
+import com.dergoogler.mmrl.wx.ui.navigation.FileExplorerGraph
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.LocalTextStyle
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
@@ -562,17 +562,16 @@ fun CodeEditor(
     )
 }
 
-@Destination<RootGraph>
+@Destination<FileExplorerGraph>
 @Composable
-fun FileEditorScreen(moduleId: String, path: String) {
-    ModuleScope(moduleId) {
+fun FileEditorScreen(path: String) {
+    BasePathScope {
         FileEditorContent(path)
     }
 }
 
 @Composable
 fun FileEditorContent(path: String) {
-    val module = LocalModule.current
     val navigator = LocalDestinationsNavigator.current
     val file = remember(path) { path.toSuFile() }
     val state = rememberCodeEditorState(
@@ -598,8 +597,7 @@ fun FileEditorContent(path: String) {
             NavigateUpToolbar(
                 title = {
                     ToolbarTitle(
-                        title = file.name,
-                        subtitle = module.name
+                        title = file.name
                     )
                 },
                 onBack = backClick,

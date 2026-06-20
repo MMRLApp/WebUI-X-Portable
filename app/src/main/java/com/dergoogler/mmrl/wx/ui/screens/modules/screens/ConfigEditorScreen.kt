@@ -97,6 +97,8 @@ fun ConfigEditorScreen(moduleId: String) {
                 )
             }
         }
+
+        else -> {}
     }
 }
 

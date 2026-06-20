@@ -230,6 +230,40 @@ data class Module(
         val Empty = Module(AdbPath.Empty, emptyMap())
 
         @Composable
+        fun rememberBasePath(): State<ModuleUIState> {
+            val prefs = LocalUserPreferences.current
+            val context = LocalContext.current
+
+            return produceState<ModuleUIState>(
+                initialValue = ModuleUIState.Loading,
+                prefs.workingMode
+            ) {
+                val initialized = SuFile.AutoInit(context)
+
+                if (!initialized) {
+                    value = ModuleUIState.Error.SuInitFailed()
+                    return@produceState
+                }
+
+                val basePath: String? = prefs.getAdbPath(context)
+
+                if (basePath == null) {
+                    value = ModuleUIState.Error.MissingAdbPath()
+                    return@produceState
+                }
+
+                val baseFileDir = SuFile.async(basePath)
+
+                if (!baseFileDir.exists()) {
+                    value = ModuleUIState.Error.ModuleNotFound()
+                    return@produceState
+                }
+
+                value = ModuleUIState.ReadyBasePath(baseFileDir)
+            }
+        }
+
+        @Composable
         fun rememberCreate(id: String): State<ModuleUIState> {
             val prefs = LocalUserPreferences.current
             val context = LocalContext.current

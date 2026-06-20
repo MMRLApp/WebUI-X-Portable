@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,17 +47,15 @@ import com.dergoogler.mmrl.wx.util.versionDisplay
 import dev.mmrlx.compose.layout.flashlightCard
 import dev.mmrlx.compose.ui.AppAvatar
 import dev.mmrlx.compose.ui.HorizontalDivider
+import dev.mmrlx.compose.ui.Skeleton
 import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.ext.fadingEdge
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.text.FormatText
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.nio.inputStream
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
-import com.ramcosta.composedestinations.generated.destinations.FileExplorerScreenDestination
-import dev.mmrlx.compose.nio.rememberSuFile
-import dev.mmrlx.compose.ui.Skeleton
-import dev.mmrlx.compose.ui.ext.fadingEdge
-import dev.mmrlx.nio.inputStream
 
 @Composable
 fun <T> RootCallable<T>.produceState(
@@ -100,9 +97,6 @@ fun ModuleItem(
     Column(
         modifier = Modifier
             .combinedClickable(
-                onLongClick = {
-                    navigator.navigate(FileExplorerScreenDestination(module.id))
-                },
                 onClick = {
                     if (canWenUIAccessed) {
                         val baseDir = module.adbPath.baseDir

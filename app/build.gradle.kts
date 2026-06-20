@@ -55,7 +55,7 @@ android {
         signingConfigs.getByName("debug")
     }
 
-    flavorDimensions += listOf("distribution", "testing")
+    flavorDimensions += listOf("distribution")
 
     productFlavors {
         create("official") {
@@ -66,28 +66,28 @@ android {
         }
 
         create("internal") {
-            dimension = "testing"
+            dimension = "distribution"
             applicationIdSuffix  = ".internal"
             resValue("string", "app_name", "[ᛁ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
         create("alpha") {
-            dimension = "testing"
+            dimension = "distribution"
             applicationIdSuffix  = ".alpha"
             resValue("string", "app_name", "[ᚨ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
         create("beta") {
-            dimension = "testing"
+            dimension = "distribution"
             applicationIdSuffix  = ".beta"
             resValue("string", "app_name", "[ᛒ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
         create("rc") {
-            dimension = "testing"
+            dimension = "distribution"
             applicationIdSuffix  = ".rc"
             resValue("string", "app_name", "[ᚱ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")

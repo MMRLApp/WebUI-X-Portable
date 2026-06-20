@@ -1,10 +1,16 @@
 package com.dergoogler.mmrl.wx.model.module
 
+import dev.mmrlx.nio.SuFile
+
 sealed interface ModuleUIState {
     data object Loading : ModuleUIState
 
     data class Ready(
         val module: Module,
+    ) : ModuleUIState
+
+    data class ReadyBasePath(
+        val file: SuFile,
     ) : ModuleUIState
 
     sealed interface Error : ModuleUIState {

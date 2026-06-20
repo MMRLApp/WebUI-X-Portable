@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.screens.modules.screens.editor
+package com.dergoogler.mmrl.wx.ui.screens.fileexplorer
 
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -53,9 +53,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dergoogler.mmrl.ext.iconSize
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.ui.component.LocalModule
-import com.dergoogler.mmrl.wx.ui.component.ModuleScope
+import com.dergoogler.mmrl.wx.ui.component.BasePathScope
+import com.dergoogler.mmrl.wx.ui.component.LocalBasePath
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
+import com.dergoogler.mmrl.wx.ui.navigation.FileExplorerGraph
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.viewmodel.FileExplorerViewModel
@@ -90,26 +91,23 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.toFormattedFileSize
 
-@Destination<RootGraph>
+@Destination<FileExplorerGraph>(start = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FileExplorerScreen(
-    moduleId: String,
-) {
-    ModuleScope(moduleId) {
+fun FileExplorerScreen() {
+    BasePathScope {
         FileExplorerContent()
     }
 }
 
 @Composable
 fun FileExplorerContent() {
-    val module = LocalModule.current
+    val basePath = LocalBasePath.current
     val navigator = LocalDestinationsNavigator.current
     val viewModel = hiltViewModel<FileExplorerViewModel>()
     val state by viewModel.state.collectAsState()
     val createDialog = rememberDialog()
 
-    val initialPath = SuFile(module.path.moduleDir)
     val snackbarHostState = remember { SnackbarHostState() }
 
     // FAB state management
@@ -148,8 +146,8 @@ fun FileExplorerContent() {
         }
     }
 
-    LaunchedEffect(module) {
-        viewModel.initialize(initialPath)
+    LaunchedEffect(basePath) {
+        viewModel.initialize(SuFile(basePath, "modules"))
     }
 
     // Show snackbar for messages
@@ -190,7 +188,7 @@ fun FileExplorerContent() {
                     dev.mmrlx.compose.ui.toolbar.ToolbarTitle(
                         titleContent = {
                             Text(
-                                text = if (isSelectionMode) "${selectedFiles.size} selected" else module.name,
+                                text = if (isSelectionMode) "${selectedFiles.size} selected" else "Explorer",
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 color = LocalContentColor.current
@@ -365,7 +363,6 @@ fun FileExplorerContent() {
                                         } else {
                                             navigator.navigate(
                                                 FileEditorScreenDestination(
-                                                    module.id,
                                                     fileItem.file.path
                                                 )
                                             )
