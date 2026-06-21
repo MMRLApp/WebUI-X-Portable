@@ -1,17 +1,21 @@
 package com.dergoogler.mmrl.wx.ui.webui.interfaces
 
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.widget.Toast
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
 import com.dergoogler.mmrl.wx.ui.webui.isRootMode
 import com.dergoogler.mmrl.wx.ui.webui.module
+import com.dergoogler.mmrl.wx.ui.webui.util.packages
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
@@ -20,7 +24,6 @@ import dev.mmrlx.webui.PureJavaScriptInterface
 import dev.mmrlx.webui.WebUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CompletableFuture
@@ -243,6 +246,60 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
             break
         }
         return currentModuleInfo.toString()
+    }
+
+    private val pm get(): PackageManager = kontext.packageManager
+
+    @JavascriptInterface
+    fun listPackages(type: String): String {
+        val packageNames = packages
+            .filter { appInfo ->
+                val flags = appInfo.applicationInfo?.flags ?: 0
+                when (type.lowercase()) {
+                    "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    "user" -> (flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                    else -> true
+                }
+            }
+            .map { it.packageName }
+            .sorted()
+
+        val jsonArray = JSONArray()
+        for (pkgName in packageNames) {
+            jsonArray.put(pkgName)
+        }
+        return jsonArray.toString()
+    }
+
+    @JavascriptInterface
+    fun getPackagesInfo(packageNamesJson: String): String {
+        val packageNames = JSONArray(packageNamesJson)
+        val jsonArray = JSONArray()
+        val appMap = packages.associateBy { it.packageName }
+        for (i in 0 until packageNames.length()) {
+            val pkgName = packageNames.getString(i)
+            val appInfo = appMap[pkgName]
+            if (appInfo != null) {
+                val app = appInfo.applicationInfo
+                val obj = JSONObject()
+                obj.put("packageName", appInfo.packageName)
+                obj.put("versionName", appInfo.versionName ?: "")
+                obj.put("versionCode", PackageInfoCompat.getLongVersionCode(appInfo))
+                obj.put("appLabel", pm.getApplicationLabel(appInfo.applicationInfo!!))
+                obj.put(
+                    "isSystem",
+                    if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL
+                )
+                obj.put("uid", app?.uid ?: JSONObject.NULL)
+                jsonArray.put(obj)
+            } else {
+                val obj = JSONObject()
+                obj.put("packageName", pkgName)
+                obj.put("error", "Package not found or inaccessible")
+                jsonArray.put(obj)
+            }
+        }
+        return jsonArray.toString()
     }
 
     override fun onStop() {

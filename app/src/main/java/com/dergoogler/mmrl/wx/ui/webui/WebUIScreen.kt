@@ -28,6 +28,7 @@ import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.ModuleInterface
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.IconPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.rememberWebUIState
@@ -93,6 +94,7 @@ fun WebUIScreen() {
                 }
             }
             .settings {
+                schemeWhitelist += "ksu"
                 useDefaultApplicationInterface = false
                 useDefaultFileSystem = false
                 debug = isDebug
@@ -137,6 +139,14 @@ fun WebUIScreen() {
             .registerPathHandler(
                 WebrootPathHandler::class.java
             )
+            .registerPathHandler(
+                InternalPathHandler::class.java
+            ) {
+                add(
+                    ColorScheme::class.java to colorScheme
+                )
+            }
+            .registerPathHandler(IconPathHandler::class.java)
             .registerSuPathHandler(
                 "/.${module.id}/",
                 module.path.moduleDir
@@ -153,13 +163,6 @@ fun WebUIScreen() {
                 "/.local/",
                 module.adbPath.localDir
             )
-            .registerPathHandler(
-                InternalPathHandler::class.java
-            ) {
-                add(
-                    ColorScheme::class.java to colorScheme
-                )
-            }
     }
 
     CompositionLocalProvider(
