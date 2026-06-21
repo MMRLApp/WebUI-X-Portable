@@ -137,9 +137,6 @@ fun WebUIScreen() {
                 FileSystemInterface::class.java
             )
             .registerPathHandler(
-                WebrootPathHandler::class.java
-            )
-            .registerPathHandler(
                 InternalPathHandler::class.java
             ) {
                 add(
@@ -162,6 +159,9 @@ fun WebUIScreen() {
             .registerSuPathHandler(
                 "/.local/",
                 module.adbPath.localDir
+            )
+            .registerPathHandler(
+                WebrootPathHandler::class.java
             )
     }
 
