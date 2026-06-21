@@ -2,9 +2,9 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy
 
 import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.sanitizedIdWithFileOutputStream
+import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.ExportMethod
-import dev.mmrlx.webui.interfaces.JavaScriptInterface
+import dev.mmrlx.webui.javascript.annotation.ExportMethod
 import java.io.BufferedOutputStream
 import java.io.OutputStream
 

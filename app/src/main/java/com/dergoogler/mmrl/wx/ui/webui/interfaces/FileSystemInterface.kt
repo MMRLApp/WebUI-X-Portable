@@ -12,9 +12,9 @@ import com.dergoogler.mmrl.wx.util.PermissionParser
 import dev.mmrlx.utilities.json.getAs
 import dev.mmrlx.utilities.json.toByteArray
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.ExportMethod
-import dev.mmrlx.webui.interfaces.ExportVariable
 import dev.mmrlx.webui.interfaces.prebuilt.WebUIFileSystemInterface
+import dev.mmrlx.webui.javascript.annotation.ExportMethod
+import dev.mmrlx.webui.javascript.annotation.ExportVariable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray

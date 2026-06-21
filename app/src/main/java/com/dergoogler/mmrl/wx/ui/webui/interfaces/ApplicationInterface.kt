@@ -16,8 +16,8 @@ import dev.mmrlx.utilities.json.getAs
 import dev.mmrlx.utilities.json.getByPathOrDefault
 import dev.mmrlx.utilities.json.jsonObject
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.ExportMethod
 import dev.mmrlx.webui.interfaces.prebuilt.WebUIApplicationInterface
+import dev.mmrlx.webui.javascript.annotation.ExportMethod
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 

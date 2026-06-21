@@ -16,10 +16,11 @@ import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.WaitRunnable
+import dev.mmrlx.webui.PureJavaScriptInterface
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.PureJavaScriptInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CompletableFuture

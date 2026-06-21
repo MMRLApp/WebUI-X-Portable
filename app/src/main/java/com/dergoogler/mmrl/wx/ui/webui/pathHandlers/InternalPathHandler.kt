@@ -5,7 +5,7 @@ import androidx.compose.material3.ColorScheme
 import com.dergoogler.mmrl.webui.model.WebColors
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
-import dev.mmrlx.webui.path.PathHandler
+import dev.mmrlx.webui.PathHandler
 import java.io.IOException
 
 class InternalPathHandler(

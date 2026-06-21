@@ -4,9 +4,9 @@ import android.webkit.JavascriptInterface
 import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.sanitizedIdWithFileInputStream
 import dev.mmrlx.utilities.json.toJSONArray
+import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.ExportMethod
-import dev.mmrlx.webui.interfaces.JavaScriptInterface
+import dev.mmrlx.webui.javascript.annotation.ExportMethod
 import org.json.JSONArray
 import java.io.BufferedInputStream
 import java.io.InputStream

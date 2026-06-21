@@ -116,7 +116,7 @@ android {
             isJniDebuggable = false
             renderscriptOptimLevel = 3
             multiDexEnabled = true
-
+            versionNameSuffix = "-release"
             manifestPlaceholders["webuiPermissionId"] = mmrlBaseApplicationId
         }
 
@@ -136,7 +136,7 @@ android {
             renderscriptOptimLevel = 0
             isMinifyEnabled = false
             multiDexEnabled = true
-
+            versionNameSuffix = "-debug"
             manifestPlaceholders["webuiPermissionId"] = "$mmrlBaseApplicationId.debug"
         }
 
@@ -191,14 +191,14 @@ licensee {
 
 androidComponents {
     onVariants { variant ->
-        val testingFlavor = variant.productFlavors
-            .firstOrNull { it.first == "testing" }
+        val distributionFlavor = variant.productFlavors
+            .firstOrNull { it.first == "distribution" }
             ?.second
 
         variant.outputs.filterIsInstance<VariantOutputImpl>().forEach { output ->
             output.outputFileName.set(
                 output.versionName.map { vName ->
-                    "WebUI-X-$vName-${variant.buildType}-$testingFlavor.apk"
+                    "WebUI-X-$vName-$distributionFlavor.apk"
                 }
             )
         }

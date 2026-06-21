@@ -4,7 +4,7 @@ import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.webui.MimeUtil
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
-import dev.mmrlx.webui.path.PathHandler
+import dev.mmrlx.webui.PathHandler
 import java.io.IOException
 
 class AssetsPathHandler(

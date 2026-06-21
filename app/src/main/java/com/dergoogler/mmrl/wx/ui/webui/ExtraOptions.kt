@@ -3,10 +3,10 @@ package com.dergoogler.mmrl.wx.ui.webui
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.Module
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUISettings
 import dev.mmrlx.webui.extra
-import dev.mmrlx.webui.interfaces.JavaScriptInterface
 
 val WebUI.module: Module
     get() = settings.extra<Module>("module") ?: throw IllegalStateException("Module not set")

@@ -244,7 +244,7 @@ private fun submitJs(code: String, webui: WebUI, evalEntries: MutableList<LogEnt
                 )
                 return@runJs
             }
-            val tree = ResultNode.parse(inner.getJSONObject("value"), key = null, depth = 0)
+            val tree = ResultNode(key = null, depth = 0).parseJsonObject(inner.getJSONObject("value"))
             evalEntries.add(LogEntry.EvalResult.Parsed(root = tree, timestamp = resultTime))
         } catch (e: Exception) {
             evalEntries.add(

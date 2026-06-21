@@ -4,7 +4,7 @@ import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.webui.R
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.path.PathHandler
+import dev.mmrlx.webui.PathHandler
 import kotlinx.html.DIV
 import kotlinx.html.body
 import kotlinx.html.button

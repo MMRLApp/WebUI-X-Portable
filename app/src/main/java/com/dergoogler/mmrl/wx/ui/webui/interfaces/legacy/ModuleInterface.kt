@@ -12,10 +12,10 @@ import com.dergoogler.mmrl.wx.ui.webui.sanitizedId
 import com.dergoogler.mmrl.wx.ui.webui.workingMode
 import com.squareup.moshi.JsonClass
 import dev.mmrlx.utilities.json.jsonObject
+import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.ExportMethod
-import dev.mmrlx.webui.interfaces.ExportVariable
-import dev.mmrlx.webui.interfaces.JavaScriptInterface
+import dev.mmrlx.webui.javascript.annotation.ExportMethod
+import dev.mmrlx.webui.javascript.annotation.ExportVariable
 import org.json.JSONObject
 
 @JsonClass(generateAdapter = true)

@@ -23,7 +23,7 @@ import dev.mmrlx.webui.ResponseStatus
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIInsets
 import dev.mmrlx.webui.WebUIResourceRequest
-import dev.mmrlx.webui.path.PathHandler
+import dev.mmrlx.webui.PathHandler
 import java.io.IOException
 
 private const val DefaultContentSecurityPolicy: String =
@@ -207,7 +207,8 @@ class WebrootPathHandler(
         } catch (e: IOException) {
             console.debugError("Error opening webroot path: $path", e)
             return errorResponse(
-                title = "Failed",
+                title = "Failed",
+
                 description = {
                     +e.message.toString()
                 },
