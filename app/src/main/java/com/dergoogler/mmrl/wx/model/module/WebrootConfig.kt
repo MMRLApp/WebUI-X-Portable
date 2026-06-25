@@ -221,12 +221,15 @@ val WebrootConfig.historyFallback
 val WebrootConfig.historyFallbackFile
     get() = get("historyFallbackFile", "index.html")
 
+const val DEFAULT_CSP = "default-src 'self' data: blob: {domain}; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
+        "img-src 'self' ksu://icon;" +
+        "style-src 'self' 'unsafe-inline' {domain}; connect-src *"
+
 val WebrootConfig.contentSecurityPolicy
     get() = get(
         "contentSecurityPolicy",
-        "default-src 'self' data: blob: {domain}; " +
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
-                "style-src 'self' 'unsafe-inline' {domain}; connect-src *"
+        DEFAULT_CSP
     )
 
 val WebrootConfig.autoStatusBarsStyle

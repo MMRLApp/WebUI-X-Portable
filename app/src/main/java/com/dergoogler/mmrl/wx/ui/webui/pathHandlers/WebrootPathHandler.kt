@@ -3,6 +3,7 @@ package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 import android.util.Log
 import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
+import com.dergoogler.mmrl.wx.model.module.DEFAULT_CSP
 import com.dergoogler.mmrl.wx.model.module.autoStatusBarsStyle
 import com.dergoogler.mmrl.wx.model.module.caching
 import com.dergoogler.mmrl.wx.model.module.cachingMaxAge
@@ -19,11 +20,12 @@ import com.dergoogler.mmrl.wx.ui.webui.util.addInjection
 import com.dergoogler.mmrl.wx.ui.webui.util.asResponse
 import com.dergoogler.mmrl.wx.ui.webui.util.errorResponse
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.utilities.security.ContentSecurityPolicyManager
+import dev.mmrlx.webui.PathHandler
 import dev.mmrlx.webui.ResponseStatus
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIInsets
 import dev.mmrlx.webui.WebUIResourceRequest
-import dev.mmrlx.webui.PathHandler
 import java.io.IOException
 
 private const val DefaultContentSecurityPolicy: String =
@@ -89,6 +91,9 @@ class WebrootPathHandler(
             )
         }
 
+        val contentSecurityPolicy = ContentSecurityPolicyManager(DEFAULT_CSP, baseUri.toString())
+        val mergedCsp = contentSecurityPolicy.mergeToString(config.contentSecurityPolicy)
+
         if (path.endsWith("favicon.ico") || path.startsWith("favicon.ico")) return notFoundResponse
 
         try {
@@ -104,12 +109,10 @@ class WebrootPathHandler(
                 val fallbackFile = sufile(directory, config.historyFallbackFile)
                 val fallbackResponse = fallbackFile.asResponse()
 
-                if (config.contentSecurityPolicy.isNotNullOrBlank()) {
+                if (mergedCsp.isNotNullOrBlank()) {
                     fallbackResponse.setResponseHeaders(
                         mapOf(
-                            "Content-Security-Policy" to config.contentSecurityPolicy.replace(
-                                "{domain}", baseUri.toString()
-                            )
+                            "Content-Security-Policy" to mergedCsp
                         )
                     )
                 }
@@ -190,10 +193,8 @@ class WebrootPathHandler(
 
             val headers = mutableMapOf<String, String>()
 
-            if (isHtml && config.contentSecurityPolicy.isNotNullOrBlank()) {
-                headers["Content-Security-Policy"] = config.contentSecurityPolicy.replace(
-                    "{domain}", baseUri.toString()
-                )
+            if (isHtml && mergedCsp.isNotNullOrBlank()) {
+                headers["Content-Security-Policy"] = mergedCsp
             }
 
             if (ext in staticExtensions && config.caching) {
