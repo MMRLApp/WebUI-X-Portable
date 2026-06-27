@@ -223,7 +223,7 @@ val WebrootConfig.historyFallbackFile
 
 const val DEFAULT_CSP = "default-src 'self' data: blob: {domain}; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
-        "img-src 'self' ksu://icon; " +
+        "img-src 'self' ksu:; " +
         "style-src 'self' 'unsafe-inline' {domain}; " +
         "connect-src *; "
 

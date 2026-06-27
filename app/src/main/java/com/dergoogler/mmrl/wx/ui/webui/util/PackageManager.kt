@@ -37,7 +37,7 @@ private fun PackageManager.getLaunchableApps(): List<ResolveInfo> {
 
 val WebUI.packages: List<PackageInfo>
     get() = with(kontext) {
-        if (!BuildConfig.IS_GOOGLE_PLAY_BUILD) {
+        if (BuildConfig.IS_GOOGLE_PLAY_BUILD) {
             return packageManager.getLaunchableApps()
                 .map { packageManager.getPackageInfo(it.activityInfo.packageName, 0) }
         }
