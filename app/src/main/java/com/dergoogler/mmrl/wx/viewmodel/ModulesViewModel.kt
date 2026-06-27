@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -143,6 +144,12 @@ class ModulesViewModel @Inject constructor(
         return if (descending) base.reversed() else base
     }
 
+    val adbPath: AdbPath
+        get() = runBlocking {
+            val prefs = userPreferencesRepository.data.first()
+            return@runBlocking AdbPath(prefs.getAdbPath(context))
+        }
+
     suspend fun getLocalModules(): List<Module> {
         val prefs = userPreferencesRepository.data.first()
         val basePath = prefs.getAdbPath(context)
@@ -181,6 +188,8 @@ class ModulesViewModel @Inject constructor(
             }.getOrNull()
         }
     }
+
+    fun findById(id: String): Module? = local.value.find { it.id == id }
 
     companion object {
         private const val TAG = "ModulesViewModel"

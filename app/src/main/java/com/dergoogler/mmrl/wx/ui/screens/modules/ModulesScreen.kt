@@ -89,7 +89,7 @@ fun ModulesScreen(
         bottomBar = { BottomNavigation() },
         floatingActionButton = {
             if (prefs.workingMode != WorkingMode.MODE_NON_ROOT) return@Scaffold
-            ModuleImporter()
+            ModuleImporter(viewModel)
         },
     ) {
         PullToRefreshBox(

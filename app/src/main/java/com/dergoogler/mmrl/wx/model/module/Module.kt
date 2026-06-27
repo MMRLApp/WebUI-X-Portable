@@ -7,12 +7,15 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.ModulePath.Companion.PROP_FILE
 import com.dergoogler.mmrl.wx.util.set
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
 import kotlinx.parcelize.IgnoredOnParcel
+import org.apache.commons.compress.archivers.zip.ZipFile
 import org.luaj.LuaTable
+import java.io.File
 import java.io.InputStream
 
 data class Module(
@@ -309,6 +312,14 @@ data class Module(
                 value = ModuleUIState.Ready(
                     Module(adbPath, props)
                 )
+            }
+        }
+
+        fun fromZip(adbPath: AdbPath, file: File): Module? {
+            val zipFile = ZipFile.Builder().setFile(file).get()
+            val entry = zipFile.getEntry(PROP_FILE) ?: return null
+            return zipFile.getInputStream(entry).use {
+                Module(adbPath, readProps(it))
             }
         }
     }
