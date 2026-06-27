@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.webui.devtools
+package com.dergoogler.mmrl.wx.ui.webui.devtools.tabs
 
 import android.webkit.WebResourceRequest
 import androidx.compose.foundation.background
@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.ui.component.Tab
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
+import com.dergoogler.mmrl.wx.ui.webui.devtools.tonalSurface
 import dev.mmrlx.compose.ui.HorizontalDivider
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.icon.Icon

@@ -50,7 +50,8 @@ fun ViewTab(
         listOf(
             R.string.dom,
             R.string.console,
-            R.string.network
+            R.string.network,
+            R.string.snippets,
         )
     }
 

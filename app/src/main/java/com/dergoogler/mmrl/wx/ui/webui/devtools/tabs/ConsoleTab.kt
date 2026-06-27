@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.webui.devtools
+package com.dergoogler.mmrl.wx.ui.webui.devtools.tabs
 
 import android.webkit.ConsoleMessage
 import androidx.annotation.DrawableRes
@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
 import com.dergoogler.mmrl.wx.util.badgeDebugBackground
 import com.dergoogler.mmrl.wx.util.badgeDebugForeground
 import com.dergoogler.mmrl.wx.util.badgeErrorBackground

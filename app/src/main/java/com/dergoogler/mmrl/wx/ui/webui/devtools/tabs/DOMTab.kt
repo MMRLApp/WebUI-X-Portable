@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.webui.devtools
+package com.dergoogler.mmrl.wx.ui.webui.devtools.tabs
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -50,7 +50,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode as JsoupTextNode
@@ -167,7 +169,7 @@ private fun parseElement(
 private fun unwrapJsString(raw: String): String {
     if (raw == "null") return ""
     return try {
-        org.json.JSONObject("""{"v":$raw}""").getString("v")
+        JSONObject("""{"v":$raw}""").getString("v")
     } catch (_: Exception) {
         raw
     }

@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
@@ -18,6 +19,7 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.DraggableFab
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.webui.devtools.DevTools
+import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalDevTools
 import com.dergoogler.mmrl.wx.ui.webui.devtools.LocalWebUI
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
@@ -30,6 +32,7 @@ import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.IconPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
+import com.dergoogler.mmrl.wx.viewmodel.DevToolsViewModel
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.rememberWebUIState
 import dev.mmrlx.nio.SuFile
@@ -38,7 +41,7 @@ import dev.mmrlx.nio.SuFileOutputStream
 import dev.mmrlx.webui.WebUI
 
 @Composable
-fun WebUIScreen() {
+fun WebUIScreen(devToolsViewModel: DevToolsViewModel = hiltViewModel()) {
     val module = LocalModule.current
     val context = LocalContext.current
     val prefs = LocalUserPreferences.current
@@ -166,7 +169,8 @@ fun WebUIScreen() {
     }
 
     CompositionLocalProvider(
-        LocalWebUI provides wstate.webui
+        LocalWebUI provides wstate.webui,
+        LocalDevTools provides devToolsViewModel
     ) {
         WebUIView(wstate)
 
