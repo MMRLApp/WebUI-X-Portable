@@ -43,6 +43,7 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.component.LocalCover
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.dergoogler.mmrl.wx.util.toPainter
 import com.dergoogler.mmrl.wx.util.versionDisplay
 import dev.mmrlx.compose.layout.flashlightCard
 import dev.mmrlx.compose.ui.Avatar
@@ -53,7 +54,6 @@ import dev.mmrlx.compose.ui.ext.fadingEdge
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.text.FormatText
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
-import dev.mmrlx.compose.utilities.io.toPainter
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
