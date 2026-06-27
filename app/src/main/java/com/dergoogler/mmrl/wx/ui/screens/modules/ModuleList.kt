@@ -3,9 +3,7 @@ package com.dergoogler.mmrl.wx.ui.screens.modules
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -15,12 +13,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.platform.PlatformManager.platform
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
 import dev.mmrlx.compose.ui.button.ButtonSize
@@ -33,7 +31,6 @@ import dev.mmrlx.compose.ui.ext.with
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
 import java.io.File
-import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 
 @Composable
 fun ScaffoldScope.ModulesList(
@@ -99,10 +96,6 @@ fun ModuleItem(
             )
         },
         trailingButton = {
-            ShortcutAdd(
-                module = module,
-            )
-
             if (prefs.isNonRoot) {
                 RemoveButton {
                     removeDialog.open()
@@ -157,44 +150,6 @@ fun ModuleItem(
             }
         }
 
-    }
-}
-
-@Composable
-private fun ShortcutAdd(
-    module: Module,
-) {
-//    val webUiConfig = module.id.toWebUIConfig()
-//    val modConfConfig = module.id.toModConfConfig()
-    val context = LocalContext.current
-
-    Button(
-        onClick = {
-            if (module.hasWebUI) {
-//                webUiConfig.createShortcut(context, WebUIActivity::class.java)
-                return@Button
-            }
-
-            Toast.makeText(context, "Unsupported module", Toast.LENGTH_SHORT).show()
-        },
-//        enabled = enabled
-//                && (webUiConfig.canAddWebUIShortcut() || modConfConfig.canAddWebUIShortcut())
-//                && !(webUiConfig.hasWebUIShortcut(
-//            context
-//        ) || modConfConfig.hasWebUIShortcut(context)),
-        variant = ButtonVariant.Outline,
-        size = ButtonSize.Sm
-    ) {
-        Icon(
-            modifier = Modifier.size(20.dp),
-            painter = painterResource(id = R.drawable.link),
-            contentDescription = null
-        )
-
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = stringResource(id = R.string.add_shortcut)
-        )
     }
 }
 

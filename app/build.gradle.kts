@@ -191,6 +191,17 @@ licensee {
 
 androidComponents {
     onVariants { variant ->
+        val variantName = variant.name
+
+        // Use maybeCreate to dynamically generate the source set if it doesn't exist
+        android.sourceSets.maybeCreate(variantName).apply {
+            java.srcDirs(
+                "build/generated/ksp/$variantName/java",
+                "build/generated/ksp/$variantName/kotlin"
+            )
+        }
+
+        // Your existing APK renaming logic
         val distributionFlavor = variant.productFlavors
             .firstOrNull { it.first == "distribution" }
             ?.second

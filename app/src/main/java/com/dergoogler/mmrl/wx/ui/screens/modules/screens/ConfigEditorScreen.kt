@@ -32,10 +32,12 @@ import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.model.module.windowResize
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
+import com.dergoogler.mmrl.wx.ui.component.NavButton
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
 import dev.mmrlx.compose.ui.Badge
 import dev.mmrlx.compose.ui.BadgeVariant
 import dev.mmrlx.compose.ui.list.List
@@ -140,9 +142,14 @@ fun ConfigEditorContent() {
                 }
             }
 
+            NavButton(
+                route = ShortcutCreateScreenDestination(module.id),
+                title = R.string.create_shortcut,
+                desc = R.string.create_shortcut_desc
+            )
 
-
-            val hasNoJsBackInterceptor = !listOf("javascript", "javascript-full").contains(config.backInterceptor)
+            val hasNoJsBackInterceptor =
+                !listOf("javascript", "javascript-full").contains(config.backInterceptor)
 
             SwitchItem(
                 enabled = hasNoJsBackInterceptor && !userPrefs.disableGlobalExitConfirm,
