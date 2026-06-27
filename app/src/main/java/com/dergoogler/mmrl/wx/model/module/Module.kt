@@ -24,6 +24,7 @@ data class Module(
 ) : Comparable<Module> {
     val id: String = properties.get("", "id")
     val path: ModulePath = ModulePath(adbPath, id)
+    val webrootConfig: WebrootConfig = WebrootConfig(this)
     val name: String = properties.get(NA, "name")
     val version: String = properties.get(NA, "version")
     val versionCode: Int = properties.get(-1, "versionCode")
@@ -34,10 +35,9 @@ data class Module(
     private val metaModuleInt = properties.get(0, "metamodule")
     val metaModule: Boolean = metaModuleBoolean || metaModuleInt != 0
 
-    val banner: SuFile? = properties.get<String?>(null, "banner", "cover").relativeModuleDir
-    val icon: SuFile? = properties.get<String?>(null, "webuiIcon", "icon").relativeModuleDir
+    val banner: SuFile? = properties.get<String?>(null, "banner", "cover").relativeModuleOrWebrootDir
+    val icon: SuFile? = properties.get<String?>(null, "webuiIcon", "icon").relativeModuleOrWebrootDir
 
-    val webrootConfig: WebrootConfig = WebrootConfig(this)
 
     @IgnoredOnParcel
     val hasWebUI: Boolean by lazy {
@@ -121,17 +121,32 @@ data class Module(
 
     override fun compareTo(other: Module): Int = id.compareTo(other.id)
 
-    private val String?.relativeModuleDir: SuFile?
-        get() = this?.let { SuFile(path.moduleDir, it) }
+    private val String?.relativeModuleOrWebrootDir: SuFile?
+        get() = this?.run {
+            val webrootFile = SuFile(path.webrootDir, this)
+            if (webrootFile.exists()) return@run webrootFile
+
+            val moduleFile = SuFile(path.moduleDir, this)
+            if (moduleFile.exists()) return@run moduleFile
+
+            null
+        }
 
     private inline fun <reified T> Map<String, Any>.get(
         defaultValue: T,
         vararg aliases: String,
     ): T {
-        if (aliases.size == 1) return this[aliases.first()].asOrDefault(defaultValue)
         for (alias in aliases) {
-            val value = this[alias]
-            if (value != null) return value.asOrDefault(defaultValue)
+            this[alias]?.let {
+                return it.asOrDefault(defaultValue)
+            }
+        }
+
+        for (alias in aliases) {
+            val value = webrootConfig.get<T?>(alias, defaultValue)
+            if (value != null) {
+                return value
+            }
         }
 
         return defaultValue
@@ -230,7 +245,7 @@ data class Module(
             }
         }
 
-        val Empty = Module(AdbPath.Empty, emptyMap())
+        val Empty get() = Module(AdbPath.Empty, emptyMap())
 
         @Composable
         fun rememberBasePath(): State<ModuleUIState> {

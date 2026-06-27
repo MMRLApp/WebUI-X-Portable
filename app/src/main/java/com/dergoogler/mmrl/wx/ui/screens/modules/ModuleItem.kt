@@ -45,7 +45,7 @@ import com.dergoogler.mmrl.wx.ui.component.LocalCover
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.util.versionDisplay
 import dev.mmrlx.compose.layout.flashlightCard
-import dev.mmrlx.compose.ui.AppAvatar
+import dev.mmrlx.compose.ui.Avatar
 import dev.mmrlx.compose.ui.HorizontalDivider
 import dev.mmrlx.compose.ui.Skeleton
 import dev.mmrlx.compose.ui.Text
@@ -53,6 +53,7 @@ import dev.mmrlx.compose.ui.ext.fadingEdge
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.text.FormatText
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.compose.utilities.io.toPainter
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.thread.RootCallable
 import dev.mmrlx.thread.ktx.asThread
@@ -159,10 +160,12 @@ fun ModuleItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                AppAvatar(
+                Avatar(
                     initials = module.name.take(
                         2
-                    ).uppercase(), size = 36.dp
+                    ).uppercase(),
+                    size = 36.dp,
+                    painter = module.icon?.toPainter()
                 )
 
                 Column {
