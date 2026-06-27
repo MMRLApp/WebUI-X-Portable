@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ViewTab(
+    modifier: Modifier = Modifier,
     state: PagerState,
     onDismissRequest: () -> Unit,
 ) {
@@ -56,7 +57,7 @@ fun ViewTab(
     }
 
     DevToolsTabRow(
-        modifier = Modifier
+        modifier = modifier
             .background(MMRLXTheme.colors.card)
             .padding(top = statusBarHeight),
         selectedTabIndex = state.currentPage,

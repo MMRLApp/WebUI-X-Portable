@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -21,14 +22,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
 @Composable
 fun DevToolsContainer(
     isVisible: Boolean,
+    panelHeight: Dp,
     onDismissRequest: () -> Unit,
-    dragHandle: @Composable () -> Unit,
+    dragHandle: @Composable (Modifier) -> Unit,
     content: @Composable () -> Unit,
 ) {
     val colors = MMRLXTheme.colors
@@ -64,6 +67,7 @@ fun DevToolsContainer(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(panelHeight)
                     .drawWithContent {
                         drawContent()
 
@@ -82,7 +86,7 @@ fun DevToolsContainer(
                 tonalElevation = 1.dp
             ) {
                 Column {
-                    dragHandle()
+                    dragHandle(Modifier)
                     content()
                 }
             }
