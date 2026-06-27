@@ -38,6 +38,8 @@ jobs:
         id: build-apk
         uses: ./.github/actions/build-apk
         with:
+          username: ${{ secrets.ACTOR }}
+          token: ${{ secrets.GH_TOKEN }}
           flavor: ${{ matrix.flavor }}
           buildType: "release"
           keyStore: ${{ secrets.KEY_STORE }}
