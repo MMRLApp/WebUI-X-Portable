@@ -1,5 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,17 +12,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.ui.component.Logo
+import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.screens.modules.SkeletonModuleItem
+import dev.mmrlx.compose.ui.Surface
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
 @Composable
 fun ExampleItem() {
@@ -29,69 +32,51 @@ fun ExampleItem() {
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
-        OutlinedCard(
+        Column(
             modifier = Modifier
                 .padding(vertical = 16.dp)
+                .background(MMRLXTheme.colors.background)
+                .border(1.dp, MMRLXTheme.colors.border, RoundedCornerShape(15.dp))
+                .fillMaxSize(0.5f),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
                 modifier = Modifier
-                    .fillMaxSize(0.5f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(
+                Logo(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Logo(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp)
-                            .size(20.dp),
-                        icon = R.drawable.launcher_outline
-                    )
+                        .padding(horizontal = 10.dp)
+                        .size(20.dp),
+                    icon = R.drawable.launcher_outline
+                )
 
-                    Text(text = stringResource(id = R.string.app_name))
+                Text(
+                    text = stringResource(id = R.string.app_name),
+                    style = MMRLXTheme.typography.labelLarge
+                )
+            }
+
+            SkeletonModuleItem(
+                modifier = Modifier.graphicsLayer {
+                    scaleX = 0.8f
+                    scaleY = 0.8f
                 }
+            )
 
-                Surface(
-                    shape = RoundedCornerShape(15.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(60.dp)
-                            .fillMaxWidth(0.9f)
-                    )
-                }
+            Spacer(modifier = Modifier.height(160.dp))
 
-                Surface(
-                    shape = RoundedCornerShape(15.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(60.dp)
-                            .fillMaxWidth(0.9f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(160.dp))
-
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 2.dp
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .height(45.dp)
-                            .fillMaxWidth()
-                    )
-                }
+            Surface(
+                color = MMRLXTheme.colors.card,
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .height(45.dp)
+                        .fillMaxWidth()
+                )
             }
         }
     }

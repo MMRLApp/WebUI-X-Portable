@@ -31,7 +31,6 @@ import dev.mmrlx.compose.ui.list.component.Section
 import dev.mmrlx.compose.ui.list.component.item.Description
 import dev.mmrlx.compose.ui.list.component.item.DialogDescription
 import dev.mmrlx.compose.ui.list.component.item.Icon
-import dev.mmrlx.compose.ui.list.component.item.Supporting
 import dev.mmrlx.compose.ui.list.component.item.Title
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 import dev.mmrlx.compose.ui.toolbar.Toolbar
@@ -68,12 +67,12 @@ fun SettingsScreen() {
             Section(
                 title = stringResource(R.string.general)
             ) {
-//                NavButton(
-//                    route = AppThemeScreenDestination,
-//                    icon = R.drawable.color_swatch,
-//                    title = R.string.settings_app_theme,
-//                    desc = R.string.settings_app_theme_desc
-//                )
+                NavButton(
+                    route = AppThemeScreenDestination,
+                    icon = R.drawable.color_swatch,
+                    title = R.string.settings_app_theme,
+                    desc = R.string.settings_app_theme_desc
+                )
 
                 NavButton(
                     route = BehaviorScreenDestination,
