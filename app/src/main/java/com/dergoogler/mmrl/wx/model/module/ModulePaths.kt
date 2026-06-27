@@ -4,6 +4,7 @@ import com.dergoogler.mmrl.wx.util.PathVarArgFunction
 import dev.mmrlx.nio.Path
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.json.JSONObject
 import org.luaj.LuaTable
 
 @Parcelize
@@ -14,6 +15,13 @@ data class AdbPath(
     val configDir get() = Path.resolve(baseDir, HIDDEN_CONFIG_DIR)
     val localDir get() = Path.resolve(baseDir, HIDDEN_LOCAL_DIR)
     val modulesDir get() = Path.resolve(baseDir, MODULES_DIR)
+
+    fun toJSONObject() = JSONObject().apply {
+        put("baseDir", baseDir)
+        put("configDir", configDir)
+        put("localDir", localDir)
+        put("modulesDir", modulesDir)
+    }
 
     companion object {
         const val MODULES_DIR = "modules"
@@ -85,6 +93,28 @@ data class ModulePath(
     val disableFile get() = Path.resolve(moduleDir, DISABLE_FILE)
     val removeFile get() = Path.resolve(moduleDir, REMOVE_FILE)
     val updateFile get() = Path.resolve(moduleDir, UPDATE_FILE)
+
+    fun toJSONObject() = JSONObject().apply {
+        put("moduleId", moduleId)
+        put("configDir", configDir)
+        put("moduleDir", moduleDir)
+        put("webrootDir", webrootDir)
+        put("webrootConfig", webrootConfig)
+        put("webrootLuaIndex", webrootLuaIndex)
+        put("propFile", propFile)
+        put("actionFile", actionFile)
+        put("serviceFile", serviceFile)
+        put("postFsDataFile", postFsDataFile)
+        put("postMountFile", postMountFile)
+        put("systemPropFile", systemPropFile)
+        put("bootCompletedFile", bootCompletedFile)
+        put("sepolicyFile", sepolicyFile)
+        put("uninstallFile", uninstallFile)
+        put("systemDir", systemDir)
+        put("disableFile", disableFile)
+        put("removeFile", removeFile)
+        put("updateFile", updateFile)
+    }
 
     fun toLuaTable(): LuaTable {
         val table = LuaTable()
