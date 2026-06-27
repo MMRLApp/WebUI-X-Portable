@@ -291,7 +291,7 @@ private fun ConsoleRow(entry: ConsoleEntry) {
         )
 
         else -> ConsoleRowStyle(
-            Color.Transparent, MMRLXTheme.colors.card,
+            Color.Transparent, MMRLXTheme.colors.cardForeground,
             Color.Transparent, null
         )
     }
