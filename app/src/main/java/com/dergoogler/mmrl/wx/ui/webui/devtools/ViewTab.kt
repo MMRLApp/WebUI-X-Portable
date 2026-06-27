@@ -5,14 +5,11 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.PagerState
@@ -43,8 +40,6 @@ fun ViewTab(
     state: PagerState,
     onDismissRequest: () -> Unit,
 ) {
-    val statusBarHeight =
-        WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val scope = rememberCoroutineScope()
 
     val pages = remember {
@@ -58,8 +53,7 @@ fun ViewTab(
 
     DevToolsTabRow(
         modifier = modifier
-            .background(MMRLXTheme.colors.card)
-            .padding(top = statusBarHeight),
+            .background(MMRLXTheme.colors.card),
         selectedTabIndex = state.currentPage,
         indicator = { tabPositions ->
             AnimatedIndicator(
