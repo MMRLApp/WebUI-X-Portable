@@ -144,7 +144,7 @@ class WebrootConfig(
 
         for (i in segments.indices) {
             if (current !is JsonObject) {
-                return null
+                return JsonObject(emptyMap())
             }
 
             val remaining = segments.drop(i).joinToString(".")
@@ -154,7 +154,7 @@ class WebrootConfig(
                 return literal
             }
 
-            current = current[segments[i]] ?: return null
+            current = current[segments[i]] ?: return JsonObject(emptyMap())
         }
 
         return current
