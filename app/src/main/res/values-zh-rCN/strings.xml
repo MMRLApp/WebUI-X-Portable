@@ -123,7 +123,7 @@
     <string name="build_tools_version">构建工具版本</string>
     <string name="compile_sdk">编译SDK</string>
     <string name="settings_force_kill_webui_process">强制停止WebUI进程</string>
-    <string name="settings_force_kill_webui_process_desc">立即终止当前正在运行的 WebUI X 进程。[bold]该操作不会影响 KSU WebUI。[/bold]</string>
+    <string name="settings_force_kill_webui_process_desc">立即终止当前正在运行的 WebUI X 进程。[bold]建议保持此选项开启[/bold]</string>
     <string name="webui_additional_config">额外配置</string>
     <string name="webui_additional_config_desc">由模块作者定义的可选额外配置。</string>
     <string name="settings_webui_engine_undefined">未定义</string>
@@ -134,4 +134,11 @@
     <string name="globally_disabled">全局禁用</string>
     <string name="behavior">行为</string>
     <string name="behavior_desc">修改应用特性的行为</string>
+    <string name="dom">DOM</string>
+    <string name="console">控制台</string>
+    <string name="network">网络</string>
+    <string name="settings_security_enable_devtools">开发者工具</string>
+    <string name="settings_security_enable_devtools_desc">不同于 Eruda，此调试控制台可以与远程主机使用。</string>
+    <string name="beta">Beta</string>
+    <string name="stack_trace_truncated">%s\\n… %d 更多</string>
 </resources>
