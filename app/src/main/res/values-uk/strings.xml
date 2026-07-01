@@ -24,4 +24,6 @@
     <string name="menu_show_antifeatures">Показувати антифункції</string>
     <string name="search_empty">Порожній список</string>
     <string name="search_placeholder">Пошук…</string>
+    <string name="invalid_ip">Вказаний локальний домен недійсний!</string>
+    <string name="settings_security_inject_eruda">Упровадити Eruda</string>
 </resources>
