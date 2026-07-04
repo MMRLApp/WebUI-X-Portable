@@ -45,6 +45,7 @@ import com.dergoogler.mmrl.platform.model.ModId.Companion.INTENT_MOD_ID
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
@@ -82,7 +83,7 @@ fun ShortcutCreateContent() {
 
     val moduleIcon = remember(module) { module.icon }
 
-    var shortcutName = rememberInputState(module.name)
+    val shortcutName = rememberInputState(module.webrootConfig.title ?: module.name)
     var selectedEngine by remember { mutableStateOf<WebUIEngine?>(null) }
     var iconUri by remember { mutableStateOf<String?>(null) }
 
