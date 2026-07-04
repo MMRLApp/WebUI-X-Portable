@@ -121,23 +121,6 @@ fun DeveloperScreen() {
                     Description(R.string.settings_security_enable_devtools_desc)
                 }
 
-                DeveloperSwitch(
-                    checked = userPreferences.disableConsoleInterceptor,
-                    onChange = viewModel::setDisableConsoleInterceptor
-                ) {
-                    Title {
-                        FormatText(stringResource(R.string.settings_disable_console_interceptor) + " %y") {
-                            composable {
-                                Badge(
-                                    text = stringResource(R.string.beta),
-                                    variant = BadgeVariant.Secondary,
-                                )
-                            }
-                        }
-                    }
-                    Description(R.string.settings_disable_console_interceptor_desc)
-                }
-
                 InputDialogItem(
                     enabled = userPreferences.developerMode,
                     value = userPreferences.webUiDevUrl,
