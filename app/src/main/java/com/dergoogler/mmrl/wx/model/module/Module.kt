@@ -22,7 +22,7 @@ data class Module(
     val adbPath: AdbPath,
     private val properties: Map<String, Any>,
 ) : Comparable<Module> {
-    val id: String = properties.get("", "id")
+    val id: String = properties["id"].asOrDefault("")
     val path: ModulePath = ModulePath(adbPath, id)
     val webrootConfig: WebrootConfig = WebrootConfig(this)
     val name: String = properties.get(NA, "name")
