@@ -82,6 +82,8 @@
     <string name="webui_config_back_handler_desc">Enables the back button handler for the native WebView.</string>
     <string name="webui_config_back_interceptor_title">Back Interceptor</string>
     <string name="webui_config_back_interceptor_desc">Enables the change of the back button interceptor for the native WebView.</string>
+    <string name="webui_config_theme_title">Theme</string>
+    <string name="webui_config_theme_desc">Select a different theme for this WebUI</string>
     <string name="webui_config_pull_to_refresh_title">Pull-to-Refresh</string>
     <string name="webui_config_pull_to_refresh_desc">Enabled pull to refresh for WebUI. This can break the scroll behavior of the WebUI when nested scroll elements are used</string>
     <string name="webui_config_pull_to_refresh_helper_title">Pull-to-Refresh Helper</string>

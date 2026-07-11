@@ -28,6 +28,7 @@ import com.dergoogler.mmrl.wx.model.module.icon
 import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
 import com.dergoogler.mmrl.wx.model.module.pullToRefresh
 import com.dergoogler.mmrl.wx.model.module.refreshInterceptor
+import com.dergoogler.mmrl.wx.model.module.theme
 import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.model.module.windowResize
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
@@ -69,6 +70,18 @@ private val Context.interceptorList: List<RadioDialogOption<String?>>
             value = "javascript-full",
             title = getString(R.string.controlled_by_javascript_full),
             desc = getString(R.string.controlled_by_javascript_full_desc)
+        ),
+    )
+
+private val Context.themeList: List<RadioDialogOption<String?>>
+    get() = listOf(
+        RadioDialogOption(
+            value = "mmrlx",
+            title = "MMRL X"
+        ),
+        RadioDialogOption(
+            value = "md3",
+            title = "Material Design 3",
         ),
     )
 
@@ -147,6 +160,23 @@ fun ConfigEditorContent() {
                 title = R.string.create_shortcut,
                 desc = R.string.create_shortcut_desc
             )
+
+            RadioDialogItem(
+                selection = config.theme,
+                options = context.themeList,
+                onConfirm = {
+                    if (it.value == null) {
+                        Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
+                            .show()
+                        return@RadioDialogItem
+                    }
+
+                    config.set("theme", it.value)
+                }
+            ) {
+                Title(R.string.webui_config_theme_title)
+                Description(R.string.webui_config_theme_desc)
+            }
 
             val hasNoJsBackInterceptor =
                 !listOf("javascript", "javascript-full").contains(config.backInterceptor)
