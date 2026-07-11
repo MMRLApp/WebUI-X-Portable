@@ -19,8 +19,11 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
+import dev.mmrlx.compose.ui.button.ButtonGroup
+import dev.mmrlx.compose.ui.button.ButtonGroupDefaults
 import dev.mmrlx.compose.ui.button.ButtonSize
 import dev.mmrlx.compose.ui.button.ButtonVariant
 import dev.mmrlx.compose.ui.dialog.Content
@@ -88,11 +91,14 @@ fun ModuleItem(
             }
         },
         leadingButton = {
-            ConfigButton(
-                onClick = {
+            OptionButtonGroup(
+                enabled = module.state != State.REMOVE,
+                onConfigClick = {
                     navigator.navigate(ConfigEditorScreenDestination(module.id))
                 },
-                enabled = module.state != State.REMOVE
+                onShortcutClick = {
+                    navigator.navigate(ShortcutCreateScreenDestination(module.id))
+                },
             )
         },
         trailingButton = {
@@ -154,22 +160,39 @@ fun ModuleItem(
 }
 
 @Composable
-private fun ConfigButton(
+private fun OptionButtonGroup(
     enabled: Boolean,
-    onClick: () -> Unit,
+    onConfigClick: () -> Unit,
+    onShortcutClick: () -> Unit,
 ) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        variant = ButtonVariant.Outline,
-        size = ButtonSize.Sm
-    ) {
-        Icon(
-            modifier = Modifier.size(20.dp),
-            painter = painterResource(id = R.drawable.settings),
-            contentDescription = null
+    ButtonGroup {
+        Button(
+            onClick = onConfigClick,
+            enabled = enabled,
+            variant = ButtonVariant.Outline,
+            size = ButtonSize.Sm,
+            shape = ButtonGroupDefaults.shape(0, 2)
+        ) {
+            Icon(
+                modifier = Modifier.size(20.dp),
+                painter = painterResource(id = R.drawable.settings),
+                contentDescription = null
+            )
+        }
 
-        )
+        Button(
+            onClick = onShortcutClick,
+            enabled = enabled,
+            variant = ButtonVariant.Outline,
+            size = ButtonSize.Sm,
+            shape = ButtonGroupDefaults.shape(1, 2)
+        ) {
+            Icon(
+                modifier = Modifier.size(20.dp),
+                painter = painterResource(id = R.drawable.link),
+                contentDescription = null
+            )
+        }
     }
 }
 
