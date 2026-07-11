@@ -1,0 +1,1 @@
+All files in this directory have been taken from https://github.com/KOWX712/KernelSU/tree/cfac3be332ae8fe71d3d541b323ffeb742aed295/manager/app/src/main/java/me/weishu/kernelsu/ui/webui/file.
