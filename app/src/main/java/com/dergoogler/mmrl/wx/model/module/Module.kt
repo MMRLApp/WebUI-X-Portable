@@ -122,14 +122,16 @@ data class Module(
     override fun compareTo(other: Module): Int = id.compareTo(other.id)
 
     private val String?.relativeModuleOrWebrootDir: SuFile?
-        get() = this?.run {
+        get()  {
+            if (this.isNullOrBlank()) return null
+
             val webrootFile = SuFile(path.webrootDir, this)
-            if (webrootFile.exists()) return@run webrootFile
+            if (webrootFile.isFile) return webrootFile
 
             val moduleFile = SuFile(path.moduleDir, this)
-            if (moduleFile.exists()) return@run moduleFile
+            if (moduleFile.isFile) return moduleFile
 
-            null
+            return null
         }
 
     private inline fun <reified T> Map<String, Any>.get(
