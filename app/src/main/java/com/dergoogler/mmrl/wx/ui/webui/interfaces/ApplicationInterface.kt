@@ -2,13 +2,10 @@
 
 package com.dergoogler.mmrl.wx.ui.webui.interfaces
 
-import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import com.dergoogler.mmrl.wx.ui.webui.alerts.MXConfirm
-import com.dergoogler.mmrl.wx.ui.webui.alerts.MXPrompt
-import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Confirm
-import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Prompt
+import com.dergoogler.mmrl.wx.ui.webui.alerts.Confirm
+import com.dergoogler.mmrl.wx.ui.webui.alerts.Prompt
 import com.dergoogler.mmrl.wx.ui.webui.alerts.fromString
 import com.dergoogler.mmrl.wx.ui.webui.workingMode
 import dev.mmrlx.compose.layout.addOverlayView
@@ -21,10 +18,7 @@ import dev.mmrlx.webui.javascript.annotation.ExportMethod
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 
-class ApplicationInterface(
-    webui: WebUI,
-    private val colorScheme: ColorScheme,
-) : WebUIApplicationInterface(webui) {
+class ApplicationInterface(webui: WebUI) : WebUIApplicationInterface(webui) {
 
     @ExportMethod
     fun getCurrentRootManager(): JSONObject {
@@ -40,7 +34,7 @@ class ApplicationInterface(
         options: JSONObject?,
     ): Promise<String?> {
         return Promise(Dispatchers.Main) {
-            val theme = options.getAs<String>("theme", "md3")
+            val theme = options.getAs<String?>("theme", null)
             val title = options.getAs<String>("title", "Confirm")
             val launchKeyboard = options.getAs<Boolean>("launchKeyboard", true)
             val confirmText = options.getByPathOrDefault<String>("buttons.confirmText", "Confirm")
@@ -61,107 +55,53 @@ class ApplicationInterface(
                 return@Promise
             }
 
-            if (theme == "md3") {
-                activity.addOverlayView {
-                    this@ApplicationInterface.Md3Prompt(
-                        title = title,
-                        description = message,
-                        value = defaultValue,
-                        onConfirm = {
-                            resolve(it)
-                        },
-                        onClose = {
-                            resolve(null)
-                        },
-                        colorScheme = colorScheme,
-                        confirmText = confirmText,
-                        cancelText = cancelText,
-                        launchKeyboard = launchKeyboard,
-                        keyboardType = keyboardType,
-                        imeAction = imeAction
-                    )
-                }
-
-                return@Promise
+            activity.addOverlayView {
+                this@ApplicationInterface.Prompt(
+                    title = title,
+                    description = message,
+                    value = defaultValue,
+                    onConfirm = {
+                        resolve(it)
+                    },
+                    onClose = {
+                        resolve(null)
+                    },
+                    confirmText = confirmText,
+                    cancelText = cancelText,
+                    launchKeyboard = launchKeyboard,
+                    keyboardType = keyboardType,
+                    imeAction = imeAction,
+                    theme = theme,
+                    supportingText = supportingText
+                )
             }
-
-            if (theme == "mmrlx") {
-                activity.addOverlayView {
-                    this@ApplicationInterface.MXPrompt(
-                        title = title,
-                        description = message,
-                        value = defaultValue,
-                        onConfirm = {
-                            resolve(it)
-                        },
-                        onClose = {
-                            resolve(null)
-                        },
-                        confirmText = confirmText,
-                        cancelText = cancelText,
-                        launchKeyboard = launchKeyboard,
-                        supportingText = supportingText,
-                        keyboardType = keyboardType,
-                        imeAction = imeAction
-                    )
-                }
-
-                return@Promise
-            }
-
-            reject(Exception("Unsupported theme: $theme"))
         }
     }
 
     @ExportMethod
     suspend fun confirm(options: JSONObject?): Promise<Boolean> {
         return Promise(Dispatchers.Main) {
-            val theme = options.getAs<String>("theme", "md3")
+            val theme = options.getAs<String?>("theme", null)
             val title = options.getAs<String>("title", "Confirm")
             val confirmText = options.getByPathOrDefault("buttons.confirmText", "Confirm")
             val cancelText = options.getByPathOrDefault("buttons.cancelText", "Cancel")
             val message = options.getAs<String?>("message", null)
 
-            if (theme == "md3") {
-                activity.addOverlayView {
-                    this@ApplicationInterface.Md3Confirm(
-                        title = title,
-                        description = message,
-                        onConfirm = {
-                            resolve(true)
-                        },
-                        onClose = {
-                            resolve(false)
-                        },
-                        colorScheme = colorScheme,
-                        confirmText = confirmText,
-                        cancelText = cancelText,
-                    )
-                }
-
-                return@Promise
+            activity.addOverlayView {
+                this@ApplicationInterface.Confirm(
+                    title = title,
+                    description = message,
+                    onConfirm = {
+                        resolve(true)
+                    },
+                    onClose = {
+                        resolve(false)
+                    },
+                    confirmText = confirmText,
+                    cancelText = cancelText,
+                    theme = theme
+                )
             }
-
-            if (theme == "mmrlx") {
-                activity.addOverlayView {
-                    this@ApplicationInterface.MXConfirm(
-                        title = title,
-                        description = message,
-                        onConfirm = {
-                            resolve(true)
-                        },
-                        onClose = {
-                            resolve(false)
-                        },
-                        confirmText = confirmText,
-                        cancelText = cancelText,
-
-                        )
-                }
-                return@Promise
-            }
-
-            reject(Exception("Unsupported theme: $theme"))
         }
     }
 }

@@ -10,7 +10,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmDialog
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
+import com.dergoogler.mmrl.wx.model.module.theme
+import com.dergoogler.mmrl.wx.ui.webui.mdColorScheme
+import com.dergoogler.mmrl.wx.ui.webui.module
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
 import dev.mmrlx.compose.ui.button.ButtonVariant
@@ -19,9 +21,59 @@ import dev.mmrlx.compose.ui.dialog.Footer
 import dev.mmrlx.compose.ui.dialog.Title
 import dev.mmrlx.compose.ui.dialog.rememberDialog
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.webui.PureJavaScriptInterface
 
 @Composable
-fun ApplicationInterface.Md3Confirm(
+internal fun PureJavaScriptInterface.Confirm(
+    title: String,
+    description: String?,
+    onConfirm: () -> Unit,
+    onClose: () -> Unit,
+    confirmText: String,
+    cancelText: String,
+    theme: String? = null,
+) {
+    val t = theme ?: module.webrootConfig.theme
+    when (t) {
+        "md3", "md", "mmrl" -> {
+            Md3Confirm(
+                title = title,
+                description = description,
+                onConfirm = onConfirm,
+                onClose = onClose,
+                colorScheme = mdColorScheme,
+                confirmText = confirmText,
+                cancelText = cancelText,
+            )
+        }
+
+        "mmrlx", "mx" -> {
+            MXConfirm(
+                title = title,
+                description = description,
+                onConfirm = onConfirm,
+                onClose = onClose,
+                confirmText = confirmText,
+                cancelText = cancelText,
+            )
+        }
+
+        else -> {
+            MXConfirm(
+                title = title,
+                description = description,
+                onConfirm = onConfirm,
+                onClose = onClose,
+                confirmText = confirmText,
+                cancelText = cancelText,
+            )
+        }
+    }
+}
+
+
+@Composable
+fun PureJavaScriptInterface.Md3Confirm(
     title: String,
     description: String?,
     onConfirm: () -> Unit,
@@ -58,7 +110,7 @@ fun ApplicationInterface.Md3Confirm(
 }
 
 @Composable
-fun ApplicationInterface.MXConfirm(
+fun PureJavaScriptInterface.MXConfirm(
     title: String,
     description: String?,
     onConfirm: () -> Unit,
@@ -67,14 +119,14 @@ fun ApplicationInterface.MXConfirm(
     cancelText: String,
 ) {
     MMRLXTheme(
-        darkTheme = isDarkMode
+        darkTheme = settings.darkMode
     ) {
         val dialog = rememberDialog(true)
 
         val done = {
-                dialog.close()
-                onConfirm()
-            }
+            dialog.close()
+            onConfirm()
+        }
 
         val close = {
             dialog.close()

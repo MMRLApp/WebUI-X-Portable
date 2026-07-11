@@ -15,6 +15,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.boolean
@@ -24,6 +25,7 @@ import kotlinx.serialization.json.float
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import kotlin.reflect.typeOf
 
 class WebrootConfig(
     private val module: Module,
@@ -77,6 +79,22 @@ class WebrootConfig(
                 Short::class -> jsonPrimitive.int.toShort()
                 Byte::class -> jsonPrimitive.int.toByte()
 
+                List::class -> {
+                    val elementType = typeOf<T>().arguments.first().type!!
+
+                    (this as? JsonArray)?.map { element ->
+                        when (elementType.classifier) {
+                            String::class -> element.jsonPrimitive.content
+                            Int::class -> element.jsonPrimitive.int
+                            Long::class -> element.jsonPrimitive.long
+                            Boolean::class -> element.jsonPrimitive.boolean
+                            Double::class -> element.jsonPrimitive.double
+                            Float::class -> element.jsonPrimitive.float
+                            else -> element
+                        }
+                    } as T
+                }
+
                 else -> return default
             } as T
         }.getOrDefault(default)
@@ -88,16 +106,73 @@ class WebrootConfig(
     }
 
     inline fun <reified T> set(key: String, value: T) {
-        when (T::class) {
-            String::class -> set(key, JsonPrimitive(value as String))
-            Boolean::class -> set(key, JsonPrimitive(value as Boolean))
-            Int::class -> set(key, JsonPrimitive(value as Int))
-            Long::class -> set(key, JsonPrimitive(value as Long))
-            Float::class -> set(key, JsonPrimitive(value as Float))
-            Double::class -> set(key, JsonPrimitive(value as Double))
-            Short::class -> set(key, JsonPrimitive(value as Short))
-            Byte::class -> set(key, JsonPrimitive(value as Byte))
-            else -> throw IllegalArgumentException("Unsupported type: ${T::class}")
+        val json = when (value) {
+            null -> JsonNull
+
+            is JsonElement -> value
+
+            is String -> JsonPrimitive(value)
+            is Boolean -> JsonPrimitive(value)
+            is Number -> JsonPrimitive(value)
+
+            is List<*> -> JsonArray(
+                value.map { it.toJsonElement() }
+            )
+
+            is Set<*> -> JsonArray(
+                value.map { it.toJsonElement() }
+            )
+
+            is Array<*> -> JsonArray(
+                value.map { it.toJsonElement() }
+            )
+
+            is Map<*, *> -> JsonObject(
+                value.entries.associate { (k, v) ->
+                    k.toString() to v.toJsonElement()
+                }
+            )
+
+            else -> throw IllegalArgumentException(
+                "Unsupported type: ${value!!::class}"
+            )
+        }
+
+        set(key, json)
+    }
+
+    @PublishedApi
+    internal fun Any?.toJsonElement(): JsonElement {
+        return when (this) {
+            null -> JsonNull
+
+            is JsonElement -> this
+
+            is String -> JsonPrimitive(this)
+            is Boolean -> JsonPrimitive(this)
+            is Number -> JsonPrimitive(this)
+
+            is List<*> -> JsonArray(
+                map { it.toJsonElement() }
+            )
+
+            is Set<*> -> JsonArray(
+                map { it.toJsonElement() }
+            )
+
+            is Array<*> -> JsonArray(
+                map { it.toJsonElement() }
+            )
+
+            is Map<*, *> -> JsonObject(
+                entries.associate { (k, v) ->
+                    k.toString() to v.toJsonElement()
+                }
+            )
+
+            else -> throw IllegalArgumentException(
+                "Unsupported JSON value: ${this::class}"
+            )
         }
     }
 
@@ -263,6 +338,9 @@ val WebrootConfig.title
 val WebrootConfig.icon
     get() = get<String?>("icon", null)
 
+val WebrootConfig.theme
+    get() = get<String?>("theme", "md3")
+
 val WebrootConfig.refreshInterceptor
     get() = get<String?>("refreshInterceptor", "native")
 
@@ -273,7 +351,7 @@ val WebrootConfig.backHandler
     get() = get<Boolean?>("backHandler", true)
 
 val WebrootConfig.permissions
-    get() = get("permissions", JsonArray(emptyList()))
+    get() = get<List<String>>("permissions", emptyList())
 
 @Deprecated("Kept for backwards compatibility.")
 val WebrootConfig.dexFiles: List<WebUIConfigDexFile>

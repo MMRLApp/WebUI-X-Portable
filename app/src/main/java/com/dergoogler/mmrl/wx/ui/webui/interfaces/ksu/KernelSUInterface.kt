@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.webui.interfaces
+package com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -13,9 +13,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.io.KsuIO
 import com.dergoogler.mmrl.wx.ui.webui.isRootMode
 import com.dergoogler.mmrl.wx.ui.webui.module
+import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
 import com.dergoogler.mmrl.wx.ui.webui.util.packages
+import com.dergoogler.mmrl.wx.ui.webui.util.requirePermission
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
@@ -32,9 +35,7 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     override var id: String = "ksu"
 
     private val config get() = module.webrootConfig
-
     private val commands = if (!settings.isRootMode) arrayOf("sh") else arrayOf("su")
-
     private var shell: Shell = Shell.getShell()
 
     private inline fun <T> withNewRootShell(
@@ -80,13 +81,13 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     }
 
     @JavascriptInterface
-    fun exec(cmd: String): String {
-        return withNewRootShell { ShellUtils.fastCmd(this, cmd) }
+    fun exec(cmd: String): String? = requirePermission(Permissions.KSU.SHELL, "exec") {
+        withNewRootShell { ShellUtils.fastCmd(this, cmd) }
     }
 
     @JavascriptInterface
-    fun execBool(cmd: String): Boolean {
-        return withNewRootShell { ShellUtils.fastCmdResult(this, cmd) }
+    fun execBool(cmd: String): Boolean? = requirePermission(Permissions.KSU.SHELL, "execBool") {
+        withNewRootShell { ShellUtils.fastCmdResult(this, cmd) }
     }
 
     @JavascriptInterface
@@ -116,7 +117,7 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
         cmd: String,
         options: String?,
         callbackFunc: String,
-    ) {
+    ) = requirePermission(Permissions.KSU.SHELL, "exec") {
         val finalCommand = StringBuilder()
         processOptions(finalCommand, options)
         finalCommand.append(cmd)
@@ -154,81 +155,83 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
     }
 
     @JavascriptInterface
-    fun spawn(command: String, args: String, options: String?, callbackFunc: String) {
-        val finalCommand = StringBuilder()
+    fun spawn(command: String, args: String, options: String?, callbackFunc: String) =
+        requirePermission(Permissions.KSU.SHELL, "spawn") {
+            val finalCommand = StringBuilder()
 
-        processOptions(finalCommand, options)
+            processOptions(finalCommand, options)
 
-        if (!TextUtils.isEmpty(args)) {
-            finalCommand.append(command).append(" ")
-            JSONArray(args).let { argsArray ->
-                for (i in 0 until argsArray.length()) {
-                    finalCommand.append(argsArray.getString(i))
-                    finalCommand.append(" ")
+            if (!TextUtils.isEmpty(args)) {
+                finalCommand.append(command).append(" ")
+                JSONArray(args).let { argsArray ->
+                    for (i in 0 until argsArray.length()) {
+                        finalCommand.append(argsArray.getString(i))
+                        finalCommand.append(" ")
+                    }
+                }
+            } else {
+                finalCommand.append(command)
+            }
+
+            val shell = createRootShell(
+                globalMnt = true,
+            )
+
+            val emitData = fun(name: String, data: String) {
+                val jsCode =
+                    "(function() { try { ${callbackFunc}.${name}.emit('data', ${
+                        JSONObject.quote(
+                            data
+                        )
+                    }); } catch(e) { console.error('emitData', e); } })();"
+
+                runJs(jsCode)
+            }
+
+            val stdout = object : CallbackList<String>(::runAndWait) {
+                override fun onAddElement(s: String) {
+                    emitData("stdout", s)
                 }
             }
-        } else {
-            finalCommand.append(command)
-        }
 
-        val shell = createRootShell(
-            globalMnt = true,
-        )
-
-        val emitData = fun(name: String, data: String) {
-            val jsCode =
-                "(function() { try { ${callbackFunc}.${name}.emit('data', ${
-                    JSONObject.quote(
-                        data
-                    )
-                }); } catch(e) { console.error('emitData', e); } })();"
-
-            runJs(jsCode)
-        }
-
-        val stdout = object : CallbackList<String>(::runAndWait) {
-            override fun onAddElement(s: String) {
-                emitData("stdout", s)
-            }
-        }
-
-        val stderr = object : CallbackList<String>(::runAndWait) {
-            override fun onAddElement(s: String) {
-                emitData("stderr", s)
-            }
-        }
-
-        supervisorScope.launch(Dispatchers.IO) {
-            val future = shell.newJob().add(finalCommand.toString()).to(stdout, stderr).enqueue()
-            val completableFuture = CompletableFuture.supplyAsync {
-                future.get()
+            val stderr = object : CallbackList<String>(::runAndWait) {
+                override fun onAddElement(s: String) {
+                    emitData("stderr", s)
+                }
             }
 
-            completableFuture.thenAccept { result ->
-                val emitExitCode =
-                    "(function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
-                runJs(emitExitCode)
+            supervisorScope.launch(Dispatchers.IO) {
+                val future =
+                    shell.newJob().add(finalCommand.toString()).to(stdout, stderr).enqueue()
+                val completableFuture = CompletableFuture.supplyAsync {
+                    future.get()
+                }
+
+                completableFuture.thenAccept { result ->
+                    val emitExitCode =
+                        "(function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
+                    runJs(emitExitCode)
 
 
-                if (result.code != 0) {
-                    val emitErrCode =
-                        "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
-                            JSONObject.quote(
-                                result.err.joinToString(
-                                    "\n"
+                    if (result.code != 0) {
+                        val emitErrCode =
+                            "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
+                                JSONObject.quote(
+                                    result.err.joinToString(
+                                        "\n"
+                                    )
                                 )
-                            )
-                        };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
-                    runJs(emitErrCode)
+                            };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
+                        runJs(emitErrCode)
+                    }
+                }.whenComplete { _, _ ->
+                    runJsCatching { shell.close() }
                 }
-            }.whenComplete { _, _ ->
-                runJsCatching { shell.close() }
             }
         }
-    }
 
     @JavascriptInterface
-    fun moduleInfo(): String {
+    fun moduleInfo(): String? = requirePermission(Permissions.KSU.MODINFO, "moduleInfo") {
         val moduleInfos = JSONArray(PlatformManager.moduleManager.modules)
         val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", module.path.moduleDir)
@@ -245,7 +248,7 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
             }
             break
         }
-        return currentModuleInfo.toString()
+        return@requirePermission currentModuleInfo.toString()
     }
 
     private val pm get(): PackageManager = kontext.packageManager
@@ -302,6 +305,14 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
         return jsonArray.toString()
     }
 
+    @JavascriptInterface
+    fun io(): KsuIO? = requirePermission(
+        name = Permissions.KSU.IO,
+        method = "io"
+    ) {
+        KsuIO(this)
+    }
+
     override fun onStop() {
         super.onStop()
 
@@ -336,4 +347,3 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
             window.decorView
         ).show(WindowInsetsCompat.Type.systemBars())
 }
-

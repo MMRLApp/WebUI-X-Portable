@@ -32,7 +32,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ui.component.dialog.TextFieldDialog
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
+import com.dergoogler.mmrl.wx.model.module.theme
+import com.dergoogler.mmrl.wx.ui.webui.mdColorScheme
+import com.dergoogler.mmrl.wx.ui.webui.module
 import dev.mmrlx.compose.ui.button.Button
 import dev.mmrlx.compose.ui.button.ButtonVariant
 import dev.mmrlx.compose.ui.dialog.Content
@@ -43,9 +45,77 @@ import dev.mmrlx.compose.ui.list.DialogItemSlot
 import dev.mmrlx.compose.ui.text.OutlinedInput
 import dev.mmrlx.compose.ui.text.rememberInputState
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.webui.PureJavaScriptInterface
 
 @Composable
-internal fun ApplicationInterface.Md3Prompt(
+internal fun PureJavaScriptInterface.Prompt(
+    title: String,
+    description: String?,
+    value: String,
+    onConfirm: (String) -> Unit,
+    onClose: () -> Unit,
+    confirmText: String,
+    cancelText: String,
+    launchKeyboard: Boolean,
+    imeAction: ImeAction,
+    keyboardType: KeyboardType,
+    supportingText: String?,
+    theme: String? = null,
+) {
+    val t = theme ?: module.webrootConfig.theme
+    when (t) {
+        "md3", "md", "mmrl" -> {
+            Md3Prompt(
+                title = title,
+                description = description,
+                onConfirm = onConfirm,
+                onClose = onClose,
+                value = value,
+                colorScheme = mdColorScheme,
+                confirmText = confirmText,
+                cancelText = cancelText,
+                launchKeyboard = launchKeyboard,
+                imeAction = imeAction,
+                keyboardType = keyboardType,
+            )
+        }
+
+        "mmrlx", "mx" -> {
+            MXPrompt(
+                title = title,
+                description = description,
+                onConfirm = onConfirm,
+                onClose = onClose,
+                value = value,
+                confirmText = confirmText,
+                cancelText = cancelText,
+                launchKeyboard = launchKeyboard,
+                imeAction = imeAction,
+                keyboardType = keyboardType,
+                supportingText = supportingText,
+            )
+        }
+
+        else -> {
+            MXPrompt(
+                title = title,
+                description = description,
+                onConfirm = onConfirm,
+                onClose = onClose,
+                value = value,
+                confirmText = confirmText,
+                cancelText = cancelText,
+                launchKeyboard = launchKeyboard,
+                imeAction = imeAction,
+                keyboardType = keyboardType,
+                supportingText = supportingText,
+            )
+        }
+    }
+}
+
+@Composable
+internal fun PureJavaScriptInterface.Md3Prompt(
     title: String,
     description: String?,
     value: String,
@@ -133,7 +203,7 @@ internal fun ApplicationInterface.Md3Prompt(
 }
 
 @Composable
-internal fun ApplicationInterface.MXPrompt(
+internal fun PureJavaScriptInterface.MXPrompt(
     title: String,
     description: String?,
     value: String,
@@ -146,7 +216,7 @@ internal fun ApplicationInterface.MXPrompt(
     imeAction: ImeAction,
     keyboardType: KeyboardType,
 ) {
-    MMRLXTheme(darkTheme = isDarkMode) {
+    MMRLXTheme(darkTheme = settings.darkMode) {
         val dialog = rememberDialog(true)
         val state = rememberInputState(value)
 
@@ -268,7 +338,7 @@ internal fun ApplicationInterface.MXPrompt(
 }
 
 internal fun KeyboardType.Companion.fromString(value: String): KeyboardType {
-    return when(value.lowercase()) {
+    return when (value.lowercase()) {
         "ascii" -> KeyboardType.Ascii
         "number" -> KeyboardType.Number
         "phone" -> KeyboardType.Phone
@@ -282,7 +352,7 @@ internal fun KeyboardType.Companion.fromString(value: String): KeyboardType {
 }
 
 internal fun ImeAction.Companion.fromString(value: String): ImeAction {
-    return when(value) {
+    return when (value) {
         "done" -> ImeAction.Done
         "go" -> ImeAction.Go
         "next" -> ImeAction.Next

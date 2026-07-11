@@ -1,6 +1,9 @@
 package com.dergoogler.mmrl.wx.ui.webui.interfaces
 
 import com.dergoogler.mmrl.wx.ui.webui.module
+import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
+import com.dergoogler.mmrl.wx.ui.webui.util.Permissions.or
+import com.dergoogler.mmrl.wx.ui.webui.util.requirePermission
 import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.javascript.annotation.ExportVariable
@@ -12,13 +15,22 @@ class ModuleInterface(
     override val propertyName = "mod"
 
     @ExportVariable
-    val adbPath = module.adbPath.toJSONObject()
+    val adbPath = requirePermission(Permissions.MX.MODINFO or Permissions.KSU.MODINFO, "adbPath") {
+        module.adbPath.toJSONObject()
+    }
 
     @ExportVariable
-    val path = module.path.toJSONObject()
+    val path = requirePermission(
+        Permissions.MX.MODINFO or Permissions.KSU.MODINFO,
+        "path"
+    ) { module.path.toJSONObject() }
 
     @ExportVariable
-    override val id = module.id
+    override val id = requirePermission(
+        Permissions.MX.MODINFO or Permissions.KSU.MODINFO,
+        "adbPath",
+        "",
+    ) { module.id }
 
     @ExportVariable
     val name = module.name

@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.wx.ui.webui
 
 import android.net.Uri
 import android.os.Build
+import android.system.OsConstants.O_RDONLY
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -14,7 +15,7 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.KernelSUInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.KernelSUInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileInputInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileOutputInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.ModuleInterface
@@ -28,6 +29,7 @@ import dev.mmrlx.compose.webui.rememberWebUIState
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFileInputStream
 import dev.mmrlx.nio.SuFileOutputStream
+import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.WebUI
 
 @Composable
@@ -69,13 +71,21 @@ fun WebUIScreen() {
         it
             .factories {
                 inputStreamFactory { paths ->
-                    SuFileInputStream(paths.first)
+                    val path = paths.first
+                    val mode: Int = paths[1, O_RDONLY]
+                    SuFileInputStream(SuFile(path), mode, 0)
                 }
 
                 outputStreamFactory { paths ->
                     val path = paths.first
-                    val append = paths.append
+                    val append = paths[1, false]
                     SuFileOutputStream(path, append)
+                }
+
+                randomAccessFileFactory { paths ->
+                    val path = paths.first
+                    val mode = paths[1, "r"]
+                    SuRandomAccessFile(path, mode)
                 }
 
                 fileFactory { paths ->
@@ -98,7 +108,8 @@ fun WebUIScreen() {
                     "autoOpenEruda" to prefs.enableAutoOpenEruda,
                     "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
                     "isRootMode" to prefs.workingMode.isRoot,
-                    "workingMode" to prefs.workingMode
+                    "workingMode" to prefs.workingMode,
+                    "mdColorScheme" to colorScheme,
                 )
             }
             // legacy interfaces
@@ -116,11 +127,7 @@ fun WebUIScreen() {
             )
             .registerJavascriptInterface(
                 ApplicationInterface::class.java
-            ) {
-                add(
-                    ColorScheme::class.java to colorScheme
-                )
-            }
+            )
             .registerJavascriptInterface(
                 FileSystemInterface::class.java
             )

@@ -1,10 +1,13 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
+import androidx.compose.material3.ColorScheme
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.Module
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.WebUIFactories
 import dev.mmrlx.webui.WebUISettings
 import dev.mmrlx.webui.extra
 
@@ -38,6 +41,11 @@ fun WebUI.sufile(vararg paths: Any): SuFile {
 
     return f
 }
+
+val WebUI.mdColorScheme: ColorScheme
+    get() = settings.extra<ColorScheme>("mdColorScheme")
+        ?: throw IllegalStateException("MD Color Scheme not set")
+
 
 fun JavaScriptInterface.deprecated(method: String, replaceWith: String? = null) {
     console.warn(
@@ -100,13 +108,21 @@ fun <R, T> JavaScriptInterface.runTryJsWith(
     }
 }
 
-val Array<out Any>.append: Boolean
-    get() {
-        val p = this[1]
+inline operator fun <reified T> Array<out Any>.get(index: Int, default: T): T {
+    val p = this[index]
 
-        if (p is Boolean) {
-            return p
-        }
-
-        return false
+    if (p is T) {
+        return p
     }
+
+    return default
+}
+
+fun WebUIFactories.randomAccessFileFactory(factory: WebUIFactories.Factory<SuRandomAccessFile>) {
+    addFactory("randomAccessFile", factory)
+}
+
+fun WebUI.randomAccessFile(path: String, mode: String): SuRandomAccessFile {
+    return getFactory<SuRandomAccessFile>("randomAccessFile")?.create(path, mode)
+        ?: throw IllegalStateException("Random access file factory not set")
+}
