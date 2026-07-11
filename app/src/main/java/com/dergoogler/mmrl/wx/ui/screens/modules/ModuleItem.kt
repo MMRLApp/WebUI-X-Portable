@@ -48,6 +48,8 @@ import com.dergoogler.mmrl.wx.util.toPainter
 import com.dergoogler.mmrl.wx.util.versionDisplay
 import dev.mmrlx.compose.layout.flashlightCard
 import dev.mmrlx.compose.ui.Avatar
+import dev.mmrlx.compose.ui.Badge
+import dev.mmrlx.compose.ui.BadgeVariant
 import dev.mmrlx.compose.ui.HorizontalDivider
 import dev.mmrlx.compose.ui.Skeleton
 import dev.mmrlx.compose.ui.Text
@@ -171,10 +173,24 @@ fun ModuleItem(
                 }
 
                 Column {
-                    Text(
-                        text = module.name,
+                    FormatText(
+                        text = buildString {
+                            if (module.metaModule) {
+                                append("%y ")
+                            }
+                            append(module.name)
+                        },
                         style = MMRLXTheme.typography.titleSmall
-                    )
+                    ) {
+                        if (module.metaModule) {
+                            composable {
+                                Badge(
+                                    text = "M",
+                                    variant = BadgeVariant.Secondary,
+                                )
+                            }
+                        }
+                    }
 
                     Text(
                         text = "${module.author}, ${module.versionDisplay}",
