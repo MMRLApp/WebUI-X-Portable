@@ -7,7 +7,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.ui.theme.Colors
 import com.dergoogler.mmrl.ui.theme.Colors.Companion.getColorScheme
 import kotlinx.serialization.ExperimentalSerializationApi

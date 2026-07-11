@@ -46,6 +46,9 @@
     <string name="menu_pin_action">Pin Action</string>
     <string name="menu_pin_webui">Pin WebUI</string>
     <string name="menu_show_updated">Show Updated Time</string>
+    <string name="menu_show_size">Show Size</string>
+    <string name="menu_show_icon">Show Icon</string>
+    <string name="menu_show_cover">Show Cover/Banner</string>
     <string name="menu_show_antifeatures">Show Anti-Features</string>
     <string name="settings_security_inject_eruda_desc">Injecting Eruda cannot be used with WebUI Remote URL</string>
     <string name="add_shortcut">Add Shortcut</string>

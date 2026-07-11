@@ -6,10 +6,10 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.Option
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
+import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
+import com.dergoogler.mmrl.wx.datastore.model.Option
 import com.dergoogler.mmrl.wx.model.module.AdbPath
 import com.dergoogler.mmrl.wx.model.module.Module
 import dagger.hilt.android.lifecycle.HiltViewModel

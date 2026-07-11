@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -94,7 +95,6 @@ fun ModuleItem(
 //    }
 
     val toastStr = stringResource(R.string.unsupported_engine)
-
     Column(
         modifier = Modifier
             .combinedClickable(
@@ -134,8 +134,8 @@ fun ModuleItem(
             .fillMaxWidth()
             .flashlightCard()
     ) {
-        module.banner?.let {
-            it.exists { cover ->
+        if (menu.showCover && module.banner != null) {
+            module.banner.exists { cover ->
                 LocalCover(
                     modifier = Modifier.fadingEdge(
                         brush = Brush.verticalGradient(
@@ -160,13 +160,15 @@ fun ModuleItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Avatar(
-                    initials = module.name.take(
-                        2
-                    ).uppercase(),
-                    size = 36.dp,
-                    painter = module.icon?.toPainter()
-                )
+                if (menu.showIcon) {
+                    Avatar(
+                        initials = module.name.take(
+                            2
+                        ).uppercase(),
+                        size = 36.dp,
+                        painter = module.icon?.toPainter()
+                    )
+                }
 
                 Column {
                     Text(
@@ -188,28 +190,53 @@ fun ModuleItem(
                 style = MMRLXTheme.typography.bodySmall
             )
 
-            FormatText(
-                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
-                text = "%y %s • %y %s",
-                style = MMRLXTheme.typography.labelSmall,
-                color = MMRLXTheme.colors.mutedForeground
-            ) {
-                composable {
-                    Icon(
-                        modifier = Modifier.size(fontSize.dp),
-                        painter = painterResource(R.drawable.folder),
-                        tint = MMRLXTheme.colors.mutedForeground
-                    )
+            val stats = remember(menu) {
+                buildString {
+                    if (menu.showSize) {
+                        append("%y %s")
+                    }
+                    if (menu.showSize && menu.showUpdatedTime) {
+                        append(" %s ")
+                    }
+                    if (menu.showUpdatedTime) {
+                        append("%y %s")
+                    }
                 }
-                string(module.size.toFormattedFileSize())
-                composable {
-                    Icon(
-                        modifier = Modifier.size(fontSize.dp),
-                        painter = painterResource(R.drawable.git_branch),
-                        tint = MMRLXTheme.colors.mutedForeground
-                    )
+            }
+
+            if (stats.isNotEmpty()) {
+                FormatText(
+                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                    text = stats,
+                    style = MMRLXTheme.typography.labelSmall,
+                    color = MMRLXTheme.colors.mutedForeground
+                ) {
+                    if (menu.showSize) {
+                        composable {
+                            Icon(
+                                modifier = Modifier.size(fontSize.dp),
+                                painter = painterResource(R.drawable.folder),
+                                tint = MMRLXTheme.colors.mutedForeground
+                            )
+                        }
+                        string(module.size.toFormattedFileSize())
+                    }
+
+                    if (menu.showSize && menu.showUpdatedTime) {
+                        string("•")
+                    }
+
+                    if (menu.showUpdatedTime) {
+                        composable {
+                            Icon(
+                                modifier = Modifier.size(fontSize.dp),
+                                painter = painterResource(R.drawable.git_branch),
+                                tint = MMRLXTheme.colors.mutedForeground
+                            )
+                        }
+                        string(module.lastUpdated.toFormattedDateSafely(userPreferences.datePattern))
+                    }
                 }
-                string(module.lastUpdated.toFormattedDateSafely(userPreferences.datePattern))
             }
 
             HorizontalDivider(Modifier.padding(top = 8.dp))

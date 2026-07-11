@@ -2,7 +2,7 @@ package com.dergoogler.mmrl.wx.datastore
 
 import androidx.datastore.core.DataStore
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
+import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode

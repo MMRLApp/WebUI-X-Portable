@@ -21,9 +21,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.Option
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
+import com.dergoogler.mmrl.wx.datastore.model.Option
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Segment
@@ -119,6 +119,24 @@ private fun ColumnScope.MenuBottomSheetContent(
                 selected = menu.showUpdatedTime,
                 onClick = { setMenu(menu.copy(showUpdatedTime = !menu.showUpdatedTime)) },
                 label = { Text(text = stringResource(id = R.string.menu_show_updated)) }
+            )
+
+            MenuChip(
+                selected = menu.showCover,
+                onClick = { setMenu(menu.copy(showCover = !menu.showCover)) },
+                label = { Text(text = stringResource(id = R.string.menu_show_cover)) }
+            )
+
+            MenuChip(
+                selected = menu.showIcon,
+                onClick = { setMenu(menu.copy(showIcon = !menu.showIcon)) },
+                label = { Text(text = stringResource(id = R.string.menu_show_icon)) }
+            )
+
+            MenuChip(
+                selected = menu.showSize,
+                onClick = { setMenu(menu.copy(showSize = !menu.showSize)) },
+                label = { Text(text = stringResource(id = R.string.menu_show_size)) }
             )
         }
     }
