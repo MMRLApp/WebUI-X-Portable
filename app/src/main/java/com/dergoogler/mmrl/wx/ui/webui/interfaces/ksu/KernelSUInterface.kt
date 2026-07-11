@@ -258,9 +258,13 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
         val packageNames = packages
             .filter { appInfo ->
                 val flags = appInfo.applicationInfo?.flags ?: 0
+                val category = appInfo.applicationInfo?.category ?: 0
                 when (type.lowercase()) {
                     "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
                     "user" -> (flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                    "game" -> category == ApplicationInfo.CATEGORY_GAME ||
+                            (flags and ApplicationInfo.FLAG_IS_GAME) != 0
+
                     else -> true
                 }
             }
@@ -289,9 +293,16 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
                 obj.put("versionName", appInfo.versionName ?: "")
                 obj.put("versionCode", PackageInfoCompat.getLongVersionCode(appInfo))
                 obj.put("appLabel", pm.getApplicationLabel(appInfo.applicationInfo!!))
+                obj.put("category", app?.category ?: JSONObject.NULL)
+                obj.put("flags", app?.flags ?: JSONObject.NULL)
                 obj.put(
                     "isSystem",
                     if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL
+                )
+                obj.put(
+                    "isGame",
+                    if (app != null) app.category == ApplicationInfo.CATEGORY_GAME ||
+                            (app.flags and ApplicationInfo.FLAG_IS_GAME) != 0 else JSONObject.NULL
                 )
                 obj.put("uid", app?.uid ?: JSONObject.NULL)
                 jsonArray.put(obj)
