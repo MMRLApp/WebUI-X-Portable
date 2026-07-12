@@ -9,7 +9,7 @@ import java.io.IOException
 
 class AssetsPathHandler(
     webui: WebUI,
-) : PathHandler(webui) {
+) : KsuPathHandler(webui) {
     override val id = ""
 
     private val assets get() = kontext.assets

@@ -32,6 +32,7 @@ import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
+import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -135,6 +136,13 @@ fun ModulesScreen(
                     }
 
                     else -> {
+
+                        if (prefs.developerMode { useWebUiDevUrl }) {
+                            item {
+                                DebugAlert("Remote URL", "You currently have a remote URL set. Modules might not work as expected.")
+                            }
+                        }
+
                         items(
                             items = modules.filter { it.hasWebUI },
                             key = { it.id },

@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 import android.webkit.WebResourceResponse
 import androidx.compose.material3.ColorScheme
 import com.dergoogler.mmrl.webui.model.WebColors
-import dev.mmrlx.webui.PathHandler
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
 import java.io.IOException
@@ -11,7 +10,7 @@ import java.io.IOException
 class InternalPathHandler(
     webui: WebUI,
     private val colorScheme: ColorScheme,
-) : PathHandler(webui) {
+) : KsuPathHandler(webui) {
     override val id = "/internal/"
 
     val webColors get() = WebColors(colorScheme)

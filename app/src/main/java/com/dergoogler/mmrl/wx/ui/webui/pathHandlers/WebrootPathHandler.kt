@@ -21,21 +21,15 @@ import com.dergoogler.mmrl.wx.ui.webui.util.asResponse
 import com.dergoogler.mmrl.wx.ui.webui.util.errorResponse
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.utilities.security.ContentSecurityPolicyManager
-import dev.mmrlx.webui.PathHandler
 import dev.mmrlx.webui.ResponseStatus
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIInsets
 import dev.mmrlx.webui.WebUIResourceRequest
 import java.io.IOException
 
-private const val DefaultContentSecurityPolicy: String =
-    "default-src 'self' data: blob: {domain}; " +
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
-            "style-src 'self' 'unsafe-inline' {domain}; connect-src *"
-
 class WebrootPathHandler(
     webui: WebUI,
-) : PathHandler(webui) {
+) : KsuPathHandler(webui) {
     override val id = "/"
 
     private val configBase get() = module.path.configDir

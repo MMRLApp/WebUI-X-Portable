@@ -1,13 +1,11 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
-import android.net.Uri
 import android.os.Build
 import android.system.OsConstants.O_RDONLY
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
@@ -166,11 +164,9 @@ fun WebUIScreen() {
 private fun WebUI.registerSuPathHandler(
     path: String,
     directory: String,
-    authority: String = baseUri.toString(),
 ): WebUI {
     return this.registerPathHandler(SuPathHandler::class.java) {
         add(String::class.java to path)
-        add(Uri::class.java to authority.toUri())
         add(String::class.java to directory)
     }
 }
