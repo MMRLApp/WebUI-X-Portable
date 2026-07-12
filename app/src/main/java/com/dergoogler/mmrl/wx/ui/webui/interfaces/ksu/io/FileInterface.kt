@@ -2,13 +2,16 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.io
 
 import android.util.Log
 import android.webkit.JavascriptInterface
-import com.topjohnwu.superuser.io.SuFile
+import com.dergoogler.mmrl.wx.ui.webui.sufile
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.SuFileOutputStream
+import dev.mmrlx.nio.inputStream
 import dev.mmrlx.webui.PureJavaScriptInterface
 import dev.mmrlx.webui.WebUI
 import java.io.BufferedOutputStream
 
 class FileInterface(webui: WebUI, private val path: String) : PureJavaScriptInterface(webui) {
-    private val suFile: SuFile = SuFile(path)
+    private val suFile: SuFile = sufile(path)
 
     @JavascriptInterface
     fun exists(): Boolean = runCatching { suFile.exists() }.getOrDefault(false)
@@ -34,9 +37,9 @@ class FileInterface(webui: WebUI, private val path: String) : PureJavaScriptInte
     @JavascriptInterface
     fun delete(): Boolean = runCatching { suFile.delete() }.getOrDefault(false)
 
+    @Deprecated("Use delete() instead")
     @JavascriptInterface
-    fun deleteRecursive(): Boolean = runCatching { suFile.deleteRecursive() }.getOrDefault(false)
-
+    fun deleteRecursive(): Boolean = false
     @JavascriptInterface
     fun mkdir(): Boolean = runCatching { suFile.mkdir() }.getOrDefault(false)
 
@@ -86,27 +89,22 @@ class FileInterface(webui: WebUI, private val path: String) : PureJavaScriptInte
     fun isHidden(): Boolean = runCatching { suFile.isHidden }.getOrDefault(false)
 
     @JavascriptInterface
-    fun isBlock(): Boolean = runCatching { suFile.isBlock }.getOrDefault(false)
+    fun isBlock(): Boolean = runCatching { suFile.isBlock() }.getOrDefault(false)
 
     @JavascriptInterface
-    fun isCharacter(): Boolean = runCatching { suFile.isCharacter }.getOrDefault(false)
+    fun isCharacter(): Boolean = runCatching { suFile.isCharacter() }.getOrDefault(false)
 
     @JavascriptInterface
-    fun isSymlink(): Boolean = runCatching { suFile.isSymlink }.getOrDefault(false)
+    fun isSymlink(): Boolean = runCatching { suFile.isSymlink() }.getOrDefault(false)
 
     @JavascriptInterface
-    fun createNewSymlink(target: String): Boolean = runCatching {
-        suFile.createNewSymlink(target)
-    }.getOrDefault(false)
+    fun createNewSymlink(target: String): Boolean = false
 
     @JavascriptInterface
-    fun createNewLink(existing: String): Boolean = runCatching {
-        suFile.createNewLink(existing)
-    }.getOrDefault(false)
+    fun createNewLink(existing: String): Boolean = false
 
     @JavascriptInterface
-    fun clear(): Boolean = runCatching { suFile.clear() }.getOrDefault(false)
-
+    fun clear(): Boolean =false
     @JavascriptInterface
     fun setReadOnly(): Boolean = runCatching { suFile.setReadOnly() }.getOrDefault(false)
 
@@ -134,7 +132,7 @@ class FileInterface(webui: WebUI, private val path: String) : PureJavaScriptInte
     @JavascriptInterface
     fun newInputStream(): String {
         return runCatching {
-            val stream = ManagedInputStream(suFile.newInputStream())
+            val stream = ManagedInputStream(suFile.inputStream())
             val id = java.util.UUID.randomUUID().toString()
             KsuIO.openInputStreams[id] = stream
             id
@@ -144,7 +142,7 @@ class FileInterface(webui: WebUI, private val path: String) : PureJavaScriptInte
     @JavascriptInterface
     fun newOutputStream(append: Boolean): String {
         return runCatching {
-            val stream = suFile.newOutputStream(append)
+            val stream = SuFileOutputStream(suFile, append)
             val id = java.util.UUID.randomUUID().toString()
             KsuIO.openOutputStreams[id] =
                 BufferedOutputStream(stream, ManagedInputStream.MAX_CHUNK_SIZE)

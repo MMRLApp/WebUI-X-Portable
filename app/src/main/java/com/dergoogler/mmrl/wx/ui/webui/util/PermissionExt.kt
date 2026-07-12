@@ -5,10 +5,10 @@ import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Confirm
 import com.dergoogler.mmrl.wx.ui.webui.mdColorScheme
 import com.dergoogler.mmrl.wx.ui.webui.module
 import dev.mmrlx.compose.layout.addOverlayView
+import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.PureJavaScriptInterface
 
 private val requestedPermissions = mutableSetOf<String>()
-
 
 fun <T> PureJavaScriptInterface.requirePermission(
     name: Permissions.Group,
@@ -33,6 +33,55 @@ fun <T> PureJavaScriptInterface.requirePermission(
 )
 
 fun <T> PureJavaScriptInterface.requirePermission(
+    group: Permissions.Group,
+    method: String? = null,
+    default: T,
+    block: () -> T,
+): T = requirePermission(
+    interfaceId = id,
+    group = group,
+    method = method,
+    default = default,
+    block = block,
+)
+
+fun <T> JavaScriptInterface.requirePermission(
+    name: Permissions.Group,
+    method: String? = null,
+    block: () -> T,
+): T? = requirePermission(
+    name,
+    method,
+    null,
+    block,
+)
+
+fun <T> JavaScriptInterface.requirePermission(
+    name: Permissions.Name,
+    method: String? = null,
+    block: () -> T,
+): T? = requirePermission(
+    Permissions.Group(setOf(name)),
+    method,
+    null,
+    block,
+)
+
+fun <T> JavaScriptInterface.requirePermission(
+    group: Permissions.Group,
+    method: String? = null,
+    default: T,
+    block: () -> T,
+): T = requirePermission(
+    interfaceId = propertyName ?: "[\"$id\"]",
+    group = group,
+    method = method,
+    default = default,
+    block = block,
+)
+
+private fun <T> PureJavaScriptInterface.requirePermission(
+    interfaceId: String,
     group: Permissions.Group,
     method: String? = null,
     default: T,
@@ -67,7 +116,7 @@ fun <T> PureJavaScriptInterface.requirePermission(
         append("After confirming, the WebUI will be refreshed.")
 
         if (method != null) {
-            append("\n\nThis request was called by $id.$method(...)")
+            append("\n\nThis request was called by $interfaceId.$method")
         }
     }
 

@@ -5,10 +5,12 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces
 import android.os.Build
 import android.system.OsConstants
 import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.platform.file.SuFileInputStream
 import com.dergoogler.mmrl.platform.file.SuFileOutputStream
-import com.dergoogler.mmrl.platform.file.inputStream
+import com.dergoogler.mmrl.wx.ui.webui.sufile
+import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
+import com.dergoogler.mmrl.wx.ui.webui.util.requirePermission
 import com.dergoogler.mmrl.wx.util.PermissionParser
+import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.json.getAs
 import dev.mmrlx.utilities.json.toByteArray
 import dev.mmrlx.webui.WebUI
@@ -19,8 +21,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.FileOutputStream
 import java.io.IOException
+import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
@@ -35,64 +37,47 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
     // Hidden, sadly
     //    val O_DIRECT: Int = OsConstants.O_DIRECT
 
-    // TODO: support pure for variables
-    //    @ExportVariable(pure = true)
     @ExportVariable
-    val O_EXCL: Int = OsConstants.O_EXCL
+    val constants = JSONObject().apply {
+        put("O_EXCL", OsConstants.O_EXCL)
+        put("O_NOCTTY", OsConstants.O_NOCTTY)
+        put("O_NOFOLLOW", OsConstants.O_NOFOLLOW)
+        put("O_NONBLOCK", OsConstants.O_NONBLOCK)
+        put("O_RDONLY", OsConstants.O_RDONLY)
+        put("O_RDWR", OsConstants.O_RDWR)
+        put("O_SYNC", OsConstants.O_SYNC)
+        put(
+            "O_DSYNC", if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                OsConstants.O_DSYNC
+            } else {
+                0
+            }
+        )
+        put("O_TRUNC", OsConstants.O_TRUNC)
+        put("O_WRONLY", OsConstants.O_WRONLY)
+        put("O_ACCMODE", OsConstants.O_ACCMODE)
+        put("O_APPEND", OsConstants.O_APPEND)
+        put(
+            "O_CLOEXEC", if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                OsConstants.O_CLOEXEC
+            } else {
+                0
+            }
+        )
+        put("O_CREAT", OsConstants.O_CREAT)
+        put("W_OK", OsConstants.W_OK)
+        put("R_OK", OsConstants.R_OK)
+        put("X_OK", OsConstants.X_OK)
+        put("F_OK", OsConstants.F_OK)
 
-    @ExportVariable
-    val O_NOCTTY: Int = OsConstants.O_NOCTTY
-
-    @ExportVariable
-    val O_NOFOLLOW: Int = OsConstants.O_NOFOLLOW
-
-    @ExportVariable
-    val O_NONBLOCK: Int = OsConstants.O_NONBLOCK
-
-    @ExportVariable
-    val O_RDONLY: Int = OsConstants.O_RDONLY
-
-    @ExportVariable
-    val O_RDWR: Int = OsConstants.O_RDWR
-
-    @ExportVariable
-    val O_SYNC: Int = OsConstants.O_SYNC
-
-    @ExportVariable
-    val O_DSYNC: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-        OsConstants.O_DSYNC
-    } else {
-        0
     }
-
-    @ExportVariable
-    val O_TRUNC: Int = OsConstants.O_TRUNC
-
-    @ExportVariable
-    val O_WRONLY: Int = OsConstants.O_WRONLY
-
-    @ExportVariable
-    val O_ACCMODE: Int = OsConstants.O_ACCMODE
-
-    @ExportVariable
-    val O_APPEND: Int = OsConstants.O_APPEND
-
-    @ExportVariable
-    val O_CLOEXEC: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-        OsConstants.O_CLOEXEC
-    } else {
-        0
-    }
-
-    @ExportVariable
-    val O_CREAT: Int = OsConstants.O_CREAT
 
     // TODO: better handle
     private class JSInputStream : JSObject {
-        private var stream: SuFileInputStream
+        private var stream: InputStream
 
-        constructor(path: String, flags: Int, mode: Int) {
-            stream = SuFileInputStream(SuFile(path), flags, mode)
+        constructor(webui: WebUI, path: String, flags: Int, mode: Int) {
+            stream = webui.inputStream(path, flags, mode)
         }
 
         @ExportMethod
@@ -144,14 +129,18 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
     }
 
     @ExportMethod
-    suspend fun inputstream(path: String, options: JSONObject?): Promise<JSObject> {
-        val flags = options.getAs<Int>("flags", O_RDONLY)
+    suspend fun inputstream(path: String, options: JSONObject?): Promise<JSObject?> {
+        val flags = options.getAs<Int>("flags", OsConstants.O_RDONLY)
         val rawMode = options?.opt("mode") ?: 0
         val mode = PermissionParser.parse(rawMode)
 
         return Promise(Dispatchers.Main) {
             try {
-                resolve(JSInputStream(path, flags, mode))
+                requirePermission(
+                    Permissions.MX.IO, "inputstream"
+                ) {
+                    resolve(JSInputStream(this@FileSystemInterface, path, flags, mode))
+                }
             } catch (e: Exception) {
                 reject(e)
             }
@@ -162,25 +151,29 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
     suspend fun outputstream(path: String, options: JSONObject): Promise<JSObject> {
         return Promise {
             try {
-                val fos = FileOutputStream(path, false) // overwrite (use true for append)
+                requirePermission(
+                    Permissions.MX.IO, "outputstream"
+                ) {
+                    val fos = outputStream(path, false) // overwrite (use true for append)
 
-                val writer = object : JSObject {
-                    @ExportMethod
-                    fun write(chunk: JSONArray) {
-                        val byteArray = ByteArray(chunk.length()) { i ->
-                            chunk.getInt(i).toByte()
+                    val writer = object : JSObject {
+                        @ExportMethod
+                        fun write(chunk: JSONArray) {
+                            val byteArray = ByteArray(chunk.length()) { i ->
+                                chunk.getInt(i).toByte()
+                            }
+                            fos.write(byteArray)
                         }
-                        fos.write(byteArray)
+
+                        @ExportMethod
+                        fun close() {
+                            fos.flush()
+                            fos.close()
+                        }
                     }
 
-                    @ExportMethod
-                    fun close() {
-                        fos.flush()
-                        fos.close()
-                    }
+                    resolve(writer)
                 }
-
-                resolve(writer)
             } catch (e: Throwable) {
                 reject(e)
             }
@@ -193,7 +186,7 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
         options: JSONObject?,
     ): Promise<String> {
         val charset: Charset? = Charset.forName(options.getAs<String>("encoding", "UTF-8"))
-        val flags = options.getAs<Int>("flags", O_RDONLY)
+        val flags = options.getAs<Int>("flags", OsConstants.O_RDONLY)
         val rawMode = options?.opt("mode") ?: 0
         val mode = PermissionParser.parse(rawMode)
 
@@ -203,14 +196,18 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
                 return@Promise
             }
 
-            try {
-                val file = SuFile(path)
-                val stream = file.inputStream(flags, mode)
-                val reader = stream.reader(charset)
-                val text = reader.use { it.readText() }
-                resolve(text)
-            } catch (e: Exception) {
-                reject(e)
+            requirePermission(
+                Permissions.MX.IO, "readFile"
+            ) {
+                try {
+                    val file = sufile(path)
+                    val stream = file.inputStream(flags, mode)
+                    val reader = stream.reader(charset)
+                    val text = reader.use { it.readText() }
+                    resolve(text)
+                } catch (e: Exception) {
+                    reject(e)
+                }
             }
         }
     }
@@ -221,7 +218,7 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
         options: JSONObject?,
     ): String? {
         val charset: Charset? = Charset.forName(options.getAs<String>("encoding", "UTF-8"))
-        val flags = options.getAs<Int>("flags", O_RDONLY)
+        val flags = options.getAs<Int>("flags", OsConstants.O_RDONLY)
         val rawMode = options?.opt("mode") ?: 0
         val mode = PermissionParser.parse(rawMode)
 
@@ -230,15 +227,19 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
             return null
         }
 
-        try {
-            val file = SuFile(path)
-            val stream = file.inputStream(flags, mode)
-            val reader = stream.reader(charset)
-            val text = reader.use { it.readText() }
-            return text
-        } catch (e: Exception) {
-            console.error(e)
-            return null
+        return requirePermission(
+            Permissions.MX.IO, "readFileSync"
+        ) {
+            try {
+                val file = sufile(path)
+                val stream = file.inputStream(flags, mode)
+                val reader = stream.reader(charset)
+                val text = reader.use { it.readText() }
+                return@requirePermission text
+            } catch (e: Exception) {
+                console.error(e)
+                return@requirePermission null
+            }
         }
     }
 
@@ -249,7 +250,10 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
         options: JSONObject?,
     ): Promise<Unit> {
         val charset: Charset? = Charset.forName(options.getAs<String>("encoding", "UTF-8"))
-        val flags = options.getAs<Int>("flags", O_CREAT or O_WRONLY or O_TRUNC)
+        val flags = options.getAs<Int>(
+            "flags",
+            OsConstants.O_CREAT or OsConstants.O_WRONLY or OsConstants.O_TRUNC
+        )
         val rawMode = options?.opt("mode") ?: 438
         val mode = PermissionParser.parse(rawMode)
 
@@ -258,55 +262,65 @@ class FileSystemInterface(webui: WebUI) : WebUIFileSystemInterface(webui) {
                 reject(Error("Invalid charset"))
                 return@Promise
             }
-
-            try {
-                SuFile(path).writeNIOText(data, flags, mode, charset)
-                resolve(Unit)
-            } catch (e: Exception) {
-                reject(e)
+            requirePermission(
+                Permissions.MX.IO, "writeFile"
+            ) {
+                try {
+                    SuFile(path).writeNIOText(data, flags, mode, charset)
+                    resolve(Unit)
+                } catch (e: Exception) {
+                    reject(e)
+                }
             }
         }
     }
 // TODO: implement it with Os.access(path, flags)
-//
-//    @ExportMethod
-//    suspend fun access(
-//        path: String,
-//        mode: Int,
-//    ): Promise<Boolean> {
-//        return Promise {
-//            val accessMode = AccessMode.from(mode)
-//
-//            if (accessMode == null) {
-//                reject(Error("Invalid access mode"))
-//                return@Promise
-//            }
-//
-//            try {
-//                val success = when (accessMode) {
-//                    AccessMode.F_OK -> {
-//                        SuFile(path).exists()
-//                    }
-//
-//                    AccessMode.R_OK -> {
-//                        SuFile(path).canRead()
-//                    }
-//
-//                    AccessMode.W_OK -> {
-//                        SuFile(path).canWrite()
-//                    }
-//
-//                    AccessMode.X_OK -> {
-//                        SuFile(path).canExecute()
-//                    }
-//                }
-//
-//                resolve(success)
-//            } catch (e: Exception) {
-//                reject(e)
-//            }
-//        }
-//    }
+
+    @ExportMethod
+    suspend fun access(
+        path: String,
+        mode: Int,
+    ): Promise<Boolean> {
+        return Promise {
+
+            if (mode != OsConstants.W_OK && mode != OsConstants.R_OK && mode != OsConstants.X_OK) {
+                reject(Error("Invalid access mode"))
+                return@Promise
+            }
+
+            requirePermission(
+                Permissions.MX.IO, "access"
+            ) {
+                try {
+                    resolve(sufile(path).access(mode))
+                } catch (e: Exception) {
+                    reject(e)
+                }
+            }
+        }
+    }
+
+    @ExportMethod
+    fun accessSync(
+        path: String,
+        mode: Int,
+    ): Boolean? {
+        if (mode != OsConstants.W_OK && mode != OsConstants.R_OK && mode != OsConstants.X_OK) {
+            console.error("Invalid access mode")
+            return false
+        }
+
+        return requirePermission(
+            Permissions.MX.IO, "accessSync"
+        ) {
+            try {
+                return@requirePermission sufile(path).access(mode)
+            } catch (e: Exception) {
+                console.error(e)
+                return@requirePermission false
+            }
+        }
+    }
 
     @Throws(IOException::class)
     private fun SuFile.writeNIOText(

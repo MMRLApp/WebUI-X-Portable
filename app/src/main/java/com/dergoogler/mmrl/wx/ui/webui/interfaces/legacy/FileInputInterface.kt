@@ -3,6 +3,8 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy
 import android.webkit.JavascriptInterface
 import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.sanitizedIdWithFileInputStream
+import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
+import com.dergoogler.mmrl.wx.ui.webui.util.requirePermission
 import dev.mmrlx.utilities.json.toJSONArray
 import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
@@ -18,7 +20,7 @@ class FileInputInterface(
     override val propertyName = module.sanitizedIdWithFileInputStream
 
     @ExportMethod
-    fun open(path: String): JSObject? =
+    fun open(path: String): JSObject? = requirePermission(Permissions.WX.IO, "open") {
         try {
             val stream = inputStream(path)
             FileInputInterfaceStream(this, stream)
@@ -26,6 +28,7 @@ class FileInputInterface(
             console.error(e)
             null
         }
+    }
 }
 
 class FileInputInterfaceStream(

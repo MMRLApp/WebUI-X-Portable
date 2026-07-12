@@ -2,6 +2,8 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy
 
 import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.sanitizedIdWithFileOutputStream
+import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
+import com.dergoogler.mmrl.wx.ui.webui.util.requirePermission
 import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.javascript.annotation.ExportMethod
@@ -16,12 +18,14 @@ class FileOutputInterface(
 
     @ExportMethod
     fun open(path: String, append: Boolean): JSObject? =
-        try {
-            val stream = outputStream(path, append)
-            FileOutputInterfaceStream(this, stream)
-        } catch (e: Exception) {
-            console.error(e)
-            null
+        requirePermission(Permissions.WX.IO, "open") {
+            try {
+                val stream = outputStream(path, append)
+                FileOutputInterfaceStream(this, stream)
+            } catch (e: Exception) {
+                console.error(e)
+                null
+            }
         }
 
     @ExportMethod
