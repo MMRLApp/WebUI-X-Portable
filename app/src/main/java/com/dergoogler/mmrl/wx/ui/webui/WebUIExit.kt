@@ -8,7 +8,7 @@ import com.dergoogler.mmrl.wx.model.module.WebrootConfig
 import com.dergoogler.mmrl.wx.model.module.backInterceptor
 import com.dergoogler.mmrl.wx.model.module.exitConfirm
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.WebUIBackEventType
+import dev.mmrlx.webui.WebUIInterceptorType
 import kotlin.system.exitProcess
 
 private fun WebUI.handleNativeExit(colorScheme: ColorScheme, config: WebrootConfig) {
@@ -45,10 +45,10 @@ fun WebUI.backHandlers(colorScheme: ColorScheme): WebUI {
     val config = module.webrootConfig
 
     val backInterceptor = when (config.backInterceptor) {
-        "native" -> WebUIBackEventType.NATIVE
-        "javascript" -> WebUIBackEventType.JAVASCRIPT
-        "javascript-full" -> WebUIBackEventType.JAVASCRIPT_FULL
-        else -> WebUIBackEventType.NATIVE
+        "native" -> WebUIInterceptorType.NATIVE
+        "javascript" -> WebUIInterceptorType.JAVASCRIPT
+        "javascript-full" -> WebUIInterceptorType.JAVASCRIPT_FULL
+        else -> WebUIInterceptorType.NATIVE
     }
 
     return this
@@ -57,15 +57,15 @@ fun WebUI.backHandlers(colorScheme: ColorScheme): WebUI {
         }.backEvents {
             onBackPressed {
                 when (backInterceptor) {
-                    WebUIBackEventType.NATIVE -> {
+                    WebUIInterceptorType.NATIVE -> {
                         handleNativeExit(colorScheme, config)
                     }
 
-                    WebUIBackEventType.JAVASCRIPT -> {
+                    WebUIInterceptorType.JAVASCRIPT -> {
                         guardWebViewState(::emitBackPressed)
                     }
 
-                    WebUIBackEventType.JAVASCRIPT_FULL -> {
+                    WebUIInterceptorType.JAVASCRIPT_FULL -> {
                         emitBackPressed()
                     }
                 }

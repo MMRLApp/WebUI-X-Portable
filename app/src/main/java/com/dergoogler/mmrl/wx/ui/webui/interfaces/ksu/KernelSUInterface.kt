@@ -231,7 +231,7 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
         }
 
     @JavascriptInterface
-    fun moduleInfo(): String? = requirePermission(Permissions.KSU.MODINFO, "moduleInfo") {
+    fun moduleInfo(): String {
         val moduleInfos = JSONArray(PlatformManager.moduleManager.modules)
         val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", module.path.moduleDir)
@@ -248,7 +248,7 @@ class KernelSUInterface(webui: WebUI) : PureJavaScriptInterface(webui) {
             }
             break
         }
-        return@requirePermission currentModuleInfo.toString()
+        return currentModuleInfo.toString()
     }
 
     private val pm get(): PackageManager = kontext.packageManager
