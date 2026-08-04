@@ -2,25 +2,39 @@
 
 package com.dergoogler.mmrl.wx.model.module
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Icon
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import com.dergoogler.mmrl.platform.model.ModId.Companion.INTENT_MOD_ID
+import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.ModulePath.Companion.PROP_FILE
 import com.dergoogler.mmrl.wx.util.set
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
-import kotlinx.parcelize.IgnoredOnParcel
 import org.apache.commons.compress.archivers.zip.ZipFile
 import org.luaj.LuaTable
 import java.io.File
 import java.io.InputStream
+import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity as WxWebUIActivity
+import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity as MxWebUIActivity
 
 data class Module(
     val adbPath: AdbPath,
     private val properties: Map<String, Any>,
+    private val context: Context? = null,
+    private val webuiEngine: WebUIEngine,
 ) : Comparable<Module> {
     val id: String = properties["id"].asOrDefault("")
     val path: ModulePath = ModulePath(adbPath, id)
@@ -35,11 +49,11 @@ data class Module(
     private val metaModuleInt = properties.get(0, "metamodule")
     val metaModule: Boolean = metaModuleBoolean || metaModuleInt != 0
 
-    val banner: SuFile? = properties.get<String?>(null, "banner", "cover").relativeModuleOrWebrootDir
-    val icon: SuFile? = properties.get<String?>(null, "webuiIcon", "icon").relativeModuleOrWebrootDir
+    val banner: SuFile? =
+        properties.get<String?>(null, "banner", "cover").relativeModuleOrWebrootDir
+    val icon: SuFile? =
+        properties.get<String?>(null, "webuiIcon", "icon").relativeModuleOrWebrootDir
 
-
-    @IgnoredOnParcel
     val hasWebUI: Boolean by lazy {
         val webroot = SuFile(path.webrootDir)
         val index = webroot.resolve("index.html")
@@ -62,8 +76,6 @@ data class Module(
 //        return@lazy ModuleState.ENABLE
 //    }
 
-
-    @IgnoredOnParcel
     val state: com.dergoogler.mmrl.platform.content.State by lazy {
         SuFile(path.removeFile).apply {
             if (exists()) return@lazy com.dergoogler.mmrl.platform.content.State.REMOVE
@@ -80,7 +92,6 @@ data class Module(
         return@lazy com.dergoogler.mmrl.platform.content.State.ENABLE
     }
 
-    @IgnoredOnParcel
     val lastUpdated: Long by lazy {
         path.files.map { SuFile(it) }.forEach {
             if (it.exists()) {
@@ -91,12 +102,128 @@ data class Module(
         return@lazy 0L
     }
 
-
-    @IgnoredOnParcel
     val size: Long by lazy {
         val directory = SuFile(adbPath.modulesDir, id)
         calculateSizeFast(directory)
     }
+
+    private val shortcutManager = context?.getSystemService(ShortcutManager::class.java)
+    val shortcutId get() = "shortcut_${id}_${webuiEngine.name.lowercase()}"
+
+    fun hasShortcut(): Boolean {
+        if (context == null) return false
+
+        if (shortcutManager == null) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_not_supported),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        if (shortcutManager.pinnedShortcuts.any { it.id == shortcutId }) {
+            return true
+        }
+
+        return false
+    }
+
+    fun createShortcut(
+        webuiContext: Boolean = false,
+        title: String = if (this.webrootConfig.title.isNullOrBlank()) name else this.webrootConfig.title!!,
+        iconUri: String? = this.icon?.path,
+        engine: WebUIEngine = webuiEngine,
+    ): Boolean {
+        if (context == null) return false
+
+        val shortcutManager = context.getSystemService(ShortcutManager::class.java)
+        val shortcutId = "shortcut_${id}_${engine.name.lowercase()}"
+
+        if (!shortcutManager.isRequestPinShortcutSupported) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_not_supported),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        if (shortcutManager.pinnedShortcuts.any { it.id == shortcutId }) {
+            if (!webuiContext) Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_already_exists),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        val bitmap = loadShortcutBitmap(webuiContext, iconUri)
+        if (bitmap == null) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_icon_invalid),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        val shortcutIntent = when (engine) {
+            WebUIEngine.WX -> {
+                Intent(context, WxWebUIActivity::class.java).apply {
+                    putExtra(INTENT_MOD_ID, id)
+                    action = Intent.ACTION_VIEW
+                }
+            }
+
+            WebUIEngine.MX -> {
+                Intent(context, MxWebUIActivity::class.java).apply {
+                    putExtra("MODULE_ID", id)
+                    action = Intent.ACTION_VIEW
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                }
+            }
+
+            else -> {
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.unsupported_engine),
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+                return false
+            }
+        }
+
+        val shortcut = ShortcutInfo.Builder(context, shortcutId)
+            .setShortLabel(title)
+            .setLongLabel(title)
+            .setIcon(Icon.createWithAdaptiveBitmap(bitmap))
+            .setIntent(shortcutIntent)
+            .build()
+
+        shortcutManager.requestPinShortcut(shortcut, null)
+        return true
+    }
+
+    private fun loadShortcutBitmap(
+        webuiContext: Boolean,
+        iconUri: String?,
+    ) = runCatching {
+        if (context == null) return@runCatching null
+        if (iconUri != null && !webuiContext) {
+            context.contentResolver.openInputStream(iconUri.toUri()).use { input ->
+                input?.let { BitmapFactory.decodeStream(it) }
+            }
+        } else {
+            icon?.inputStream()?.buffered()?.use { BitmapFactory.decodeStream(it) }
+        }
+    }.getOrNull()
+
 
     private fun calculateSizeFast(file: SuFile): Long {
         // skip symbolic links entirely
@@ -122,7 +249,7 @@ data class Module(
     override fun compareTo(other: Module): Int = id.compareTo(other.id)
 
     private val String?.relativeModuleOrWebrootDir: SuFile?
-        get()  {
+        get() {
             if (this.isNullOrBlank()) return null
 
             val webrootFile = SuFile(path.webrootDir, this)
@@ -247,7 +374,7 @@ data class Module(
             }
         }
 
-        val Empty get() = Module(AdbPath.Empty, emptyMap())
+        val Empty get() = Module(AdbPath.Empty, emptyMap(), webuiEngine = WebUIEngine.MX)
 
         @Composable
         fun rememberBasePath(): State<ModuleUIState> {
@@ -327,16 +454,16 @@ data class Module(
                     .use { readProps(it) }
 
                 value = ModuleUIState.Ready(
-                    Module(adbPath, props)
+                    Module(adbPath, props, context, prefs.webuiEngine)
                 )
             }
         }
 
-        fun fromZip(adbPath: AdbPath, file: File): Module? {
+        fun fromZip(adbPath: AdbPath, file: File, engine: WebUIEngine): Module? {
             val zipFile = ZipFile.Builder().setFile(file).get()
             val entry = zipFile.getEntry(PROP_FILE) ?: return null
             return zipFile.getInputStream(entry).use {
-                Module(adbPath, readProps(it))
+                Module(adbPath, readProps(it), webuiEngine = engine)
             }
         }
     }

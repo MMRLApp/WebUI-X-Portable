@@ -20,6 +20,7 @@ import com.dergoogler.mmrl.ext.systemBarsPaddingEnd
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.rememberConfirm
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
@@ -40,7 +41,7 @@ fun ModuleImporter(viewModel: ModulesViewModel) {
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
-            val result = importZipToModules(context, uri, viewModel)
+            val result = importZipToModules(context, uri, viewModel, prefs.webuiEngine)
 
             confirm(
                 ConfirmData(
@@ -79,7 +80,12 @@ data class ResultData(
     val message: String,
 )
 
-fun importZipToModules(context: Context, zipUri: Uri, viewModel: ModulesViewModel): ResultData {
+fun importZipToModules(
+    context: Context,
+    zipUri: Uri,
+    viewModel: ModulesViewModel,
+    engine: WebUIEngine,
+): ResultData {
     val tempZipName = "temp_module_import_${System.currentTimeMillis()}.zip"
     val zipFile = ExtFile(context.cacheDir, tempZipName)
 
@@ -97,7 +103,7 @@ fun importZipToModules(context: Context, zipUri: Uri, viewModel: ModulesViewMode
 
         val baseDir = viewModel.adbPath
 
-        val newModule: Module = Module.fromZip(baseDir, zipFile) ?: return ResultData(
+        val newModule: Module = Module.fromZip(baseDir, zipFile, engine) ?: return ResultData(
             title = "Failed",
             message = "Could not parse module information from the ZIP file. It might be corrupted or not a valid module."
         )

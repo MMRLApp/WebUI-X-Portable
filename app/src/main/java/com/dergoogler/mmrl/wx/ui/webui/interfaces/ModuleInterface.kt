@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.webui.interfaces
 
+import com.dergoogler.mmrl.wx.model.module.toJSONObject
 import com.dergoogler.mmrl.wx.ui.webui.module
 import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
@@ -34,4 +35,7 @@ class ModuleInterface(
 
     @ExportVariable
     val description = module.description
+
+    @ExportVariable
+    val config = module.webrootConfig.toJSONObject()
 }

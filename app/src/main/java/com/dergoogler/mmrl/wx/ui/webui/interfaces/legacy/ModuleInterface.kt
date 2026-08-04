@@ -15,7 +15,6 @@ import dev.mmrlx.utilities.json.jsonObject
 import dev.mmrlx.webui.JavaScriptInterface
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.javascript.annotation.ExportMethod
-import dev.mmrlx.webui.javascript.annotation.ExportVariable
 import org.json.JSONObject
 
 @JsonClass(generateAdapter = true)
@@ -111,15 +110,25 @@ class ModuleInterface(
         return 0
     }
 
-    @ExportVariable
-    val isLightNavigationBars: Boolean
-        get() = with(activity) {
+    @ExportMethod
+    fun createShortcut(): Boolean {
+        deprecated("$propertyName.createShortcut()", "webui.createShortcut()")
+        return module.createShortcut(true)
+    }
+
+    @ExportMethod
+    fun hasShortcut(): Boolean {
+        deprecated("$propertyName.hasShortcut()", "webui.hasShortcut")
+        return module.hasShortcut()
+    }
+
+    @ExportMethod
+    fun isLightNavigationBars(): Boolean = with(activity) {
             getWindowInsetsController(this).isAppearanceLightNavigationBars
         }
 
-    @ExportVariable
-    val isDarkMode: Boolean
-        get() = settings.darkMode
+    @ExportMethod
+    fun isDarkMode(): Boolean = settings.darkMode
 
     @ExportMethod
     fun setLightNavigationBars(isLight: Boolean) = webview.post {
@@ -128,9 +137,8 @@ class ModuleInterface(
         }
     }
 
-    @ExportVariable
-    val isLightStatusBars: Boolean
-        get() = with(activity) {
+    @ExportMethod
+    fun isLightStatusBars(): Boolean = with(activity) {
             getWindowInsetsController(this).isAppearanceLightStatusBars
         }
 

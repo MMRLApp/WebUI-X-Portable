@@ -7,6 +7,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.dergoogler.mmrl.wx.ui.webui.alerts.Confirm
 import com.dergoogler.mmrl.wx.ui.webui.alerts.Prompt
 import com.dergoogler.mmrl.wx.ui.webui.alerts.fromString
+import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.workingMode
 import dev.mmrlx.compose.layout.addOverlayView
 import dev.mmrlx.utilities.json.getAs
@@ -15,6 +16,7 @@ import dev.mmrlx.utilities.json.jsonObject
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.interfaces.prebuilt.WebUIApplicationInterface
 import dev.mmrlx.webui.javascript.annotation.ExportMethod
+import dev.mmrlx.webui.javascript.annotation.ExportVariable
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 
@@ -28,6 +30,12 @@ class ApplicationInterface(webui: WebUI) : WebUIApplicationInterface(webui) {
             "versionCode" to -1
         }
     }
+
+    @ExportMethod
+    fun createShortcut(): Boolean = module.createShortcut(true)
+
+    @ExportVariable
+    val hasShortcut: Boolean = module.hasShortcut()
 
     @ExportMethod
     suspend fun prompt(

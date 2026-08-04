@@ -182,7 +182,7 @@ class ModulesViewModel @Inject constructor(
                     Log.w(TAG, "Missing module.prop in ${dir.path}")
                     return@mapNotNull null
                 }
-                Module(adbPath, Module.readProps(propFile.inputStream()))
+                Module(adbPath, Module.readProps(propFile.inputStream()), webuiEngine = prefs.webuiEngine)
             }.onFailure {
                 Log.e(TAG, "Failed parsing module ${dir.path}", it)
             }.getOrNull()

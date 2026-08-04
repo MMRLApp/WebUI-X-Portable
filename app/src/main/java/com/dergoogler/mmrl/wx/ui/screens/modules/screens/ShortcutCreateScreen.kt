@@ -1,11 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules.screens
 
-import android.content.Context
-import android.content.Intent
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
 import android.graphics.BitmapFactory
-import android.graphics.drawable.Icon
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -41,10 +36,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.platform.model.ModId.Companion.INTENT_MOD_ID
+import androidx.core.net.toUri
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
-import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
@@ -63,8 +57,6 @@ import dev.mmrlx.compose.ui.text.Input
 import dev.mmrlx.compose.ui.text.rememberInputState
 import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 import dev.mmrlx.nio.SuFile
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity as WxWebUIActivity
-import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity as MxWebUIActivity
 
 @Destination<RootGraph>()
 @Composable
@@ -240,12 +232,10 @@ fun ShortcutCreateContent() {
                             return@Button
                         }
 
-                        val isCreated = createShortcut(
-                            context = context,
-                            module = module,
+                        val isCreated = module.createShortcut(
                             title = shortcutName.text.toString(),
-                            engine = selectedEngine!!,
                             iconUri = iconUri,
+                            engine = selectedEngine!!
                         )
 
                         if (isCreated) {
@@ -305,7 +295,7 @@ private fun ShortcutIconPreview(
     val uriBitmap = remember(iconUri) {
         iconUri?.let {
             runCatching {
-                context.contentResolver.openInputStream(Uri.parse(it)).use { stream ->
+                context.contentResolver.openInputStream(it.toUri()).use { stream ->
                     BitmapFactory.decodeStream(stream)
                 }
             }.getOrNull()
@@ -345,101 +335,3 @@ private fun ShortcutIconPreview(
         }
     }
 }
-
-private fun createShortcut(
-    context: Context,
-    module: Module,
-    title: String,
-    engine: WebUIEngine,
-    iconUri: String?,
-): Boolean {
-    val shortcutManager = context.getSystemService(ShortcutManager::class.java)
-    val shortcutId = "shortcut_${module.id}_${engine.name.lowercase()}"
-
-    if (!shortcutManager.isRequestPinShortcutSupported) {
-        Toast.makeText(
-            context,
-            context.getString(R.string.shortcut_not_supported),
-            Toast.LENGTH_SHORT
-        )
-            .show()
-        return false
-    }
-
-    if (shortcutManager.pinnedShortcuts.any { it.id == shortcutId }) {
-        Toast.makeText(
-            context,
-            context.getString(R.string.shortcut_already_exists),
-            Toast.LENGTH_SHORT
-        )
-            .show()
-        return false
-    }
-
-    val bitmap = loadShortcutBitmap(
-        context = context,
-        module = module,
-        iconUri = iconUri
-    )
-
-    if (bitmap == null) {
-        Toast.makeText(
-            context,
-            context.getString(R.string.shortcut_icon_invalid),
-            Toast.LENGTH_SHORT
-        )
-            .show()
-        return false
-    }
-
-    val shortcutIntent = when (engine) {
-        WebUIEngine.WX -> {
-            Intent(context, WxWebUIActivity::class.java).apply {
-                putExtra(INTENT_MOD_ID, module.id)
-                action = Intent.ACTION_VIEW
-            }
-        }
-
-        WebUIEngine.MX -> {
-            Intent(context, MxWebUIActivity::class.java).apply {
-                putExtra("MODULE_ID", module.id)
-                action = Intent.ACTION_VIEW
-                addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-            }
-        }
-
-        else -> {
-            Toast.makeText(
-                context,
-                context.getString(R.string.unsupported_engine),
-                Toast.LENGTH_SHORT
-            )
-                .show()
-            return false
-        }
-    }
-
-    val shortcut = ShortcutInfo.Builder(context, shortcutId)
-        .setShortLabel(title)
-        .setLongLabel(title)
-        .setIcon(Icon.createWithAdaptiveBitmap(bitmap))
-        .setIntent(shortcutIntent)
-        .build()
-
-    shortcutManager.requestPinShortcut(shortcut, null)
-    return true
-}
-
-private fun loadShortcutBitmap(
-    context: Context,
-    module: Module,
-    iconUri: String?,
-) = runCatching {
-    if (iconUri != null) {
-        context.contentResolver.openInputStream(Uri.parse(iconUri)).use { input ->
-            input?.let { BitmapFactory.decodeStream(it) }
-        }
-    } else {
-        module.icon?.newInputStream()?.buffered()?.use { BitmapFactory.decodeStream(it) }
-    }
-}.getOrNull()

@@ -25,6 +25,8 @@ import kotlinx.serialization.json.float
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlin.reflect.typeOf
 
 class WebrootConfig(
@@ -385,3 +387,47 @@ val WebrootConfig.dexFiles: List<WebUIConfigDexFile>
             )
         }
     }
+
+fun WebrootConfig.toJSONObject() = JSONObject().apply {
+    put("historyFallback", historyFallback)
+    put("historyFallbackFile", historyFallbackFile)
+    put("contentSecurityPolicy", contentSecurityPolicy)
+    put("autoStatusBarsStyle", autoStatusBarsStyle)
+    put("autoAddInsets", autoAddInsets)
+    put("windowResize", windowResize)
+    put("caching", caching)
+    put("exitConfirm", exitConfirm)
+    put("pullToRefresh", pullToRefresh)
+    put("cachingMaxAge", cachingMaxAge)
+    put("killShellWhenBackground", killShellWhenBackground)
+    put("title", title)
+    put("icon", icon)
+    put("theme", theme)
+    put("refreshInterceptor", refreshInterceptor)
+    put("backInterceptor", backInterceptor)
+    put("backHandler", backHandler)
+    put("permissions", JSONArray(permissions))
+
+    @Suppress("DEPRECATION")
+    if (dexFiles.isNotEmpty()) {
+        put(
+            "dexFiles",
+            JSONArray(
+                dexFiles.map { dex ->
+                    JSONObject().apply {
+                        put(
+                            "type",
+                            when (dex.type) {
+                                DexSourceType.APK -> "apk"
+                                DexSourceType.DEX -> "dex"
+                            }
+                        )
+                        dex.path?.let { put("path", it) }
+                        dex.className?.let { put("className", it) }
+                        put("cache", dex.cache)
+                    }
+                }
+            )
+        )
+    }
+}
