@@ -9,7 +9,7 @@
     <string name="requireNewVersion_refresh">刷新</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
-    <string name="says">%1$s 询问</string>
+    <string name="says">%1$s 说</string>
     <string name="title_or_icon_not_found">没有找到标题或图标</string>
     <string name="icon_not_found">没有找到图标</string>
     <string name="exit">退出</string>
