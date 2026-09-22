@@ -5,13 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
@@ -23,10 +21,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ui.component.PageIndicator
-import com.dergoogler.mmrl.ui.component.text.TextRow
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
@@ -34,12 +30,11 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
-import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
+import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.PullToRefreshBox
 import dev.mmrlx.compose.ui.PullToRefreshDefaults.Indicator
-import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.ext.with
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.icon.IconButton
@@ -49,14 +44,14 @@ import dev.mmrlx.compose.ui.text.rememberInputState
 import dev.mmrlx.compose.ui.toolbar.SearchableToolbar
 import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
+import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
-@Destination<RootGraph>(start = true)
+@Destination<RootGraph>
 @Composable
-fun ModulesScreen(
-    viewModel: ModulesViewModel = hiltViewModel(),
-) {
+fun ModulesScreen() {
+    val viewModel = LocalModulesViewModel.current
     val prefs = LocalUserPreferences.current
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
@@ -139,7 +134,10 @@ fun ModulesScreen(
 
                         if (prefs.developerMode { useWebUiDevUrl }) {
                             item {
-                                DebugAlert("Remote URL", "You currently have a remote URL set. Modules might not work as expected.")
+                                DebugAlert(
+                                    "Remote URL",
+                                    "You currently have a remote URL set. Modules might not work as expected."
+                                )
                             }
                         }
 
@@ -186,18 +184,7 @@ private fun ModuleScreenToolbar(
         state = state,
         isSearch = isSearch,
         title = {
-            TextRow(
-                leadingContent = {
-                    Icon(
-                        modifier = Modifier.size(30.dp),
-                        painter = painterResource(R.drawable.launcher_outline),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.surfaceTint,
-                    )
-                }
-            ) {
-                Text(stringResource(R.string.app_name))
-            }
+            ToolbarTitle(title = stringResource(R.string.modules))
         },
         scrollBehavior = scrollBehavior,
         onClose = onCloseSearch,

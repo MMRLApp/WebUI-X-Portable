@@ -182,4 +182,20 @@
     <string name="settings_custom_adb_path_desc">Select a custom ADB Path where modules should be loaded from</string>
     <string name="settings_custom_adb_path_dialog_desc">The new ADB Path must contain a `modules` folder in order to load modules from there</string>
     <string name="snippets">Snippets</string>
+    <string name="settings_root_access">Root Access: %s</string>
+    <string name="settings_root_provider">Provider: %s</string>
+    <string name="settings_root_version">Version: %s</string>
+    <string name="settings_root_granted">Granted</string>
+    <string name="settings_root_not_available">Not available</string>
+    <string name="settings_root_none">None</string>
+    <string name="settings_non_root">Non-Root</string>
+    <string name="settings_non_root_desc">Functionality is limited</string>
+    <string name="architecture">Architecture</string>
+    <string name="app_version">App Version</string>
+    <string name="unix_name">Unix Name</string>
+    <string name="home_total_modules">Total Modules</string>
+    <string name="home_support_title">Support Us</string>
+    <string name="home_support_content">WebUI X is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
+    <string name="home_storage_usage">Storage Usage</string>
+    <string name="home">Home</string>
 </resources>
