@@ -140,6 +140,7 @@
     <string name="license_title">Licenses</string>
     <string name="settings_documentation">API Documentation</string>
     <string name="latest_commit_id">Latest Commit ID</string>
+    <string name="commit_id_and_branch">Commit ID and Branch</string>
     <string name="build_tools_version">Build Tools Version</string>
     <string name="compile_sdk">Compile SDK</string>
     <string name="settings_force_kill_webui_process">Force Kill WebUI Process</string>

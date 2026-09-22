@@ -17,6 +17,7 @@ import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
+import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.ramcosta.composedestinations.annotation.Destination
@@ -166,10 +167,12 @@ fun DeveloperScreen() {
             Section(
                 divider = false
             ) {
-                Item {
-                    Title(stringResource(R.string.latest_commit_id))
-                    Description(BuildConfig.LATEST_COMMIT_ID)
-                }
+                val commitId = BuildConfig.LATEST_COMMIT_ID
+                LinkButton(
+                    uri = "${BuildConfig.ORIGIN}/commit/$commitId",
+                    title = stringResource(R.string.commit_id_and_branch),
+                    desc = "$commitId, ${BuildConfig.LATEST_BRANCH}"
+                )
                 Item {
                     Title(stringResource(R.string.build_tools_version))
                     Description(BuildConfig.BUILD_TOOLS_VERSION)

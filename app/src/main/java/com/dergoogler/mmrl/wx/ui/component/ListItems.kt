@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.wx.R
@@ -52,9 +53,9 @@ internal fun <T : Direction> ListScope.NavButton(
 @Composable
 internal fun ListScope.LinkButton(
     uri: String,
-    @DrawableRes icon: Int,
-    @StringRes title: Int,
-    @StringRes desc: Int? = null,
+    @DrawableRes icon: Int? = null,
+    title: String,
+    desc: String? = null,
 ) {
     val browser = LocalUriHandler.current
 
@@ -65,9 +66,11 @@ internal fun ListScope.LinkButton(
             }
             .contentPadding()
     ) {
-        Icon(
-            painter = painterResource(icon)
-        )
+        icon.nullable {
+            Icon(
+                painter = painterResource(it)
+            )
+        }
         Title(title)
         desc.nullable {
             Description(it)
@@ -79,6 +82,14 @@ internal fun ListScope.LinkButton(
         )
     }
 }
+
+@Composable
+internal fun ListScope.LinkButton(
+    uri: String,
+    @DrawableRes icon: Int? = null,
+    @StringRes title: Int,
+    @StringRes desc: Int? = null,
+) = LinkButton(uri, icon, stringResource(title), desc?.let { stringResource(it) })
 
 @Composable
 internal fun ListScope.DeveloperSwitch(

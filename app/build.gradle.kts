@@ -146,6 +146,8 @@ android {
             buildConfigField("String", "BUILD_TOOLS_VERSION", "\"${BUILD_TOOLS_VERSION}\"")
             buildConfigField("String", "MIN_SDK", "\"$MIN_SDK\"")
             buildConfigField("String", "LATEST_COMMIT_ID", "\"${commitId}\"")
+            buildConfigField("String", "LATEST_BRANCH", "\"${branchName}\"")
+            buildConfigField("String", "ORIGIN", "\"${originUrl}\"")
 
             manifestPlaceholders["__packageName__"] = basePackageName
         }
