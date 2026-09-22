@@ -15,7 +15,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.model.module.autoStatusBarsStyle
 import com.dergoogler.mmrl.wx.model.module.backHandler
 import com.dergoogler.mmrl.wx.model.module.backInterceptor
 import com.dergoogler.mmrl.wx.model.module.caching
@@ -285,15 +284,15 @@ fun ConfigEditorContent() {
                 Description(R.string.webui_config_window_resize_desc)
             }
 
-            SwitchItem(
-                checked = config.autoStatusBarsStyle,
-                onChange = { isChecked ->
-                    config.set("autoStatusBarsStyle", isChecked)
-                }
-            ) {
-                Title(R.string.webui_config_auto_style_statusbars_title)
-                Description(R.string.webui_config_auto_style_statusbars_desc)
-            }
+//            SwitchItem(
+//                checked = config.autoStatusBarsStyle,
+//                onChange = { isChecked ->
+//                    config.set("autoStatusBarsStyle", isChecked)
+//                }
+//            ) {
+//                Title(R.string.webui_config_auto_style_statusbars_title)
+//                Description(R.string.webui_config_auto_style_statusbars_desc)
+//            }
 
             SwitchItem(
                 checked = config.killShellWhenBackground,

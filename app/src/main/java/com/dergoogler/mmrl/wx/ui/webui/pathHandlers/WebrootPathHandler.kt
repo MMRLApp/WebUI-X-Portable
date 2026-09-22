@@ -4,7 +4,6 @@ import android.util.Log
 import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
 import com.dergoogler.mmrl.wx.model.module.DEFAULT_CSP
-import com.dergoogler.mmrl.wx.model.module.autoStatusBarsStyle
 import com.dergoogler.mmrl.wx.model.module.caching
 import com.dergoogler.mmrl.wx.model.module.cachingMaxAge
 import com.dergoogler.mmrl.wx.model.module.contentSecurityPolicy
@@ -129,12 +128,6 @@ class WebrootPathHandler(
                         appendLine("\tsheet.replaceSync(\".eruda-dev-tools { padding-bottom: ${insets.bottom}px }\");")
                         appendLine("\twindow.eruda.shadowRoot.adoptedStyleSheets.push(sheet);")
                         appendLine("</script>")
-                    }
-                }
-
-                if (config.autoStatusBarsStyle) {
-                    addInjection {
-                        appendLine("<script src=\"https://mui.kernelsu.org/internal/assets/ext/statusbar.js\"></script>")
                     }
                 }
 
