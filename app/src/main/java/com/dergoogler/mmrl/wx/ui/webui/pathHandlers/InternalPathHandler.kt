@@ -9,12 +9,12 @@ import java.io.IOException
 
 class InternalPathHandler(
     webui: WebUI,
-    private val colorScheme: ColorScheme,
+    colorScheme: ColorScheme,
 ) : KsuPathHandler(webui) {
     override val id = "/internal/"
 
-    val webColors get() = WebColors(colorScheme)
-    val assetsPathHandler get() = AssetsPathHandler(this)
+    val webColors = WebColors(colorScheme)
+    val assetsPathHandler = AssetsPathHandler(this)
 
     override fun handle(
         request: WebUIResourceRequest,
@@ -35,7 +35,7 @@ class InternalPathHandler(
                     )
                 )
             }
-
+            
             if (path.matches(Regex("insets\\.css"))) {
                 return insets.css.asStyleResponse()
             }
@@ -46,7 +46,7 @@ class InternalPathHandler(
 
             return notFoundResponse
         } catch (e: IOException) {
-            console.debugError("Error opening mmrl asset path: $path", e)
+            console.debugError("Error opening internal asset path: $path", e)
             return notFoundResponse
         }
     }
