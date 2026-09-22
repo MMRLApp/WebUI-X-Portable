@@ -89,8 +89,6 @@ class WebrootPathHandler(
 
         if (path.endsWith("favicon.ico") || path.startsWith("favicon.ico")) return notFoundResponse
 
-        Log.d("CSP", mergedCsp)
-
         try {
             val file = directory.getCanonicalFileIfChild(path) ?: run {
                 Log.e(
