@@ -19,6 +19,7 @@ import com.dergoogler.mmrl.ui.theme.MMRLAppTheme
 import com.dergoogler.mmrl.wx.App.Companion.TAG
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.service.PlatformService
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
@@ -61,6 +62,7 @@ open class BaseActivity : ComponentActivity() {
 
 fun BaseActivity.setBaseContent(
     parent: CompositionContext? = null,
+    preferencesLoaded: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) = this.setContent(
     parent = parent,
@@ -77,7 +79,13 @@ fun BaseActivity.setBaseContent(
     val preferences = if (userPreferences == null) {
         return@setContent
     } else {
+        preferencesLoaded?.invoke()
         checkNotNull(userPreferences)
+    }
+
+    // Set engine always to MX
+    if (preferences.webuiEngine != WebUIEngine.MX) {
+        settings.setWebUIEngine(WebUIEngine.MX)
     }
 
     MMRLXTheme(

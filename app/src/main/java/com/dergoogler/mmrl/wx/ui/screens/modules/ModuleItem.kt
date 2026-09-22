@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
@@ -28,7 +27,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.nullply
@@ -36,10 +34,7 @@ import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
-import com.dergoogler.mmrl.platform.model.ModId.Companion.toModId
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.component.LocalCover
@@ -96,41 +91,23 @@ fun ModuleItem(
 //        module.config
 //    }
 
-    val toastStr = stringResource(R.string.unsupported_engine)
     Column(
         modifier = Modifier
             .combinedClickable(
                 onClick = {
                     if (canWenUIAccessed) {
-                        val baseDir = module.adbPath.baseDir
+                        val intent = Intent(
+                            context,
+                            com.dergoogler.mmrl.wx.ui.webui.WebUIActivity::class.java
+                        )
+                            .apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                                putExtra("MODULE_ID", module.id)
+                            }
 
-                        if (userPreferences.webuiEngine == WebUIEngine.MX) {
-                            val intent = Intent(
-                                context,
-                                com.dergoogler.mmrl.wx.ui.webui.WebUIActivity::class.java
-                            )
-                                .apply {
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-                                    putExtra("MODULE_ID", module.id)
-                                }
-
-                            context.startActivity(intent)
-                            return@combinedClickable
-                        }
-
-                        // TODO: deprecate WX engine, devtools are crashing currently!
-                        if (userPreferences.webuiEngine == WebUIEngine.WX) {
-                            context.launchWebUIX<com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity>(
-                                module.id.toModId(baseDir),
-                                baseDir
-                            )
-                            return@combinedClickable
-                        }
+                        context.startActivity(intent)
+                        return@combinedClickable
                     }
-
-                    Toast.makeText(
-                        context, toastStr, Toast.LENGTH_SHORT
-                    ).show()
                 }
             )
             .fillMaxWidth()

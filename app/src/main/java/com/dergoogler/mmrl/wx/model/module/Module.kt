@@ -14,7 +14,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
-import com.dergoogler.mmrl.platform.model.ModId.Companion.INTENT_MOD_ID
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
@@ -27,7 +26,6 @@ import org.apache.commons.compress.archivers.zip.ZipFile
 import org.luaj.LuaTable
 import java.io.File
 import java.io.InputStream
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity as WxWebUIActivity
 import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity as MxWebUIActivity
 
 data class Module(
@@ -134,12 +132,11 @@ data class Module(
         webuiContext: Boolean = false,
         title: String = if (this.webrootConfig.title.isNullOrBlank()) name else this.webrootConfig.title!!,
         iconUri: String? = this.icon?.path,
-        engine: WebUIEngine = webuiEngine,
     ): Boolean {
         if (context == null) return false
 
         val shortcutManager = context.getSystemService(ShortcutManager::class.java)
-        val shortcutId = "shortcut_${id}_${engine.name.lowercase()}"
+        val shortcutId = "shortcut_${id}"
 
         if (!shortcutManager.isRequestPinShortcutSupported) {
             Toast.makeText(
@@ -172,32 +169,11 @@ data class Module(
             return false
         }
 
-        val shortcutIntent = when (engine) {
-            WebUIEngine.WX -> {
-                Intent(context, WxWebUIActivity::class.java).apply {
-                    putExtra(INTENT_MOD_ID, id)
-                    action = Intent.ACTION_VIEW
-                }
-            }
-
-            WebUIEngine.MX -> {
-                Intent(context, MxWebUIActivity::class.java).apply {
+        val shortcutIntent = Intent(context, MxWebUIActivity::class.java).apply {
                     putExtra("MODULE_ID", id)
                     action = Intent.ACTION_VIEW
                     addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                 }
-            }
-
-            else -> {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.unsupported_engine),
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
-                return false
-            }
-        }
 
         val shortcut = ShortcutInfo.Builder(context, shortcutId)
             .setShortLabel(title)

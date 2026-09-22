@@ -38,7 +38,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
@@ -76,7 +75,6 @@ fun ShortcutCreateContent() {
     val moduleIcon = remember(module) { module.icon }
 
     val shortcutName = rememberInputState(module.webrootConfig.title ?: module.name)
-    var selectedEngine by remember { mutableStateOf<WebUIEngine?>(null) }
     var iconUri by remember { mutableStateOf<String?>(null) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -85,8 +83,7 @@ fun ShortcutCreateContent() {
         uri?.let { iconUri = it.toString() }
     }
 
-    val isCreateEnabled =
-        selectedEngine != null && shortcutName.text.isNotBlank() && (iconUri != null || moduleIcon != null)
+    val isCreateEnabled = shortcutName.text.isNotBlank() && (iconUri != null || moduleIcon != null)
 
     Scaffold(
         toolbar = {
@@ -163,33 +160,6 @@ fun ShortcutCreateContent() {
                     iconUri = iconUri,
                     moduleIcon = moduleIcon
                 )
-
-                Spacer(modifier = Modifier.height(22.dp))
-
-                Text(
-                    text = stringResource(R.string.settings_webui_engine)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    EngineOption(
-                        modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.settings_webui_engine_wx),
-                        selected = selectedEngine == WebUIEngine.WX,
-                        onClick = { selectedEngine = WebUIEngine.WX }
-                    )
-
-                    EngineOption(
-                        modifier = Modifier.weight(1f),
-                        title = stringResource(R.string.settings_webui_engine_mx),
-                        selected = selectedEngine == WebUIEngine.MX,
-                        onClick = { selectedEngine = WebUIEngine.MX }
-                    )
-                }
             }
 
             HorizontalDivider()
@@ -214,15 +184,6 @@ fun ShortcutCreateContent() {
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     onClick = {
-                        if (selectedEngine == null) {
-                            Toast.makeText(
-                                context,
-                                engineRequiredString,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@Button
-                        }
-
                         if (shortcutName.text.isBlank()) {
                             Toast.makeText(
                                 context,
@@ -235,7 +196,6 @@ fun ShortcutCreateContent() {
                         val isCreated = module.createShortcut(
                             title = shortcutName.text.toString(),
                             iconUri = iconUri,
-                            engine = selectedEngine!!
                         )
 
                         if (isCreated) {

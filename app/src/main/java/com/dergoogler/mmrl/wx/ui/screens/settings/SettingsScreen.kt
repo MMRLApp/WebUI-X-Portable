@@ -100,37 +100,6 @@ fun SettingsScreen() {
                     }
                 }
 
-                RadioDialogItem(
-                    selection = userPreferences.webuiEngine,
-                    options = listOf(
-                        RadioDialogOption(
-                            value = WebUIEngine.WX,
-                            title = stringResource(R.string.settings_webui_engine_wx)
-                        ),
-                        RadioDialogOption(
-                            value = WebUIEngine.MX,
-                            title = stringResource(R.string.settings_webui_engine_mx)
-                        ),
-                        // RadioDialogOption(
-                        //     value = WebUIEngine.KSU,
-                        //     title = stringResource(R.string.settings_webui_engine_ksu)
-                        // ),
-                        // RadioDialogOption(
-                        //     value = WebUIEngine.PREFER_MODULE,
-                        //     title = stringResource(R.string.settings_webui_engine_prefer_module)
-                        // )
-                    ),
-                    onConfirm = {
-                        viewModel.setWebUIEngine(it.value)
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.engine)
-                    )
-                    Title(R.string.settings_webui_engine)
-                    Description(R.string.settings_webui_engine_desc)
-                }
-
                 InputDialogItem(
                     value = userPreferences.datePattern,
                     onConfirm = {
