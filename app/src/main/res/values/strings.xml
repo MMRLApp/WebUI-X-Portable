@@ -190,6 +190,8 @@
     <string name="settings_root_none">None</string>
     <string name="settings_non_root">Non-Root</string>
     <string name="settings_non_root_desc">Functionality is limited</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_security_desc">App security related things</string>
     <string name="architecture">Architecture</string>
     <string name="app_version">App Version</string>
     <string name="unix_name">Unix Name</string>
@@ -198,4 +200,9 @@
     <string name="home_support_content">WebUI X is, and always will be, free, and open source. You can however show us that you care by making a donation.</string>
     <string name="home_storage_usage">Storage Usage</string>
     <string name="home">Home</string>
+    <string name="fingerprint">Fingerprint</string>
+    <string name="settings_hide_fingerprint">Hide Fingerprint in Home</string>
+    <string name="settings_hide_fingerprint_desc">Hides the device fingerprints on the app homepage</string>
+    <string name="settings_hide_unix_name">Hide Unix Name in Home</string>
+    <string name="settings_hide_unix_name_desc">Hides the kernel Unix Name on the app homepage</string>
 </resources>
