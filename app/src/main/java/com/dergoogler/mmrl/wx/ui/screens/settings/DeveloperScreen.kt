@@ -14,12 +14,11 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
 import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
-import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.dergoogler.mmrl.wx.ui.component.SettingsPage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.Badge
@@ -47,10 +46,8 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 
 @Destination<RootGraph>()
 @Composable
-fun DeveloperScreen() {
-    val userPreferences = LocalUserPreferences.current
+fun DeveloperScreen() = SettingsPage { prefs, update ->
     val navController = LocalNavController.current
-    val viewModel = LocalSettings.current
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
 
     val remoteDomainDialog = rememberDialog()
@@ -78,17 +75,17 @@ fun DeveloperScreen() {
         ) {
             Section {
                 SwitchItem(
-                    checked = userPreferences.developerMode,
-                    onChange = viewModel::setDeveloperMode
+                    checked = prefs.developerMode,
+                    onChange = { update { copy(developerMode = it) } }
                 ) {
                     Title(R.string.settings_developer_mode)
                     Description(R.string.settings_developer_mode_desc)
                 }
 
                 DeveloperSwitch(
-                    enabled = !userPreferences.useWebUiDevUrl,
-                    checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
-                    onChange = viewModel::setEnableEruda
+                    enabled = !prefs.useWebUiDevUrl,
+                    checked = prefs.enableErudaConsole && !prefs.useWebUiDevUrl,
+                    onChange = { update { copy(enableErudaConsole = it) } }
                 ) {
                     // TODO: deprecate eruda
                     Title(R.string.settings_security_inject_eruda)
@@ -96,9 +93,9 @@ fun DeveloperScreen() {
                 }
 
                 DeveloperSwitch(
-                    enabled = userPreferences.enableErudaConsole,
-                    checked = userPreferences.enableErudaConsole && userPreferences.enableAutoOpenEruda,
-                    onChange = viewModel::setEnableAutoOpenEruda
+                    enabled = prefs.enableErudaConsole,
+                    checked = prefs.enableErudaConsole && prefs.enableAutoOpenEruda,
+                    onChange = { update { copy(enableAutoOpenEruda = it) } }
                 ) {
                     // TODO: deprecate eruda
                     Title(R.string.settings_security_auto_open_eruda)
@@ -106,8 +103,8 @@ fun DeveloperScreen() {
                 }
 
                 DeveloperSwitch(
-                    checked = userPreferences.enableDevTools,
-                    onChange = viewModel::setEnableDevTools
+                    checked = prefs.enableDevTools,
+                    onChange = { update { copy(enableDevTools = it) } }
                 ) {
                     Title {
                         FormatText(stringResource(R.string.settings_security_enable_devtools) + " %y") {
@@ -123,10 +120,10 @@ fun DeveloperScreen() {
                 }
 
                 InputDialogItem(
-                    enabled = userPreferences.developerMode,
-                    value = userPreferences.webUiDevUrl,
+                    enabled = prefs.developerMode,
+                    value = prefs.webUiDevUrl,
                     onConfirm = {
-                        viewModel.setWebUiDevUrl(it.value)
+                        update { copy(webUiDevUrl = it.value) }
                     },
                     onValid = { it.isLocalWifiUrl() },
                 ) {
@@ -134,9 +131,9 @@ fun DeveloperScreen() {
                     Description(R.string.settings_webui_remote_url_desc)
 
                     VerticalDividerSwitch(
-                        checked = userPreferences.useWebUiDevUrl,
-                        onChange = viewModel::setUseWebUiDevUrl,
-                        enabled = userPreferences.developerMode
+                        checked = prefs.useWebUiDevUrl,
+                        onChange = { update { copy(useWebUiDevUrl = it) } },
+                        enabled = prefs.developerMode
                     )
 
                     Supporting {

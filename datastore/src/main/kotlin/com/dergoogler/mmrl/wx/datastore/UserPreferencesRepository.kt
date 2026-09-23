@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.wx.datastore
 
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import javax.inject.Inject
@@ -12,6 +13,9 @@ class UserPreferencesRepository @Inject constructor(
     private val userPreferencesDataSource: UserPreferencesDataSource,
 ) {
     val data get() = userPreferencesDataSource.data
+
+    suspend fun update(transform: UserPreferences.() -> UserPreferences) =
+        userPreferencesDataSource.update(transform)
 
     suspend fun setModulesMenu(value: ModulesMenu) =
         userPreferencesDataSource.setModulesMenu(value)

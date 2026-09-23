@@ -15,14 +15,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.InfoAlert
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
+import com.dergoogler.mmrl.wx.ui.component.SettingsPage
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.DarkModeItem
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.ExampleItem
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.ThemePaletteItem
 import com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items.TitleItem
-import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.scaffold.Scaffold
@@ -30,9 +29,7 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 
 @Destination<RootGraph>()
 @Composable
-fun AppThemeScreen() {
-    val userPreferences = LocalUserPreferences.current
-    val viewModel = LocalSettings.current
+fun AppThemeScreen() = SettingsPage { prefs, update ->
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val navController = LocalNavController.current
 
@@ -70,15 +67,15 @@ fun AppThemeScreen() {
 
             TitleItem(text = stringResource(id = R.string.app_theme_palette))
             ThemePaletteItem(
-                themeColor = userPreferences.themeColor,
-                isDarkMode = userPreferences.isDarkMode(),
-                onChange = viewModel::setThemeColor
+                themeColor = prefs.themeColor,
+                isDarkMode = prefs.isDarkMode(),
+                onChange = { update { copy(themeColor = it) } }
             )
 
             TitleItem(text = stringResource(id = R.string.app_theme_dark_theme))
             DarkModeItem(
-                darkMode = userPreferences.darkMode,
-                onChange = viewModel::setDarkTheme
+                darkMode = prefs.darkMode,
+                onChange = { update { copy(darkMode = it) } }
             )
         }
     }

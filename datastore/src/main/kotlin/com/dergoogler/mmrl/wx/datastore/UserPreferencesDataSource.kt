@@ -15,6 +15,10 @@ class UserPreferencesDataSource @Inject constructor(
 ) {
     val data get() = userPreferences.data
 
+    suspend fun update(transform: UserPreferences.() -> UserPreferences) {
+        userPreferences.updateData { it.transform() }
+    }
+
     suspend fun setModulesMenu(value: ModulesMenu) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
             it.copy(

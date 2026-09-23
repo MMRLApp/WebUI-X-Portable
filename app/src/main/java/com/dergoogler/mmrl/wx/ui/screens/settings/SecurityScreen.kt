@@ -9,9 +9,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
-import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.dergoogler.mmrl.wx.ui.component.SettingsPage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.list.List
@@ -23,10 +22,8 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 
 @Composable
 @Destination<RootGraph>()
-fun SecurityScreen() {
-    val userPreferences = LocalUserPreferences.current
+fun SecurityScreen() = SettingsPage { prefs, update ->
     val navController = LocalNavController.current
-    val viewModel = LocalSettings.current
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
 
     Scaffold(
@@ -47,16 +44,16 @@ fun SecurityScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             SwitchItem(
-                checked = ,
-                onChange =
+                checked = prefs.hideFingerprintInHome,
+                onChange = { update { copy(hideFingerprintInHome = it) } }
             ) {
                 Title(R.string.settings_hide_fingerprint)
                 Description(R.string.settings_hide_fingerprint_desc)
             }
 
             SwitchItem(
-                checked = ,
-                onChange =
+                checked = prefs.hideUnixNameInHome,
+                onChange = { update { copy(hideUnixNameInHome = it) } }
             ) {
                 Title(R.string.settings_hide_unix_name)
                 Description(R.string.settings_hide_unix_name_desc)

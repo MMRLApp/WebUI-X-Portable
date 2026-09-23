@@ -9,9 +9,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
-import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.dergoogler.mmrl.wx.ui.component.SettingsPage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.list.List
@@ -25,10 +24,8 @@ import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 
 @Composable
 @Destination<RootGraph>()
-fun BehaviorScreen() {
-    val userPreferences = LocalUserPreferences.current
+fun BehaviorScreen() = SettingsPage { prefs, update ->
     val navController = LocalNavController.current
-    val viewModel = LocalSettings.current
     val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
 
     Scaffold(
@@ -49,25 +46,26 @@ fun BehaviorScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             SwitchItem(
-                checked = userPreferences.disableGlobalExitConfirm,
-                onChange = viewModel::setDisableGlobalExitConfirm
+                checked = prefs.disableGlobalExitConfirm,
+                onChange = { update { copy(disableGlobalExitConfirm = it) } }
+
             ) {
                 Title(R.string.settings_global_exit_confirm)
                 Description(R.string.settings_global_exit_confirm_desc)
             }
 
             SwitchItem(
-                checked = userPreferences.forceKillWebUIProcess,
-                onChange = viewModel::setForceKillWebUIProcess
+                checked = prefs.forceKillWebUIProcess,
+                onChange = { update { copy(forceKillWebUIProcess = it) } }
             ) {
                 Title(R.string.settings_force_kill_webui_process)
                 Description(R.string.settings_force_kill_webui_process_desc)
             }
 
             InputDialogItem(
-                value = userPreferences.adbPath,
+                value = prefs.adbPath,
                 onConfirm = {
-                    viewModel.setAdbPath(it.value)
+                    update { copy(adbPath = it.value) }
                 },
             ) {
                 Title(R.string.settings_custom_adb_path)
