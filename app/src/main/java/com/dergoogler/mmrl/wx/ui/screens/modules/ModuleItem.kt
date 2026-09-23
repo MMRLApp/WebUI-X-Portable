@@ -70,7 +70,7 @@ fun <T> produceRootCallableState(
 ) = block.produceState(initialValue)
 
 @Composable
-fun ModuleItem(
+internal fun ModuleItem0(
     module: Module,
     alpha: Float = 1f,
     decoration: TextDecoration = TextDecoration.None,

@@ -23,16 +23,17 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.FeaturedManager
+import dev.mmrlx.compose.nio.LocalSuFileAliveState
 import dev.mmrlx.compose.ui.Surface
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.scaffold.PositionLayout
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
-import dev.mmrlx.nio.SuFileSystemManager.isAlive
 
 @Composable
 internal fun RootItem() {
     val userPreferences = LocalUserPreferences.current
     val shape = MMRLXTheme.shapes.extraLarge
+    val isAlive = LocalSuFileAliveState.current
 
     val manager =
         FeaturedManager.managers.find { userPreferences.workingMode == it.workingMode }

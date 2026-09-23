@@ -79,7 +79,7 @@ fun ModuleItem(
 
     val removeDialog = rememberDialog()
 
-    ModuleItem(
+    ModuleItem0(
         module = module,
         indicator = {
             when (module.state) {
