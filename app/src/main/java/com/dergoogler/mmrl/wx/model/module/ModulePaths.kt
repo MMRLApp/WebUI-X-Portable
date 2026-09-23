@@ -2,13 +2,9 @@ package com.dergoogler.mmrl.wx.model.module
 
 import com.dergoogler.mmrl.wx.util.PathVarArgFunction
 import dev.mmrlx.nio.Path
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 import org.json.JSONObject
 import org.luaj.LuaTable
 
-@Parcelize
-@Serializable
 data class AdbPath(
     val baseDir: String,
 ) {
@@ -44,8 +40,6 @@ data class AdbPath(
     }
 }
 
-@Parcelize
-@Serializable
 data class ModulePath(
     private val adbPath: AdbPath,
     private val moduleId: String,
