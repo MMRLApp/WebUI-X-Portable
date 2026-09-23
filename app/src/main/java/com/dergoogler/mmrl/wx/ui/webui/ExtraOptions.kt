@@ -1,18 +1,13 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
-import android.net.Uri
-import android.webkit.WebResourceResponse
 import androidx.compose.material3.ColorScheme
-import androidx.core.net.toUri
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.Module
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.JavaScriptInterface
-import dev.mmrlx.webui.PathHandler
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIFactories
-import dev.mmrlx.webui.WebUIResourceRequest
 import dev.mmrlx.webui.WebUISettings
 import dev.mmrlx.webui.extra
 
@@ -113,14 +108,21 @@ fun <R, T> JavaScriptInterface.runTryJsWith(
     }
 }
 
-inline operator fun <reified T> Array<out Any>.get(index: Int, default: T): T {
-    val p = this[index]
-
-    if (p is T) {
-        return p
+inline operator fun <reified T> Array<out Any>.get(
+    index: Int,
+    default: T,
+): T {
+    if (index !in indices) {
+        return default
     }
 
-    return default
+    val value = this[index]
+
+    return if (value is T) {
+        value
+    } else {
+        default
+    }
 }
 
 fun WebUIFactories.randomAccessFileFactory(factory: WebUIFactories.Factory<SuRandomAccessFile>) {

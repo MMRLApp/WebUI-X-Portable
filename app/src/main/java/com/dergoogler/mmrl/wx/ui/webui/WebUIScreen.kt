@@ -21,6 +21,7 @@ import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.IconPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.util.dexPlugin
 import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.rememberWebUIState
@@ -120,6 +121,7 @@ fun WebUIScreen() {
             .client { }
             .chromeClient { }
             .luaPlugin()
+            .dexPlugin()
             .registerJavascriptInterface(
                 KernelSUInterface::class.java
             )

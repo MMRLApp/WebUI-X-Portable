@@ -355,6 +355,28 @@ val WebrootConfig.backHandler
 val WebrootConfig.permissions
     get() = get<List<String>>("permissions", emptyList())
 
+val WebrootConfig.dex
+    get(): List<WebUIDexFile> {
+        val entries = get("dex", JsonArray(emptyList()))
+
+        return entries.mapNotNull { entry ->
+            if (entry !is JsonObject) {
+                return@mapNotNull null
+            }
+
+            val path: String? =
+                entry["path"].getOrDefault(null)
+
+            val className: String? =
+                entry["className"].getOrDefault(null)
+
+            WebUIDexFile(
+                path = path,
+                className = className,
+            )
+        }
+    }
+
 @Deprecated("Kept for backwards compatibility.")
 val WebrootConfig.dexFiles: List<WebUIConfigDexFile>
     get() {
