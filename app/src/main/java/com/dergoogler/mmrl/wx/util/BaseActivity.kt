@@ -27,6 +27,7 @@ import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
+import dev.mmrlx.compose.nio.SuFileComposition
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import javax.inject.Inject
 
@@ -85,24 +86,26 @@ fun BaseActivity.setBaseContent(
 
     // Set engine always to MX
     if (preferences.webuiEngine != WebUIEngine.MX) {
-        settings.setWebUIEngine(WebUIEngine.MX)
+        settings.update { copy(webuiEngine = WebUIEngine.MX) }
     }
 
-    MMRLXTheme(
-        darkTheme = preferences.isDarkMode()
-    ) {
-        MMRLAppTheme(
-            darkMode = preferences.isDarkMode(),
-            navController = navController,
-            themeColor = preferences.themeColor,
-            providerValues = arrayOf(
-                LocalUserPreferences provides preferences,
-                LocalNavController provides navController,
-                LocalSettings provides settings,
-                LocalDestinationsNavigator provides navigator
-            ),
-            content = content
-        )
+    SuFileComposition {
+        MMRLXTheme(
+            darkTheme = preferences.isDarkMode()
+        ) {
+            MMRLAppTheme(
+                darkMode = preferences.isDarkMode(),
+                navController = navController,
+                themeColor = preferences.themeColor,
+                providerValues = arrayOf(
+                    LocalUserPreferences provides preferences,
+                    LocalNavController provides navController,
+                    LocalSettings provides settings,
+                    LocalDestinationsNavigator provides navigator
+                ),
+                content = content
+            )
+        }
     }
 }
 

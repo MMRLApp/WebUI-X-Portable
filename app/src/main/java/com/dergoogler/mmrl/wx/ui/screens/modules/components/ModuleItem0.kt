@@ -31,7 +31,7 @@ import com.dergoogler.mmrl.wx.ui.component.LocalCover
 import com.dergoogler.mmrl.wx.util.toPainter
 import com.dergoogler.mmrl.wx.util.versionDisplay
 import dev.mmrlx.compose.layout.flashlightCard
-import dev.mmrlx.compose.nio.LocalSuFileAliveState
+import dev.mmrlx.compose.nio.LocalSuFileAlive
 import dev.mmrlx.compose.ui.Avatar
 import dev.mmrlx.compose.ui.Badge
 import dev.mmrlx.compose.ui.BadgeVariant
@@ -58,7 +58,7 @@ internal fun ModuleItem0(
     leadingButton: @Composable() (RowScope.() -> Unit)? = null,
     trailingButton: @Composable() (RowScope.() -> Unit)? = null,
 ) {
-    val isAlive = LocalSuFileAliveState.current
+    val isAlive = LocalSuFileAlive.current
     val userPreferences = LocalUserPreferences.current
     val menu = userPreferences.modulesMenu
 

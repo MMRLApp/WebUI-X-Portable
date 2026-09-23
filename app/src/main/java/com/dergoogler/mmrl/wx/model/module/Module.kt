@@ -19,7 +19,6 @@ import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.ModulePath.Companion.PROP_FILE
 import com.dergoogler.mmrl.wx.util.set
-import dev.mmrlx.compose.nio.LocalSuFileAliveState
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
@@ -357,12 +356,13 @@ data class Module(
         fun rememberBasePath(): State<ModuleUIState> {
             val prefs = LocalUserPreferences.current
             val context = LocalContext.current
-            val initialized = LocalSuFileAliveState.current
 
             return produceState<ModuleUIState>(
                 initialValue = ModuleUIState.Loading,
                 prefs.workingMode
             ) {
+                val initialized = SuFile.AutoInit(context)
+
                 if (!initialized) {
                     value = ModuleUIState.Error.SuInitFailed()
                     return@produceState
@@ -390,13 +390,14 @@ data class Module(
         fun rememberCreate(id: String): State<ModuleUIState> {
             val prefs = LocalUserPreferences.current
             val context = LocalContext.current
-            val initialized = LocalSuFileAliveState.current
 
             return produceState<ModuleUIState>(
                 initialValue = ModuleUIState.Loading,
                 id,
                 prefs.workingMode
             ) {
+                val initialized = SuFile.AutoInit(context)
+
                 if (!initialized) {
                     value = ModuleUIState.Error.SuInitFailed()
                     return@produceState
