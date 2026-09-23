@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.home
 
+import android.os.Build
 import android.system.Os
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,9 +36,10 @@ import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.ModuleAnalytics
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
+import com.dergoogler.mmrl.wx.ui.component.SensitiveDescription
 import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
-import com.dergoogler.mmrl.wx.ui.screens.home.item.NonRootItem
-import com.dergoogler.mmrl.wx.ui.screens.home.item.RootItem
+import com.dergoogler.mmrl.wx.ui.screens.home.components.NonRootItem
+import com.dergoogler.mmrl.wx.ui.screens.home.components.RootItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.layout.card
@@ -114,7 +116,11 @@ fun HomeScreen() {
                         scope.Item {
                             Icon(painter = painterResource(R.drawable.cookie_man))
                             Title(R.string.unix_name)
-                            Description("${uname.sysname} ${uname.release} ${uname.version} ${uname.machine}")
+
+                            SensitiveDescription(
+                                enabled = true,
+                                text = "${uname.sysname} ${uname.release} ${uname.version} ${uname.machine}"
+                            )
                         }
 
                         scope.Item {
@@ -123,17 +129,14 @@ fun HomeScreen() {
                             Description("${context.managerVersion.first} (${context.managerVersion.second})")
                         }
 
-//                        scope.Item {
-//                            Icon(painter = painterResource(R.drawable.fingerprint))
-//                            Title(R.string.fingerprint)
-//                            Description(
-//                                if (userPreferences.hideFingerprintInHome) {
-//                                    stringResource(id = R.string.hidden)
-//                                } else {
-//                                    Build.FINGERPRINT
-//                                },
-//                            )
-//                        }
+                        scope.Item {
+                            Icon(painter = painterResource(R.drawable.fingerprint))
+                            Title(R.string.fingerprint)
+                            SensitiveDescription(
+                                enabled = true,
+                                text = Build.FINGERPRINT
+                            )
+                        }
 
                         scope.Item {
                             Icon(painter = painterResource(R.drawable.cpu_2))
