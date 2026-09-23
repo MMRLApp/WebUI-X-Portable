@@ -1,78 +1,28 @@
-package com.dergoogler.mmrl.wx.ui.screens.modules
+package com.dergoogler.mmrl.wx.ui.screens.modules.components
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
+import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
 import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
-import dev.mmrlx.compose.ui.button.ButtonGroup
-import dev.mmrlx.compose.ui.button.ButtonGroupDefaults
-import dev.mmrlx.compose.ui.button.ButtonSize
 import dev.mmrlx.compose.ui.button.ButtonVariant
 import dev.mmrlx.compose.ui.dialog.Content
 import dev.mmrlx.compose.ui.dialog.Footer
 import dev.mmrlx.compose.ui.dialog.Title
 import dev.mmrlx.compose.ui.dialog.rememberDialog
-import dev.mmrlx.compose.ui.ext.with
-import dev.mmrlx.compose.ui.icon.Icon
-import dev.mmrlx.compose.ui.scaffold.ScaffoldScope
 import java.io.File
 
 @Composable
-fun ScaffoldScope.ModulesList(
-    list: List<Module>,
-    state: LazyListState,
-) {
-    LazyColumn(
-        state = state,
-        modifier = Modifier.with(this@ModulesList) { it.scaffoldHazeSource() },
-        contentPadding = PaddingValues(
-            top = this@ModulesList.scaffoldTopPadding + 8.dp,
-            start = 8.dp,
-            end = 8.dp,
-            bottom = this@ModulesList.scaffoldBottomPadding + 8.dp
-        ),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(
-            items = list.filter { it.hasWebUI },
-            key = { it.id }
-        ) { module ->
-            ModuleItem(
-                module = module,
-                placeholder = null
-            )
-        }
-    }
-//
-//    VerticalFastScrollbar(
-//        state = state,
-//        modifier = Modifier.align(Alignment.CenterEnd)
-//    )
-}
-
-@Composable
-fun ModuleItem(
-    module: Module,
-    placeholder: Nothing?,
-) {
+fun ModuleItem(module: Module) {
     val context = LocalContext.current
     val prefs = LocalUserPreferences.current
     val navigator = LocalDestinationsNavigator.current
@@ -81,6 +31,9 @@ fun ModuleItem(
 
     ModuleItem0(
         module = module,
+        onClick = {
+            WebUIActivity.start(context, module.id)
+        },
         indicator = {
             when (module.state) {
                 State.REMOVE,
@@ -156,62 +109,5 @@ fun ModuleItem(
             }
         }
 
-    }
-}
-
-@Composable
-private fun OptionButtonGroup(
-    enabled: Boolean,
-    onConfigClick: () -> Unit,
-    onShortcutClick: () -> Unit,
-) {
-    ButtonGroup {
-        Button(
-            onClick = onConfigClick,
-            enabled = enabled,
-            variant = ButtonVariant.Outline,
-            size = ButtonSize.Sm,
-            shape = ButtonGroupDefaults.shape(0, 2)
-        ) {
-            Icon(
-                modifier = Modifier.size(20.dp),
-                painter = painterResource(id = R.drawable.settings),
-                contentDescription = null
-            )
-        }
-
-        Button(
-            onClick = onShortcutClick,
-            enabled = enabled,
-            variant = ButtonVariant.Outline,
-            size = ButtonSize.Sm,
-            shape = ButtonGroupDefaults.shape(1, 2)
-        ) {
-            Icon(
-                modifier = Modifier.size(20.dp),
-                painter = painterResource(id = R.drawable.link),
-                contentDescription = null
-            )
-        }
-    }
-}
-
-@Composable
-private fun RemoveButton(
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        variant = ButtonVariant.Destructive,
-        size = ButtonSize.Sm
-    ) {
-        Icon(
-            modifier = Modifier.size(20.dp),
-            painter = painterResource(id = R.drawable.trash),
-            contentDescription = null
-
-        )
     }
 }

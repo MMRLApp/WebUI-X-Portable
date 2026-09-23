@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.wx.ui.screens.modules
+package com.dergoogler.mmrl.wx.ui.screens.modules.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement

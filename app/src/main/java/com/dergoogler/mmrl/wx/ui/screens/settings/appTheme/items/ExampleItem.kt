@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ui.component.Logo
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.ui.screens.modules.SkeletonModuleItem
+import com.dergoogler.mmrl.wx.ui.screens.modules.components.SkeletonModuleItem
 import dev.mmrlx.compose.ui.Surface
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.theme.MMRLXTheme

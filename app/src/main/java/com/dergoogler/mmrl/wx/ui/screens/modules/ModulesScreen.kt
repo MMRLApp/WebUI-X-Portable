@@ -1,4 +1,3 @@
-// ModulesScreen.kt
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +30,8 @@ import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
+import com.dergoogler.mmrl.wx.ui.screens.modules.components.ModuleItem
+import com.dergoogler.mmrl.wx.ui.screens.modules.components.SkeletonModuleItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.PullToRefreshBox
@@ -145,7 +146,7 @@ fun ModulesScreen() {
                             items = modules.filter { it.hasWebUI },
                             key = { it.id },
                         ) { module ->
-                            ModuleItem(module = module, placeholder = null)
+                            ModuleItem(module = module)
                         }
                     }
                 }
@@ -197,7 +198,7 @@ private fun ModuleScreenToolbar(
                     )
                 }
             }
-            ModulesMenu(setMenu = setMenu)
+            com.dergoogler.mmrl.wx.ui.screens.modules.components.ModulesMenu(setMenu = setMenu)
         },
     )
 }
