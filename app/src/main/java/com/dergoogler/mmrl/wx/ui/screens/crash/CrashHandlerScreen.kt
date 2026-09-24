@@ -2,110 +2,107 @@ package com.dergoogler.mmrl.wx.ui.screens.crash
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.shareText
-import com.dergoogler.mmrl.ui.component.BottomSheet
-import com.dergoogler.mmrl.ui.component.MarkdownText
 import com.dergoogler.mmrl.ui.component.NavigationBarsSpacer
-import com.dergoogler.mmrl.ui.component.TopAppBar
-import com.dergoogler.mmrl.ui.component.text.TextWithIcon
-import com.dergoogler.mmrl.ui.component.text.TextWithIconDefaults
-import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.webui.R
+import com.dergoogler.mmrl.wx.BuildConfig
+import com.dergoogler.mmrl.wx.ui.screens.crash.components.MarkdownView
+import com.dergoogler.mmrl.wx.util.HelpMessage
+import dev.mmrlx.compose.layout.card
+import dev.mmrlx.compose.ui.Surface
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.button.Button
+import dev.mmrlx.compose.ui.button.ButtonVariant
+import dev.mmrlx.compose.ui.dialog.SheetValue
+import dev.mmrlx.compose.ui.dialog.rememberModalBottomSheet
+import dev.mmrlx.compose.ui.dialog.rememberModalBottomSheetState
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.text.FormatText
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
+import dev.mmrlx.compose.ui.toolbar.Toolbar
+import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
+import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
+import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 
 @Composable
 fun CrashHandlerScreen(
     message: String,
     stacktrace: String,
-    helpMessage: String?,
+    help: HelpMessage?,
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    WindowInsets.statusBars
+    val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val context = LocalContext.current
-
     val browser = LocalUriHandler.current
 
-    val hasHelp = helpMessage != null
-    var helperSheet by remember { mutableStateOf(false) }
-    if (helperSheet && hasHelp) {
-        HelpBottomSheet(
-            text = helpMessage,
-            onClose = {
-                helperSheet = false
-            },
-        )
-    }
+    val helpSheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+            confirmValueChange = { newState ->
+                newState != SheetValue.Hidden
+            })
 
-    val borderModifier = 2.5.dp
-    val borderRadius = 20.dp
+    val helpSheet = rememberModalBottomSheet()
+
+    val hasHelp = help != null
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopBar(
+        toolbar = {
+            TopBar0(
                 scrollBehavior = scrollBehavior,
             )
         },
         contentWindowInsets = WindowInsets.none,
-    ) { innerPadding ->
+    ) {
         LazyColumn(
-            modifier =
-                Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .with(this@Scaffold) { it.scaffoldHazeSource() },
+            contentPadding = PaddingValues(
+                top = this@Scaffold.scaffoldTopPadding + 8.dp,
+                start = 8.dp,
+                end = 8.dp,
+                bottom = this@Scaffold.scaffoldBottomPadding + 8.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
                 Surface(
                     modifier =
                         Modifier
-                            .fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 1.dp,
-                    shape =
-                        helpMessage.nullable(default = RoundedCornerShape(20.dp)) {
-                            RoundedCornerShape(
-                                topStart = borderRadius,
-                                topEnd = borderRadius,
-                                bottomStart = borderModifier,
-                                bottomEnd = borderModifier,
-                            )
-                        },
+                            .fillMaxWidth()
+                            .card(),
                 ) {
                     SelectionContainer {
                         Text(
@@ -115,44 +112,33 @@ fun CrashHandlerScreen(
                                     .horizontalScroll(rememberScrollState()),
                             text = message,
                             style =
-                                MaterialTheme.typography.bodyLarge.copy(
+                                MMRLXTheme.typography.bodyLarge.copy(
                                     fontFamily = FontFamily.Monospace,
                                 ),
                         )
                     }
                 }
 
-                helpMessage.nullable {
-                    Surface(
+                help.nullable {
+                    Spacer(Modifier.height(8.dp))
+
+                    Button(
+                        variant = ButtonVariant.Secondary,
                         modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 1.dp,
-                        contentColor = MaterialTheme.colorScheme.surfaceTint,
-                        shape =
-                            RoundedCornerShape(
-                                topStart = borderModifier,
-                                topEnd = borderModifier,
-                                bottomStart = borderRadius,
-                                bottomEnd = borderRadius,
-                            ),
-                        onClick = { helperSheet = true },
+                        onClick = { helpSheet.open() },
                     ) {
-                        TextWithIcon(
-                            style =
-                                TextWithIconDefaults.style.copy(
-                                    rightIcon = true,
-                                    textStyle = MaterialTheme.typography.labelLarge,
-                                ),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier =
-                                Modifier.padding(
-                                    vertical = 8.dp,
-                                    horizontal = 24.dp,
-                                ),
-                            icon = com.dergoogler.mmrl.wx.R.drawable.info_circle,
-                            text = stringResource(R.string.help),
-                        )
+                        FormatText(
+                            text = "${stringResource(R.string.help)} %y",
+                            style = MaterialTheme.typography.labelLarge,
+                        ) {
+                            composable {
+                                Icon(
+                                    modifier = Modifier.size(fontSize.dp),
+                                    painter = painterResource(com.dergoogler.mmrl.wx.R.drawable.info_circle),
+                                    contentDescription = null
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -161,10 +147,8 @@ fun CrashHandlerScreen(
                 Surface(
                     modifier =
                         Modifier
-                            .fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 1.dp,
-                    shape = RoundedCornerShape(20.dp),
+                            .fillMaxWidth()
+                            .card(),
                 ) {
                     SelectionContainer {
                         Text(
@@ -174,7 +158,7 @@ fun CrashHandlerScreen(
                                     .horizontalScroll(rememberScrollState()),
                             text = stacktrace,
                             style =
-                                MaterialTheme.typography.bodyLarge.copy(
+                                MMRLXTheme.typography.bodySmall.copy(
                                     fontFamily = FontFamily.Monospace,
                                 ),
                         )
@@ -187,11 +171,12 @@ fun CrashHandlerScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
-                    OutlinedButton(
+                    Button(
                         modifier = Modifier.weight(1f),
+                        variant = ButtonVariant.Outline,
                         onClick = {
-                            browser.openUri("https://github.com/MMRLApp/WebUI-X-Portable/issues")
-                        },
+                            browser.openUri("${BuildConfig.ORIGIN}/issues")
+                        }
                     ) {
                         Text(
                             text = stringResource(R.string.report_to_issues),
@@ -216,24 +201,26 @@ fun CrashHandlerScreen(
             }
         }
     }
-}
 
-@Composable
-private fun HelpBottomSheet(
-    text: String,
-    onClose: () -> Unit,
-) = BottomSheet(onDismissRequest = onClose) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        MarkdownText(
-            text = text,
-            onTagClick = {}
-        )
+    if (hasHelp) {
+        helpSheet(
+            sheetState = helpSheetState,
+            sheetGesturesEnabled = false,
+            containerColor = MMRLXTheme.colors.background
+        ) {
+            MarkdownView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.89754f),
+                content = help.content,
+            )
+        }
     }
 }
 
 @Composable
-private fun TopBar(scrollBehavior: TopAppBarScrollBehavior) =
-    TopAppBar(
+private fun TopBar0(scrollBehavior: ToolbarScrollBehavior) =
+    Toolbar(
         title = {
             ToolbarTitle(titleResId = R.string.we_hit_a_brick_crash)
         },

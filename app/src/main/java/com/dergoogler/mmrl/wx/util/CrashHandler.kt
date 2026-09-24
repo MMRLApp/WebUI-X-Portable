@@ -2,7 +2,6 @@ package com.dergoogler.mmrl.wx.util
 
 import android.content.Intent
 import androidx.activity.ComponentActivity
-import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.activity.CrashHandlerActivity
 import kotlin.system.exitProcess
@@ -22,7 +21,7 @@ private fun ComponentActivity.startCrashActivity(
         Intent(this, CrashHandlerActivity::class.java).apply {
             putExtra("message", throwable.message)
             if (throwable is BrickException) {
-                putExtra("helpMessage", throwable.helpMessage)
+                putExtra("help", throwable.help)
             }
             putExtra("stacktrace", formatStackTrace(throwable))
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
