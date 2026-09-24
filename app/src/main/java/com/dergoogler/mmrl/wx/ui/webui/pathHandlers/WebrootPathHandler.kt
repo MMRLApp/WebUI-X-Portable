@@ -138,14 +138,6 @@ class WebrootPathHandler(
                     }
                 }
 
-//                addInjection(InjectionType.BODY) {
-//                    appendLine("<script data-internal data-internal-dont-use data-mod-id=\"${modId}\" data-input-stream=\"${modId.sanitizedIdWithFileInputStream}\" src=\"https://mui.kernelsu.org/internal/assets/ext/require.js\"></script>")
-//
-//                    if (options.config.pullToRefresh && options.config.useNativeRefreshInterceptor && options.config.pullToRefreshHelper) {
-//                        appendLine("<script data-internal data-internal-dont-use src=\"https://mui.kernelsu.org/internal/assets/ext/scroll.js\"></script>")
-//                    }
-//                }
-
                 addScriptInjections(
                     customJsHead,
                     InjectionType.HEAD,
