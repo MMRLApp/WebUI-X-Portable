@@ -87,6 +87,9 @@ class WebrootPathHandler(
         val contentSecurityPolicy = ContentSecurityPolicyManager(DEFAULT_CSP, baseUri.toString())
         val mergedCsp = contentSecurityPolicy.mergeToString(config.contentSecurityPolicy)
 
+        val isCspDisabled =
+            config.contentSecurityPolicy.isBlank() || config.contentSecurityPolicy.trim() == "*"
+
         if (path.endsWith("favicon.ico") || path.startsWith("favicon.ico")) return notFoundResponse
 
         try {
@@ -102,7 +105,7 @@ class WebrootPathHandler(
                 val fallbackFile = sufile(directory, config.historyFallbackFile)
                 val fallbackResponse = fallbackFile.asResponse()
 
-                if (mergedCsp.isNotNullOrBlank()) {
+                if (mergedCsp.isNotNullOrBlank() && !isCspDisabled) {
                     fallbackResponse.setResponseHeaders(
                         mapOf(
                             "Content-Security-Policy" to mergedCsp
@@ -180,7 +183,7 @@ class WebrootPathHandler(
 
             val headers = mutableMapOf<String, String>()
 
-            if (isHtml && mergedCsp.isNotNullOrBlank()) {
+            if (isHtml && mergedCsp.isNotNullOrBlank() && !isCspDisabled) {
                 headers["Content-Security-Policy"] = mergedCsp
             }
 
