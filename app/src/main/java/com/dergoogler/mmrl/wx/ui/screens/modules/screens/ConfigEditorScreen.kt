@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import com.dergoogler.mmrl.wx.R
@@ -34,6 +35,7 @@ import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavButton
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
+import com.dergoogler.mmrl.wx.ui.component.linkString
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -46,10 +48,12 @@ import dev.mmrlx.compose.ui.list.component.RadioDialogItem
 import dev.mmrlx.compose.ui.list.component.RadioDialogOption
 import dev.mmrlx.compose.ui.list.component.SwitchItem
 import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.DialogDescription
 import dev.mmrlx.compose.ui.list.component.item.Supporting
 import dev.mmrlx.compose.ui.list.component.item.Title
 import dev.mmrlx.compose.ui.list.component.item.VerticalDividerSwitch
 import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.text.FormatText
 import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 
 
@@ -94,6 +98,7 @@ fun ConfigEditorScreen(moduleId: String) {
 
 @Composable
 fun ConfigEditorContent() {
+    val browser = LocalUriHandler.current
     val module = LocalModule.current
     val userPrefs = LocalUserPreferences.current
     val context = LocalContext.current
@@ -328,6 +333,11 @@ fun ConfigEditorContent() {
                 },
             ) {
                 Title(R.string.webui_config_content_security_policy_title)
+                DialogDescription {
+                    FormatText(stringResource(R.string.webui_config_content_security_policy_dialog_desc)) {
+                        linkString("CSP Builder", "https://mmrl.dev/csp.html")
+                    }
+                }
                 Description(R.string.webui_config_content_security_policy_desc)
             }
 
