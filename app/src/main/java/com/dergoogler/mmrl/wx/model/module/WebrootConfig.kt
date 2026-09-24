@@ -3,8 +3,6 @@
 package com.dergoogler.mmrl.wx.model.module
 
 import androidx.compose.runtime.mutableStateMapOf
-import com.dergoogler.mmrl.webui.model.DexSourceType
-import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.readText
 import dev.mmrlx.nio.writeText
@@ -377,39 +375,6 @@ val WebrootConfig.dex
         }
     }
 
-@Deprecated("Kept for backwards compatibility.")
-val WebrootConfig.dexFiles: List<WebUIConfigDexFile>
-    get() {
-        val entries = get("dexFiles", JsonArray(emptyList()))
-
-        return entries.map { e ->
-            val entry = e as JsonObject
-
-            val type: DexSourceType =
-                when (entry["type"].getOrDefault<String?>(null)) {
-                    "apk" -> DexSourceType.APK
-                    "dex" -> DexSourceType.DEX
-                    else -> DexSourceType.DEX
-                }
-
-            val path: String? =
-                entry["path"].getOrDefault(null)
-
-            val className: String? =
-                entry["className"].getOrDefault(null)
-
-            val cache: Boolean =
-                entry["cache"].getOrDefault(true)
-
-            WebUIConfigDexFile(
-                type = type,
-                path = path,
-                className = className,
-                cache = cache
-            )
-        }
-    }
-
 fun WebrootConfig.toJSONObject() = JSONObject().apply {
     put("historyFallback", historyFallback)
     put("historyFallbackFile", historyFallbackFile)
@@ -429,27 +394,4 @@ fun WebrootConfig.toJSONObject() = JSONObject().apply {
     put("backInterceptor", backInterceptor)
     put("backHandler", backHandler)
     put("permissions", JSONArray(permissions))
-
-    @Suppress("DEPRECATION")
-    if (dexFiles.isNotEmpty()) {
-        put(
-            "dexFiles",
-            JSONArray(
-                dexFiles.map { dex ->
-                    JSONObject().apply {
-                        put(
-                            "type",
-                            when (dex.type) {
-                                DexSourceType.APK -> "apk"
-                                DexSourceType.DEX -> "dex"
-                            }
-                        )
-                        dex.path?.let { put("path", it) }
-                        dex.className?.let { put("className", it) }
-                        put("cache", dex.cache)
-                    }
-                }
-            )
-        )
-    }
 }

@@ -4,7 +4,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -24,20 +23,6 @@
         android:description="@string/permission_webuix_desc"
         android:icon="@drawable/sandbox"
         android:label="@string/permission_webuix_label"
-        android:protectionLevel="dangerous" />
-
-    <permission
-        android:name="${webuiPermissionId}.permission.WEBUI_LEGACY"
-        android:description="@string/permission_ksu_webui_desc"
-        android:icon="@drawable/kernelsu_logo"
-        android:label="@string/permission_ksu_webui_label"
-        android:protectionLevel="dangerous" />
-
-    <permission
-        android:name="${webuiPermissionId}.permission.MODCONF"
-        android:description="@string/permission_modconf_desc"
-        android:icon="@drawable/brand_kotlin"
-        android:label="@string/permission_modconf_label"
         android:protectionLevel="dangerous" />
 
     <permission
@@ -131,36 +116,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="${__packageName__}.ui.activity.webui.KsuWebUIActivity"
-            android:autoRemoveFromRecents="true"
-            android:documentLaunchMode="intoExisting"
-            android:exported="true"
-            android:label="WebUI Legacy"
-            android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
-            android:process="${webuiPermissionId}.process.webui"
-            android:taskAffinity="${applicationId}.KSU_WEBUI">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name="${__packageName__}.ui.activity.modconf.ModConfActivity"
-            android:autoRemoveFromRecents="true"
-            android:documentLaunchMode="intoExisting"
-            android:exported="true"
-            android:label="ModConf"
-            android:permission="${webuiPermissionId}.permission.MODCONF"
-            android:process="${webuiPermissionId}.process.modconf"
-            android:taskAffinity="${applicationId}.MODCONF">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
         <service
             android:name="${__packageName__}.util.NonRootService"
             android:enabled="true"
@@ -170,11 +125,6 @@
                 <action android:name="NonRootService" />
             </intent-filter>
         </service>
-
-        <service
-            android:name="${__packageName__}.service.PlatformService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse" />
 
         <service
             android:name="dev.mmrlx.nio.service.NonRootFileService"

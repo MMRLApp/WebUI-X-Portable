@@ -62,7 +62,6 @@ import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.viewmodel.FileExplorerViewModel
 import com.dergoogler.mmrl.wx.viewmodel.FileItem
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
 import dev.mmrlx.compose.layout.card
 import dev.mmrlx.compose.ui.CircularProgressIndicator
@@ -258,7 +257,7 @@ fun FileExplorerContent() {
                             onClick = { viewModel.refresh() }
                         ) {
                             Icon(
-                                painter = painterResource(com.dergoogler.mmrl.webui.R.drawable.refresh),
+                                painter = painterResource(R.drawable.refresh),
                                 contentDescription = "Refresh"
                             )
                         }

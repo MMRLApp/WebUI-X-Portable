@@ -1,8 +1,8 @@
 package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 
 import android.webkit.WebResourceResponse
-import com.dergoogler.mmrl.platform.file.SuFile
-import com.dergoogler.mmrl.webui.asResponse
+import com.dergoogler.mmrl.wx.ui.webui.sufile
+import com.dergoogler.mmrl.wx.ui.webui.util.asResponse
 import dev.mmrlx.webui.ResponseStatus
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
@@ -20,7 +20,7 @@ class SuPathHandler(
         val path = request.path
 
         return try {
-            SuFile(directory, path).asResponse()
+            sufile(directory, path).asResponse()
         } catch (e: IOException) {
             console.debugError("Error opening su path: $path", e)
             return response(

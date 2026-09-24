@@ -206,4 +206,14 @@
     <string name="settings_hide_fingerprint_desc">Hides the device fingerprints on the app homepage</string>
     <string name="settings_hide_unix_name">Hide Unix Name in Home</string>
     <string name="settings_hide_unix_name_desc">Hides the kernel Unix Name on the app homepage</string>
+    <string name="help">Help</string>
+    <string name="report_to_issues">Report to Issues</string>
+    <string name="copy_logs">Copy logs</string>
+    <string name="we_hit_a_brick_crash">We\'re hit a brick</string>
+    <string name="requireNewVersion_cannot_load_webui">Cannot load WebUI X</string>
+    <string name="requireNewVersion_require_text">requires at least %1$s &gt;=</string>
+    <string name="requireNewVersion_try_the_following">Try the following:</string>
+    <string name="requireNewVersion_try_the_following_one">Update %1$s to the latest version from Google Play or GitHub Releases.</string>
+    <string name="requireNewVersion_try_the_following_two">Reach out to the module developer for a possible workaround.</string>
+    <string name="requireNewVersion_refresh">Refresh</string>
 </resources>

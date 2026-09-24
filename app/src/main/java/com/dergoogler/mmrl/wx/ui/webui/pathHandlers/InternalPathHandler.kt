@@ -2,7 +2,7 @@ package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 
 import android.webkit.WebResourceResponse
 import androidx.compose.material3.ColorScheme
-import com.dergoogler.mmrl.webui.model.WebColors
+import com.dergoogler.mmrl.wx.model.WebColors
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
 import java.io.IOException

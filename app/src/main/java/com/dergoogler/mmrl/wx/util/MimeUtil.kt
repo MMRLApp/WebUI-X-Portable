@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.webui
+package com.dergoogler.mmrl.wx.util
 
 import java.net.URLConnection
 import java.util.Locale

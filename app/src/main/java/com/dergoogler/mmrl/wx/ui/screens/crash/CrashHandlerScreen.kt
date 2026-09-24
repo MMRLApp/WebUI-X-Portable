@@ -33,8 +33,8 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.shareText
 import com.dergoogler.mmrl.ui.component.NavigationBarsSpacer
-import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.wx.BuildConfig
+import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.screens.crash.components.MarkdownView
 import com.dergoogler.mmrl.wx.util.HelpMessage
 import dev.mmrlx.compose.layout.card

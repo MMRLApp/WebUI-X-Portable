@@ -40,11 +40,6 @@ pluginManagement {
 rootProject.name = "WebUIX"
 include(
     ":app",
-    ":webui",
-    ":helper",
     ":datastore",
     ":jna",
-    ":modconf",
-    ":lua",
-    ":hwui"
 )

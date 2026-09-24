@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.wx.util
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,15 +12,11 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.dergoogler.mmrl.platform.Platform.Companion.getPlatform
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.ui.theme.MMRLAppTheme
-import com.dergoogler.mmrl.wx.App.Companion.TAG
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
-import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.service.PlatformService
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
@@ -105,19 +100,6 @@ fun BaseActivity.setBaseContent(
                 ),
                 content = content
             )
-        }
-    }
-}
-
-fun ComponentActivity.initPlatform(userPreferences: UserPreferences) {
-    val platform = intent.getPlatform() ?: userPreferences.workingMode.toPlatform()
-
-    if (!PlatformService.isActive) {
-        try {
-            PlatformService.start(baseContext, platform)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "onCreate: $e")
         }
     }
 }

@@ -1,10 +1,9 @@
 package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 
 import android.webkit.WebResourceResponse
-import com.dergoogler.mmrl.webui.MimeUtil
+import com.dergoogler.mmrl.wx.util.MimeUtil
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
-import dev.mmrlx.webui.PathHandler
 import java.io.IOException
 
 class AssetsPathHandler(

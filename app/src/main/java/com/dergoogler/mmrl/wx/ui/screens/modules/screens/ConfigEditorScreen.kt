@@ -247,21 +247,6 @@ fun ConfigEditorContent() {
                 Description(R.string.webui_config_pull_to_refresh_desc)
             }
 
-
-//            val useNativeRefreshInterceptor = config.refreshInterceptor == "native"
-//
-//            ListSwitchItem(
-//                enabled = pullToRefresh && useNativeRefreshInterceptor,
-//                title = stringResource(R.string.webui_config_pull_to_refresh_helper_title),
-//                desc = stringResource(R.string.webui_config_pull_to_refresh_helper_desc),
-//                checked = useNativeRefreshInterceptor,
-//                onChange = { isChecked ->
-//                    saveconfig {
-//                        "pullToRefreshHelper" change isChecked
-//                    }
-//                }
-//            )
-
             RadioDialogItem(
                 selection = config.refreshInterceptor,
                 options = context.interceptorList.filterIndexed { i, _ -> i != 2 },

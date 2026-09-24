@@ -2,7 +2,7 @@ package com.dergoogler.mmrl.wx.ui.webui.util
 
 import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.nullable
-import com.dergoogler.mmrl.webui.R
+import com.dergoogler.mmrl.wx.R
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.PathHandler
 import kotlinx.html.DIV

@@ -1,4 +1,4 @@
-package com.dergoogler.mmrl.webui.model
+package com.dergoogler.mmrl.wx.model
 
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CardColors

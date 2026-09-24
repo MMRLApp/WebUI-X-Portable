@@ -3,7 +3,6 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -16,16 +15,9 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
-import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.stub.IServiceManager
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
-import com.dergoogler.mmrl.webui.interfaces.WXInterface
-import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.Module
-import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import dev.mmrlx.nio.Path
 import dev.mmrlx.thread.RootArgs
 import dev.mmrlx.thread.RootCallable
@@ -154,24 +146,6 @@ suspend fun initPlatform(
     init(platform, context, this)
 }
 
-
-fun UserPreferences.launchModConf(context: Context, modId: ModId) {
-    val baseDir = context.getBaseDir().path
-
-    val intent = Intent(context, ModConfActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-        putModId(modId)
-        putBaseDir(baseDir)
-    }
-
-    context.startActivity(intent)
-}
-
-fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
-    val baseDir = context.getBaseDir().path
-    context.launchWebUIX<WebUIActivity>(modId, baseDir)
-}
-
 fun Map<String, Any?>?.getBoolProp(key: String, def: Boolean = false): Boolean {
     val value = this?.get(key)
 
@@ -259,11 +233,6 @@ inline fun <reified T : Any> Map<String, Any?>.toDataClass(): T {
     }
 
     return ctor.callBy(args)
-}
-
-inline fun <reified T : WXInterface> WXInterface.scrambleClassName(): String {
-    val className = T::class.simpleName ?: name
-    return className.toList().shuffled().joinToString("")
 }
 
 fun <T> rootSync(args: Map<String, Any?>? = null, block: RootCallable<T>): T {

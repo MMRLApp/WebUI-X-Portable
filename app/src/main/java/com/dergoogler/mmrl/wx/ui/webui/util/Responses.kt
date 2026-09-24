@@ -1,7 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.webui.util
 
 import android.webkit.WebResourceResponse
-import com.dergoogler.mmrl.webui.MimeUtil
+import com.dergoogler.mmrl.wx.util.MimeUtil
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import java.io.ByteArrayInputStream
@@ -145,7 +145,8 @@ fun SuFile.asResponse(injects: List<Injection>? = null): WebResourceResponse {
 fun SuFile.handleSvgzStream(
     stream: InputStream,
 ): InputStream {
-    return if (extension == "svgz") GZIPInputStream(stream) else stream
+    return if (extension == "svgz") GZIPInputStream(stream) else stream
+
 }
 
 fun String.asStyleResponse(): WebResourceResponse {
