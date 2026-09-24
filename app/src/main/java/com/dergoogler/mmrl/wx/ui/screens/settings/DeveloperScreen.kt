@@ -83,26 +83,6 @@ fun DeveloperScreen() = SettingsPage { prefs, update ->
                 }
 
                 DeveloperSwitch(
-                    enabled = !prefs.useWebUiDevUrl,
-                    checked = prefs.enableErudaConsole && !prefs.useWebUiDevUrl,
-                    onChange = { update { copy(enableErudaConsole = it) } }
-                ) {
-                    // TODO: deprecate eruda
-                    Title(R.string.settings_security_inject_eruda)
-                    Description(R.string.settings_security_inject_eruda_desc)
-                }
-
-                DeveloperSwitch(
-                    enabled = prefs.enableErudaConsole,
-                    checked = prefs.enableErudaConsole && prefs.enableAutoOpenEruda,
-                    onChange = { update { copy(enableAutoOpenEruda = it) } }
-                ) {
-                    // TODO: deprecate eruda
-                    Title(R.string.settings_security_auto_open_eruda)
-                    Description(R.string.settings_security_auto_open_eruda_desc)
-                }
-
-                DeveloperSwitch(
                     checked = prefs.enableDevTools,
                     onChange = { update { copy(enableDevTools = it) } }
                 ) {

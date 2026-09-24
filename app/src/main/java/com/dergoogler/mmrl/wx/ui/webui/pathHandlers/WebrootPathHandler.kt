@@ -9,8 +9,6 @@ import com.dergoogler.mmrl.wx.model.module.cachingMaxAge
 import com.dergoogler.mmrl.wx.model.module.contentSecurityPolicy
 import com.dergoogler.mmrl.wx.model.module.historyFallback
 import com.dergoogler.mmrl.wx.model.module.historyFallbackFile
-import com.dergoogler.mmrl.wx.ui.webui.autoOpenEruda
-import com.dergoogler.mmrl.wx.ui.webui.enableErudaConsole
 import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.sufile
 import com.dergoogler.mmrl.wx.ui.webui.util.Injection
@@ -117,21 +115,6 @@ class WebrootPathHandler(
             }
 
             val injections = buildList {
-                if (settings.enableErudaConsole) {
-                    addInjection {
-                        appendLine("<script data-internal type=\"module\">")
-                        appendLine("\timport eruda from \"https://mui.kernelsu.org/internal/assets/eruda/eruda.mjs\";")
-                        appendLine("\teruda.init();")
-                        if (settings.autoOpenEruda) {
-                            appendLine("\teruda.show();")
-                        }
-                        appendLine("\tconst sheet = new CSSStyleSheet();")
-                        appendLine("\tsheet.replaceSync(\".eruda-dev-tools { padding-bottom: ${insets.bottom}px }\");")
-                        appendLine("\twindow.eruda.shadowRoot.adoptedStyleSheets.push(sheet);")
-                        appendLine("</script>")
-                    }
-                }
-
 //                if (config.backHandler == true && config.backInterceptor == "native") {
 //                    addInjection {
 //                        appendLine(

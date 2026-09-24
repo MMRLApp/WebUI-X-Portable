@@ -31,9 +31,11 @@ data class UserPreferences(
     @ProtoNumber(21) val webUiDevUrl: String = "https://127.0.0.1:8080",
     @ProtoNumber(22) val developerMode: Boolean = false,
     @ProtoNumber(23) val useWebUiDevUrl: Boolean = false,
+    @Deprecated("Use DevTools instead")
     @ProtoNumber(35) val enableErudaConsole: Boolean = false,
     @Deprecated("Force MX to be used")
     @ProtoNumber(37) val webuiEngine: WebUIEngine = WebUIEngine.MX,
+    @Deprecated("Use DevTools instead")
     @ProtoNumber(38) val enableAutoOpenEruda: Boolean = false,
     @ProtoNumber(39) val forceKillWebUIProcess: Boolean = true,
     @ProtoNumber(40) val disableGlobalExitConfirm: Boolean = false,
