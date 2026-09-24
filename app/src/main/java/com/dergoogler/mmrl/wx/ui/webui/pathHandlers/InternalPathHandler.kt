@@ -7,7 +7,7 @@ import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIResourceRequest
 import java.io.IOException
 
-class InternalPathHandler(
+open class InternalPathHandler(
     webui: WebUI,
     colorScheme: ColorScheme,
 ) : KsuPathHandler(webui) {
@@ -22,6 +22,14 @@ class InternalPathHandler(
         val path = request.path
 
         try {
+            if (path.matches(Regex("insets\\.css"))) {
+                return insets.css.asStyleResponse()
+            }
+
+            if (path.matches(Regex("colors\\.css"))) {
+                return webColors.allCssColors.asStyleResponse()
+            }
+
             if (path.matches(Regex("^assets(/.*)?$"))) {
                 return assetsPathHandler.handle(
                     WebUIResourceRequest(
@@ -34,14 +42,6 @@ class InternalPathHandler(
                         hasGesture = request.hasGesture()
                     )
                 )
-            }
-            
-            if (path.matches(Regex("insets\\.css"))) {
-                return insets.css.asStyleResponse()
-            }
-
-            if (path.matches(Regex("colors\\.css"))) {
-                return webColors.allCssColors.asStyleResponse()
             }
 
             return notFoundResponse

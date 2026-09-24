@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!--suppress HtmlRequiredLangAttribute, HtmlRequiredTitleElement -->
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <link href="https://desc.mmrl.dev/internal/assets/markdown/markdown.css" rel="stylesheet" />
+  <link href="https://desc.mmrl.dev/internal/colors.css" rel="stylesheet" />
+  <link href="https://desc.mmrl.dev/internal/insets.css" rel="stylesheet" />
+</head>
+
+<body>
+<div class="toolbar"></div>
+<div class="markdown-body" id="content"></div>
+<div class="bottom-bar"></div>
+<script type="module">
+  import { Marked } from "https://desc.mmrl.dev/internal/assets/markdown/marked/index.mjs";
+  import markedAlert from "https://desc.mmrl.dev/internal/assets/markdown/marked/alert.mjs";
+  fetch("https://desc.mmrl.dev/internal/readme.md")
+    .then((response) => response.text())
+    .then((text) => {
+      const html = new Marked()
+        .use(markedAlert())
+        .parse(text)
+      document.getElementById("content").innerHTML = html;
+    })
+</script>
+</body>
+
+</html>
