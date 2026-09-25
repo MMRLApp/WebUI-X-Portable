@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +25,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.wx.R
@@ -46,6 +46,7 @@ import dev.mmrlx.compose.ui.list.component.item.Description
 import dev.mmrlx.compose.ui.list.component.item.Icon
 import dev.mmrlx.compose.ui.list.component.item.Title
 import dev.mmrlx.compose.ui.text.MutableFormatTextList
+import dev.mmrlx.compose.ui.theme.LocalContentColor
 
 @Composable
 internal fun <T : Direction> ListScope.NavButton(
@@ -193,12 +194,17 @@ internal fun ListItemScope.SensitiveDescription(
     Text(text)
 }
 
+fun MutableFormatTextList.linkString(url: String) {
+    val reg = "^https?://".toRegex(RegexOption.MULTILINE)
+    linkString(url.replace(reg, ""), url)
+}
+
 /**
  * Placed with `%y` inside a string resource.
  */
 fun MutableFormatTextList.linkString(text: String, uri: String) = composable {
     val browser = LocalUriHandler.current
-    val color = MaterialTheme.colorScheme.primary
+    val color = LocalContentColor.current
 
     Row(
         modifier = Modifier.clickable {
@@ -209,6 +215,7 @@ fun MutableFormatTextList.linkString(text: String, uri: String) = composable {
     ) {
         Text(
             text = text,
+            textDecoration = TextDecoration.Underline,
             color = color
         )
 

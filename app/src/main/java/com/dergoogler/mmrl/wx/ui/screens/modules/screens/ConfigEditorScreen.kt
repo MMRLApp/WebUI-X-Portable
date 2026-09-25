@@ -4,6 +4,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.backHandler
@@ -31,6 +33,7 @@ import com.dergoogler.mmrl.wx.model.module.refreshInterceptor
 import com.dergoogler.mmrl.wx.model.module.theme
 import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.model.module.windowResize
+import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavButton
@@ -127,6 +130,15 @@ fun ConfigEditorContent() {
                 .verticalScroll(rememberScrollState())
                 .scaffoldPadding()
         ) {
+            DebugAlert(
+                modifier = Modifier.padding(8.dp),
+                title = "Documentation",
+            ) {
+                FormatText("We recommend checking our documentation at %y to make sure your module is working as expected.") {
+                    linkString("https://mmrl.dev/guide/webuix/config")
+                }
+            }
+
             InputDialogItem(
                 value = config.title ?: "",
                 onConfirm = {
