@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.insets
@@ -22,6 +23,7 @@ fun MarkdownView(
     modifier: Modifier = Modifier,
     insets: PaddingValues = PaddingValues(0.dp),
 ) {
+    val browser = LocalBrowser.current
     val userPrefs = LocalUserPreferences.current
     val colors = MMRLXTheme.colors
     val scheme = MaterialTheme.colorScheme.copy(
@@ -46,6 +48,10 @@ fun MarkdownView(
                     darkMode = userPrefs.isDarkMode()
                 }
                 .client {
+                    onUntrustedUrl { uri ->
+                        browser.open(uri)
+                    }
+
                     // not related to client
                     it.webview.setBackgroundColor(Color.Transparent.toArgb())
                 }

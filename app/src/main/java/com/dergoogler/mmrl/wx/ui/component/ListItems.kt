@@ -21,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
 import dev.mmrlx.compose.ui.LocalTextStyle
@@ -83,12 +83,12 @@ internal fun ListScope.LinkButton(
     title: String,
     desc: String? = null,
 ) {
-    val browser = LocalUriHandler.current
+    val browser = LocalBrowser.current
 
     RawItem(
         modifier = Modifier
             .onClick {
-                browser.openUri(uri)
+                browser.open(uri)
             }
             .contentPadding()
     ) {
@@ -203,12 +203,12 @@ fun MutableFormatTextList.linkString(url: String) {
  * Placed with `%y` inside a string resource.
  */
 fun MutableFormatTextList.linkString(text: String, uri: String) = composable {
-    val browser = LocalUriHandler.current
+    val browser = LocalBrowser.current
     val color = LocalContentColor.current
 
     Row(
         modifier = Modifier.clickable {
-            browser.openUri(uri)
+            browser.open(uri)
         },
         horizontalArrangement = Arrangement.spacedBy(1.5.dp),
         verticalAlignment = Alignment.CenterVertically

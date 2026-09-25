@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
@@ -17,12 +18,15 @@ import com.dergoogler.mmrl.ui.theme.MMRLAppTheme
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import dev.mmrlx.compose.nio.SuFileComposition
+import dev.mmrlx.compose.ui.theme.Background
+import dev.mmrlx.compose.ui.theme.DarkBackground
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import javax.inject.Inject
 
@@ -84,9 +88,17 @@ fun BaseActivity.setBaseContent(
         settings.update { copy(webuiEngine = WebUIEngine.MX) }
     }
 
+    val isDarkMode = preferences.isDarkMode()
+    val browserUriHandler = remember(isDarkMode) {
+        BrowserUriHandler(
+            context = this@setBaseContent,
+            color = (if (isDarkMode) DarkBackground else Background).toColor()
+        )
+    }
+
     SuFileComposition {
         MMRLXTheme(
-            darkTheme = preferences.isDarkMode()
+            darkTheme = isDarkMode
         ) {
             MMRLAppTheme(
                 darkMode = preferences.isDarkMode(),
@@ -96,6 +108,7 @@ fun BaseActivity.setBaseContent(
                     LocalUserPreferences provides preferences,
                     LocalNavController provides navController,
                     LocalSettings provides settings,
+                    LocalBrowser provides browserUriHandler,
                     LocalDestinationsNavigator provides navigator
                 ),
                 content = content

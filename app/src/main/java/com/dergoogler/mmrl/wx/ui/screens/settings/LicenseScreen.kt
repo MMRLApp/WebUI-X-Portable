@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -10,7 +9,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -24,6 +22,7 @@ import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.license.UiLicense
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.viewmodel.LicenseViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -112,16 +111,14 @@ private fun ScaffoldScope.LicensesContent(
 private fun ListScope.LicenseItem(
     license: UiLicense,
 ) {
-    val context = LocalContext.current
+    val browser = LocalBrowser.current
 
     RawItem(
         modifier = Modifier
             .let {
                 if (license.hasUrl) {
                     it.onClick {
-                        context.startActivity(
-                            Intent.parseUri(license.url, Intent.URI_INTENT_SCHEME)
-                        )
+                        browser.open(license.url)
                     }
                 } else Modifier
             }
