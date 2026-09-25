@@ -34,7 +34,7 @@ internal fun NonRootItem(developerMode: Boolean = false) {
     PositionLayout(
         modifier = Modifier
             .clip(shape)
-            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
     ) {
         developerMode.takeTrue {
             Surface(
@@ -71,7 +71,7 @@ internal fun NonRootItem(developerMode: Boolean = false) {
                 modifier = Modifier.size(45.dp),
                 painter = painterResource(id = R.drawable.info_circle_filled),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
             )
 
             Spacer(modifier = Modifier.width(16.dp))

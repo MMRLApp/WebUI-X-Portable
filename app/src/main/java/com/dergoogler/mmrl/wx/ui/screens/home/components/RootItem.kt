@@ -41,7 +41,7 @@ internal fun RootItem() {
     PositionLayout(
         modifier = Modifier
             .clip(shape)
-            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
     ) {
         if (userPreferences.developerMode) {
             Surface(
