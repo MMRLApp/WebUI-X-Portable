@@ -26,8 +26,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ui.theme.Colors
 import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.compose.layout.card
 import dev.mmrlx.compose.ui.icon.Icon
-import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -76,15 +76,12 @@ private fun ThemeColorItem(
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(15.dp))
             .clickable(
                 onClick = { onClick(id) },
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             )
-            .background(
-                color = MMRLXTheme.colors.card
-            )
+            .card(shape = RoundedCornerShape(15.dp))
             .size(60.dp),
         contentAlignment = Alignment.Center
     ) {

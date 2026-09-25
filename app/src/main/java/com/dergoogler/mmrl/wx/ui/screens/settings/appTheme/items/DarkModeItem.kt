@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -28,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.compose.layout.card
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.icon.Icon
 import dev.mmrlx.compose.ui.theme.LocalContentColor
@@ -94,13 +93,12 @@ private fun DarkModeItem(
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(15.dp))
             .clickable(
                 onClick = { onClick(item.value) },
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             )
-            .background(color = MMRLXTheme.colors.card),
+            .card(shape = RoundedCornerShape(15.dp)),
         contentAlignment = Alignment.Center
     ){
         Row(

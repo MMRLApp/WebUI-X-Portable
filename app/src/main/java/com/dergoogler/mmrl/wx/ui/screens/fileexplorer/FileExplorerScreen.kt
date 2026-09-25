@@ -64,6 +64,7 @@ import com.dergoogler.mmrl.wx.viewmodel.FileItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.generated.destinations.FileEditorScreenDestination
 import dev.mmrlx.compose.layout.card
+import dev.mmrlx.compose.layout.outlinedCard
 import dev.mmrlx.compose.ui.CircularProgressIndicator
 import dev.mmrlx.compose.ui.LocalTextStyle
 import dev.mmrlx.compose.ui.Text
@@ -463,7 +464,7 @@ private fun ExpandableFab(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Box(
-                        modifier = Modifier.card()
+                        modifier = Modifier.outlinedCard()
                     ) {
                         Text(
                             text = label,

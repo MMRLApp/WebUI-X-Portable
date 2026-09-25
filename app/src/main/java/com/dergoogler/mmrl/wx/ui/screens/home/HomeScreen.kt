@@ -42,7 +42,7 @@ import com.dergoogler.mmrl.wx.ui.screens.home.components.NonRootItem
 import com.dergoogler.mmrl.wx.ui.screens.home.components.RootItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import dev.mmrlx.compose.layout.card
+import dev.mmrlx.compose.layout.outlinedCard
 import dev.mmrlx.compose.ui.LinearProgressIndicator
 import dev.mmrlx.compose.ui.Surface
 import dev.mmrlx.compose.ui.Text
@@ -107,7 +107,7 @@ fun HomeScreen() {
 
                 Surface(
                     modifier = Modifier
-                        .card()
+                        .outlinedCard()
                         .padding(vertical = 16.dp)
                         .fillMaxWidth(),
                 ) {
@@ -148,7 +148,7 @@ fun HomeScreen() {
 
                 Surface(
                     modifier = Modifier
-                        .card()
+                        .outlinedCard()
                         .padding(vertical = 16.dp)
                         .fillMaxWidth()
                 ) {
@@ -188,7 +188,7 @@ fun HomeScreen() {
                         .clickable {
                             browser.openUri("https://github.com/sponsors/MMRLApp")
                         }
-                        .card()
+                        .outlinedCard()
                         .padding(vertical = 16.dp)
                         .fillMaxWidth()
                 ) {

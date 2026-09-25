@@ -37,8 +37,7 @@ import com.dergoogler.mmrl.wx.BuildConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.ui.screens.crash.components.MarkdownView
 import com.dergoogler.mmrl.wx.util.HelpMessage
-import dev.mmrlx.compose.layout.card
-import dev.mmrlx.compose.ui.Surface
+import dev.mmrlx.compose.layout.outlinedCard
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.button.Button
 import dev.mmrlx.compose.ui.button.ButtonVariant
@@ -98,25 +97,23 @@ fun CrashHandlerScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             item {
-                Surface(
+                SelectionContainer(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .card(),
+                            .outlinedCard()
                 ) {
-                    SelectionContainer {
-                        Text(
-                            modifier =
-                                Modifier
-                                    .padding(16.dp)
-                                    .horizontalScroll(rememberScrollState()),
-                            text = message,
-                            style =
-                                MMRLXTheme.typography.bodyLarge.copy(
-                                    fontFamily = FontFamily.Monospace,
-                                ),
-                        )
-                    }
+                    Text(
+                        modifier =
+                            Modifier
+                                .padding(16.dp)
+                                .horizontalScroll(rememberScrollState()),
+                        text = message,
+                        style =
+                            MMRLXTheme.typography.bodyLarge.copy(
+                                fontFamily = FontFamily.Monospace,
+                            ),
+                    )
                 }
 
                 help.nullable {
@@ -144,25 +141,23 @@ fun CrashHandlerScreen(
             }
 
             item {
-                Surface(
+                SelectionContainer(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .card(),
+                            .outlinedCard()
                 ) {
-                    SelectionContainer {
-                        Text(
-                            modifier =
-                                Modifier
-                                    .padding(16.dp)
-                                    .horizontalScroll(rememberScrollState()),
-                            text = stacktrace,
-                            style =
-                                MMRLXTheme.typography.bodySmall.copy(
-                                    fontFamily = FontFamily.Monospace,
-                                ),
-                        )
-                    }
+                    Text(
+                        modifier =
+                            Modifier
+                                .padding(16.dp)
+                                .horizontalScroll(rememberScrollState()),
+                        text = stacktrace,
+                        style =
+                            MMRLXTheme.typography.bodySmall.copy(
+                                fontFamily = FontFamily.Monospace,
+                            ),
+                    )
                 }
             }
 
