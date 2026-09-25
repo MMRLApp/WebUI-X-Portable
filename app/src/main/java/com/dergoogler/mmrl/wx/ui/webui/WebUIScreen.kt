@@ -4,13 +4,18 @@ import android.os.Build
 import android.system.OsConstants.O_RDONLY
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
+import com.dergoogler.mmrl.wx.ui.webui.components.ContextMenu
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.KernelSUInterface
@@ -30,9 +35,11 @@ import dev.mmrlx.nio.SuFileInputStream
 import dev.mmrlx.nio.SuFileOutputStream
 import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.WebUIContextMenu
 
 @Composable
 fun WebUIScreen() {
+    val browser = LocalBrowser.current
     val module = LocalModule.current
     val context = LocalContext.current
     val prefs = LocalUserPreferences.current
@@ -40,6 +47,8 @@ fun WebUIScreen() {
     val colorScheme = remember {
         prefs.colorScheme(context)
     }
+
+    var contextMenu by remember { mutableStateOf<WebUIContextMenu?>(null) }
 
     val userAgent = remember {
         val mmrlVersion = context.managerVersion.second
@@ -118,7 +127,17 @@ fun WebUIScreen() {
             .registerJavascriptInterface(com.dergoogler.mmrl.wx.ui.webui.interfaces.ModuleInterface::class.java)
             // end
             .backHandlers(colorScheme)
-            .client { }
+            .client {
+                onUntrustedUrl { uri ->
+                    browser.open(uri)
+                }
+
+                if (prefs.enableContextMenuInWebUI) {
+                    onContextMenu { state ->
+                        contextMenu = state
+                    }
+                }
+            }
             .chromeClient { }
             .luaPlugin()
             .dexPlugin()
@@ -161,6 +180,15 @@ fun WebUIScreen() {
     }
 
     WebUIView(wstate)
+
+    val currentMenu = contextMenu
+    if (prefs.enableContextMenuInWebUI && currentMenu != null) {
+        ContextMenu(
+            webui = wstate,
+            menu = currentMenu,
+            onDismiss = { contextMenu = null }
+        )
+    }
 }
 
 private fun WebUI.registerSuPathHandler(

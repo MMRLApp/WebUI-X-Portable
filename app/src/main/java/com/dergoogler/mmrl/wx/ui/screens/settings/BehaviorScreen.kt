@@ -53,6 +53,14 @@ fun BehaviorScreen() = SettingsPage { prefs, update ->
                 Title(R.string.settings_global_exit_confirm)
                 Description(R.string.settings_global_exit_confirm_desc)
             }
+            SwitchItem(
+                checked = prefs.enableContextMenuInWebUI,
+                onChange = { update { copy(enableContextMenuInWebUI = it) } }
+
+            ) {
+                Title(R.string.settings_enable_context_menu)
+                Description(R.string.settings_enable_context_menu_desc)
+            }
 
             SwitchItem(
                 checked = prefs.forceKillWebUIProcess,

@@ -70,6 +70,8 @@
     <string name="settings_date_pattern_dialog_desc">The date pattern will be parsed as:\n[color=primary]%1$s[/color]</string>
     <string name="settings_global_exit_confirm">Disable Exit Confirm</string>
     <string name="settings_global_exit_confirm_desc">Disables the confirmation dialog when exiting the WebUI.</string>
+    <string name="settings_enable_context_menu">Enable Context Menu</string>
+    <string name="settings_enable_context_menu_desc">Enables the context menu in the WebUI</string>
     <string name="controlled_by_native">Native</string>
     <string name="controlled_by_native_desc">Handled by the native app</string>
     <string name="controlled_by_javascript">JavaScript</string>
@@ -216,4 +218,25 @@
     <string name="requireNewVersion_try_the_following_one">Update %1$s to the latest version from Google Play or GitHub Releases.</string>
     <string name="requireNewVersion_try_the_following_two">Reach out to the module developer for a possible workaround.</string>
     <string name="requireNewVersion_refresh">Refresh</string>
+    <string name="back">Back</string>
+    <string name="forward">Forward</string>
+    <string name="reload">Reload</string>
+    <string name="recompose">Recompose</string>
+    <string name="open_link_in_new_tab">Open link in new tab</string>
+    <string name="copy_link_address">Copy link address</string>
+    <string name="share_link">Share link</string>
+    <string name="download_link">Download link</string>
+    <string name="open_image_in_new_tab">Open image in new tab</string>
+    <string name="save_image_as">Save image as…</string>
+    <string name="copy_image">Copy image</string>
+    <string name="copy_image_address">Copy image address</string>
+    <string name="share_image">Share image</string>
+    <string name="call">Call</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="copy_phone_number">Copy phone number</string>
+    <string name="add_to_contacts">Add to contacts</string>
+    <string name="open_in_maps">Open in Maps</string>
+    <string name="copy_address">Copy address</string>
+    <string name="send_email">Send email</string>
+    <string name="copy_email_address">Copy email address</string>
 </resources>

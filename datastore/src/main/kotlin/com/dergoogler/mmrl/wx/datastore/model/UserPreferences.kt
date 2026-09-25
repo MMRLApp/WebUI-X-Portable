@@ -45,6 +45,7 @@ data class UserPreferences(
     @ProtoNumber(43) val adbPath: String = "/data/adb",
     @ProtoNumber(44) val hideFingerprintInHome: Boolean = true,
     @ProtoNumber(45) val hideUnixNameInHome: Boolean = true,
+    @ProtoNumber(46) val enableContextMenuInWebUI: Boolean = true,
 ) {
     fun getAdbPath(context: Context): String {
         if (workingMode == WorkingMode.MODE_NON_ROOT) {
