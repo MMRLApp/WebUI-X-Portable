@@ -241,4 +241,6 @@
     <string name="copy_email_address">Copy email address</string>
     <string name="settings_opt_out_app_events">Opt-out App Events</string>
     <string name="settings_opt_out_app_events_desc">Opt-out for in-app events like Halloween, Winter (Christmas), Fall etc.</string>
+    <string name="settings_log_event_payload">Log Event Payload</string>
+    <string name="settings_log_event_payload_desc">Logs the payload from a executed event into the console.</string>
 </resources>

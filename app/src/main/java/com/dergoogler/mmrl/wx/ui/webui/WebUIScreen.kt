@@ -109,6 +109,7 @@ fun WebUIScreen() {
                     prefs.forceKillWebUIProcess
                 userAgentString = userAgent
                 darkMode = prefs.isDarkMode()
+                showEventPayloadInConsole = prefs.logEventPayload
 
                 extra = mapOf(
                     "module" to module,

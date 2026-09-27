@@ -99,6 +99,14 @@ fun DeveloperScreen() = SettingsPage { prefs, update ->
                     Description(R.string.settings_security_enable_devtools_desc)
                 }
 
+                DeveloperSwitch(
+                    checked = prefs.logEventPayload,
+                    onChange = { update { copy(logEventPayload = it) } }
+                ) {
+                    Title(R.string.settings_log_event_payload)
+                    Description(R.string.settings_log_event_payload_desc)
+                }
+
                 InputDialogItem(
                     enabled = prefs.developerMode,
                     value = prefs.webUiDevUrl,
