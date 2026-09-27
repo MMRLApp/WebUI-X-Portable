@@ -46,6 +46,7 @@ data class UserPreferences(
     @ProtoNumber(44) val hideFingerprintInHome: Boolean = true,
     @ProtoNumber(45) val hideUnixNameInHome: Boolean = true,
     @ProtoNumber(46) val enableContextMenuInWebUI: Boolean = true,
+    @ProtoNumber(47) val optOutAppEvents: Boolean = false,
 ) {
     fun getAdbPath(context: Context): String {
         if (workingMode == WorkingMode.MODE_NON_ROOT) {

@@ -80,6 +80,14 @@ fun BehaviorScreen() = SettingsPage { prefs, update ->
                 Description(R.string.settings_custom_adb_path_desc)
                 DialogDescription(R.string.settings_custom_adb_path_dialog_desc)
             }
+
+            SwitchItem(
+                checked = prefs.optOutAppEvents,
+                onChange = { update { copy(optOutAppEvents = it) } }
+            ) {
+                Title(R.string.settings_opt_out_app_events)
+                Description(R.string.settings_opt_out_app_events_desc)
+            }
         }
     }
 }
