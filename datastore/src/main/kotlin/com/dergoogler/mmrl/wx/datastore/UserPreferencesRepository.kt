@@ -1,9 +1,10 @@
 package com.dergoogler.mmrl.wx.datastore
 
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,6 +13,9 @@ class UserPreferencesRepository @Inject constructor(
     private val userPreferencesDataSource: UserPreferencesDataSource,
 ) {
     val data get() = userPreferencesDataSource.data
+
+    suspend fun update(transform: UserPreferences.() -> UserPreferences) =
+        userPreferencesDataSource.update(transform)
 
     suspend fun setModulesMenu(value: ModulesMenu) =
         userPreferencesDataSource.setModulesMenu(value)
@@ -23,6 +27,8 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setThemeColor(value: Int) = userPreferencesDataSource.setThemeColor(value)
 
     suspend fun setDatePattern(value: String) = userPreferencesDataSource.setDatePattern(value)
+
+    suspend fun setAdbPath(value: String) = userPreferencesDataSource.setAdbPath(value)
 
     suspend fun setWebUiDevUrl(value: String) =
         userPreferencesDataSource.setWebUiDevUrl(value)
@@ -47,6 +53,9 @@ class UserPreferencesRepository @Inject constructor(
 
     suspend fun setDisableGlobalExitConfirm(value: Boolean) =
         userPreferencesDataSource.setDisableGlobalExitConfirm(value)
+
+    suspend fun setDisableConsoleInterceptor(value: Boolean) =
+        userPreferencesDataSource.setDisableConsoleInterceptor(value)
 
     suspend fun setWebUIEngine(value: WebUIEngine) =
         userPreferencesDataSource.setWebUIEngine(value)

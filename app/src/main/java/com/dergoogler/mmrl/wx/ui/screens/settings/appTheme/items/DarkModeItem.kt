@@ -3,7 +3,6 @@ package com.dergoogler.mmrl.wx.ui.screens.settings.appTheme.items
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,24 +14,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.datastore.model.DarkMode
+import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.compose.layout.card
+import dev.mmrlx.compose.ui.Text
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.theme.LocalContentColor
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 
 private enum class DarkModeItem(
     val value: DarkMode,
@@ -95,13 +93,12 @@ private fun DarkModeItem(
 
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(15.dp))
             .clickable(
                 onClick = { onClick(item.value) },
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             )
-            .background(color = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp)),
+            .card(shape = RoundedCornerShape(15.dp)),
         contentAlignment = Alignment.Center
     ){
         Row(
@@ -127,7 +124,7 @@ private fun DarkModeItem(
                 painter = painterResource(id = item.icon),
                 contentDescription = null,
                 tint = if (selected) {
-                    MaterialTheme.colorScheme.primary
+                    MMRLXTheme.colors.primary
                 } else {
                     LocalContentColor.current
                 }
@@ -135,9 +132,9 @@ private fun DarkModeItem(
 
             Text(
                 text = stringResource(id = item.text),
-                style = MaterialTheme.typography.labelLarge,
+                style = MMRLXTheme.typography.labelLarge,
                 color = if (selected) {
-                    MaterialTheme.colorScheme.primary
+                    MMRLXTheme.colors.primary
                 } else {
                     Color.Unspecified
                 }

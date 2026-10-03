@@ -2,15 +2,16 @@ enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 val user: String? = providers.gradleProperty("gpr.user").orNull
-    ?: System.getenv("ACTOR")
+    ?: System.getenv("GITHUB_ACTOR")
 val pass: String? = providers.gradleProperty("gpr.key").orNull
-    ?: System.getenv("GH_TOKEN")
+    ?: System.getenv("GITHUB_TOKEN")
 
-dependencyResolutionManagement drm@{
+dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
         maven("https://jitpack.io")
 
         if (user != null && pass != null) {
@@ -26,20 +27,12 @@ dependencyResolutionManagement drm@{
     }
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        maven("https://jitpack.io")
-    }
-}
-
 pluginManagement {
     includeBuild("build-logic")
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
         gradlePluginPortal()
     }
 }
@@ -47,11 +40,6 @@ pluginManagement {
 rootProject.name = "WebUIX"
 include(
     ":app",
-    ":webui",
-    ":helper",
     ":datastore",
     ":jna",
-    ":modconf",
-    ":lua",
-    ":hwui"
 )

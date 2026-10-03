@@ -3,29 +3,31 @@ package com.dergoogler.mmrl.wx.util
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.rememberNavController
-import com.dergoogler.mmrl.platform.Platform.Companion.getPlatform
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.ui.theme.MMRLAppTheme
-import com.dergoogler.mmrl.wx.App.Companion.TAG
 import com.dergoogler.mmrl.wx.datastore.UserPreferencesRepository
-import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.service.PlatformService
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
 import com.dergoogler.mmrl.wx.viewmodel.SettingsViewModel
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
+import dev.mmrlx.compose.nio.SuFileComposition
+import dev.mmrlx.compose.ui.theme.Background
+import dev.mmrlx.compose.ui.theme.DarkBackground
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -60,6 +62,7 @@ open class BaseActivity : ComponentActivity() {
 
 fun BaseActivity.setBaseContent(
     parent: CompositionContext? = null,
+    preferencesLoaded: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) = this.setContent(
     parent = parent,
@@ -76,32 +79,40 @@ fun BaseActivity.setBaseContent(
     val preferences = if (userPreferences == null) {
         return@setContent
     } else {
+        preferencesLoaded?.invoke()
         checkNotNull(userPreferences)
     }
 
-    MMRLAppTheme(
-        darkMode = preferences.isDarkMode(),
-        navController = navController,
-        themeColor = preferences.themeColor,
-        providerValues = arrayOf(
-            LocalUserPreferences provides preferences,
-            LocalNavController provides navController,
-            LocalSettings provides settings,
-            LocalDestinationsNavigator provides navigator
-        ),
-        content = content
-    )
-}
+    // Set engine always to MX
+    if (preferences.webuiEngine != WebUIEngine.MX) {
+        settings.update { copy(webuiEngine = WebUIEngine.MX) }
+    }
 
-fun ComponentActivity.initPlatform(userPreferences: UserPreferences) {
-    val platform = intent.getPlatform() ?: userPreferences.workingMode.toPlatform()
+    val isDarkMode = preferences.isDarkMode()
+    val browserUriHandler = remember(isDarkMode) {
+        BrowserUriHandler(
+            context = this@setBaseContent,
+            color = (if (isDarkMode) DarkBackground else Background).toColor()
+        )
+    }
 
-    if (!PlatformService.isActive) {
-        try {
-            PlatformService.start(baseContext, platform)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e(TAG, "onCreate: $e")
+    SuFileComposition {
+        MMRLXTheme(
+            darkTheme = isDarkMode
+        ) {
+            MMRLAppTheme(
+                darkMode = preferences.isDarkMode(),
+                navController = navController,
+                themeColor = preferences.themeColor,
+                providerValues = arrayOf(
+                    LocalUserPreferences provides preferences,
+                    LocalNavController provides navController,
+                    LocalSettings provides settings,
+                    LocalBrowser provides browserUriHandler,
+                    LocalDestinationsNavigator provides navigator
+                ),
+                content = content
+            )
         }
     }
 }

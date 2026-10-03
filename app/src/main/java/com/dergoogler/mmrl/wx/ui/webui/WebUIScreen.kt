@@ -1,0 +1,203 @@
+package com.dergoogler.mmrl.wx.ui.webui
+
+import android.os.Build
+import android.system.OsConstants.O_RDONLY
+import androidx.compose.material3.ColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.dergoogler.mmrl.ext.managerVersion
+import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.component.LocalModule
+import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
+import com.dergoogler.mmrl.wx.ui.webui.components.ContextMenu
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.KernelSUInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileInputInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileOutputInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.ModuleInterface
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.IconPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.util.dexPlugin
+import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
+import dev.mmrlx.compose.webui.WebUIView
+import dev.mmrlx.compose.webui.rememberWebUIState
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.SuFileInputStream
+import dev.mmrlx.nio.SuFileOutputStream
+import dev.mmrlx.nio.SuRandomAccessFile
+import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.WebUIContextMenu
+
+@Composable
+fun WebUIScreen() {
+    val browser = LocalBrowser.current
+    val module = LocalModule.current
+    val context = LocalContext.current
+    val prefs = LocalUserPreferences.current
+
+    val colorScheme = remember {
+        prefs.colorScheme(context)
+    }
+
+    var contextMenu by remember { mutableStateOf<WebUIContextMenu?>(null) }
+
+    val userAgent = remember {
+        val mmrlVersion = context.managerVersion.second
+
+        val platform = prefs.workingMode.toString
+
+        val platformVersion = PlatformManager.get(-1) {
+            moduleManager.versionCode
+        }
+
+        val osVersion = Build.VERSION.RELEASE
+        val deviceModel = Build.MODEL
+
+        "WebUI X/$mmrlVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
+    }
+
+    val isDebug = prefs.developerMode
+
+    val domain = remember {
+        if (isDebug && prefs.useWebUiDevUrl) {
+            prefs.webUiDevUrl
+        } else {
+            "https://mui.kernelsu.org"
+        }
+    }
+
+    val wstate = rememberWebUIState(domain) {
+        it
+            .factories {
+                inputStreamFactory { paths ->
+                    val path = paths.first
+                    val mode: Int = paths[1, O_RDONLY]
+                    SuFileInputStream(SuFile(path), mode, 0)
+                }
+
+                outputStreamFactory { paths ->
+                    val path = paths.first
+                    val append = paths[1, false]
+                    SuFileOutputStream(path, append)
+                }
+
+                randomAccessFileFactory { paths ->
+                    val path = paths.first
+                    val mode = paths[1, "r"]
+                    SuRandomAccessFile(path, mode)
+                }
+
+                fileFactory { paths ->
+                    SuFile(*paths)
+                }
+            }
+            .settings {
+                schemeWhitelist += "ksu"
+                useDefaultApplicationInterface = false
+                useDefaultFileSystem = false
+                debug = isDebug
+                forceKillProcess =
+                    prefs.forceKillWebUIProcess
+                userAgentString = userAgent
+                darkMode = prefs.isDarkMode()
+                showEventPayloadInConsole = prefs.logEventPayload
+
+                extra = mapOf(
+                    "module" to module,
+                    "enableEruda" to prefs.enableErudaConsole,
+                    "autoOpenEruda" to prefs.enableAutoOpenEruda,
+                    "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
+                    "isRootMode" to prefs.workingMode.isRoot,
+                    "workingMode" to prefs.workingMode,
+                    "mdColorScheme" to colorScheme,
+                )
+            }
+            // legacy interfaces
+            .registerJavascriptInterface(ModuleInterface::class.java)
+            .registerJavascriptInterface(FileInputInterface::class.java)
+            .registerJavascriptInterface(FileOutputInterface::class.java)
+            .registerJavascriptInterface(com.dergoogler.mmrl.wx.ui.webui.interfaces.ModuleInterface::class.java)
+            // end
+            .backHandlers()
+            .client {
+                onUntrustedUrl { uri ->
+                    browser.open(uri)
+                }
+
+                if (prefs.enableContextMenuInWebUI) {
+                    onContextMenu { state ->
+                        contextMenu = state
+                    }
+                }
+            }
+            .chromeClient { }
+            .luaPlugin()
+            .dexPlugin()
+            .registerJavascriptInterface(
+                KernelSUInterface::class.java
+            )
+            .registerJavascriptInterface(
+                ApplicationInterface::class.java
+            )
+            .registerJavascriptInterface(
+                FileSystemInterface::class.java
+            )
+            .registerPathHandler(
+                InternalPathHandler::class.java
+            ) {
+                add(
+                    ColorScheme::class.java to colorScheme
+                )
+            }
+            .registerPathHandler(IconPathHandler::class.java)
+            .registerSuPathHandler(
+                "/.${module.id}/",
+                module.path.moduleDir
+            )
+            .registerSuPathHandler(
+                "/.adb/",
+                module.adbPath.baseDir
+            )
+            .registerSuPathHandler(
+                "/.config/",
+                module.adbPath.configDir
+            )
+            .registerSuPathHandler(
+                "/.local/",
+                module.adbPath.localDir
+            )
+            .registerPathHandler(
+                WebrootPathHandler::class.java
+            )
+    }
+
+    WebUIView(wstate)
+
+    val currentMenu = contextMenu
+    if (prefs.enableContextMenuInWebUI && currentMenu != null) {
+        ContextMenu(
+            webui = wstate,
+            menu = currentMenu,
+            onDismiss = { contextMenu = null }
+        )
+    }
+}
+
+private fun WebUI.registerSuPathHandler(
+    path: String,
+    directory: String,
+): WebUI {
+    return this.registerPathHandler(SuPathHandler::class.java) {
+        add(String::class.java to path)
+        add(String::class.java to directory)
+    }
+}

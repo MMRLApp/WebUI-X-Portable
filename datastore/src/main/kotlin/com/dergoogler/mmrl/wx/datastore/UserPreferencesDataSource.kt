@@ -2,10 +2,10 @@ package com.dergoogler.mmrl.wx.datastore
 
 import androidx.datastore.core.DataStore
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -14,6 +14,10 @@ class UserPreferencesDataSource @Inject constructor(
     private val userPreferences: DataStore<UserPreferences>,
 ) {
     val data get() = userPreferences.data
+
+    suspend fun update(transform: UserPreferences.() -> UserPreferences) {
+        userPreferences.updateData { it.transform() }
+    }
 
     suspend fun setModulesMenu(value: ModulesMenu) = withContext(Dispatchers.IO) {
         userPreferences.updateData {
@@ -51,6 +55,14 @@ class UserPreferencesDataSource @Inject constructor(
         userPreferences.updateData {
             it.copy(
                 datePattern = value
+            )
+        }
+    }
+
+    suspend fun setAdbPath(value: String) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                adbPath = value
             )
         }
     }
@@ -115,6 +127,14 @@ class UserPreferencesDataSource @Inject constructor(
         userPreferences.updateData {
             it.copy(
                 disableGlobalExitConfirm = value
+            )
+        }
+    }
+
+    suspend fun setDisableConsoleInterceptor(value: Boolean) = withContext(Dispatchers.IO) {
+        userPreferences.updateData {
+            it.copy(
+                disableConsoleInterceptor = value
             )
         }
     }

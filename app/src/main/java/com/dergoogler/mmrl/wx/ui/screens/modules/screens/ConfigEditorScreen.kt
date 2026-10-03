@@ -2,420 +2,364 @@ package com.dergoogler.mmrl.wx.ui.screens.modules.screens
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import com.dergoogler.mmrl.ext.isNotNullOrEmpty
-import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.ext.shareText
-import com.dergoogler.mmrl.platform.compose.rememberConfigFile
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.model.ModuleConfig
-import com.dergoogler.mmrl.ui.component.BottomSheet
-import com.dergoogler.mmrl.ui.component.LabelItem
-import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
-import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
-import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
-import com.dergoogler.mmrl.ui.component.listItem.ListEditTextItem
-import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
-import com.dergoogler.mmrl.ui.component.listItem.ListHeader
-import com.dergoogler.mmrl.ui.component.listItem.ListItemDefaults
-import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
-import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
-import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.backHandler
+import com.dergoogler.mmrl.wx.model.module.backInterceptor
+import com.dergoogler.mmrl.wx.model.module.caching
+import com.dergoogler.mmrl.wx.model.module.cachingMaxAge
+import com.dergoogler.mmrl.wx.model.module.contentSecurityPolicy
+import com.dergoogler.mmrl.wx.model.module.exitConfirm
+import com.dergoogler.mmrl.wx.model.module.historyFallback
+import com.dergoogler.mmrl.wx.model.module.historyFallbackFile
+import com.dergoogler.mmrl.wx.model.module.icon
+import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
+import com.dergoogler.mmrl.wx.model.module.pullToRefresh
+import com.dergoogler.mmrl.wx.model.module.refreshInterceptor
+import com.dergoogler.mmrl.wx.model.module.theme
+import com.dergoogler.mmrl.wx.model.module.title
+import com.dergoogler.mmrl.wx.model.module.windowResize
+import com.dergoogler.mmrl.wx.ui.component.DebugAlert
+import com.dergoogler.mmrl.wx.ui.component.LocalModule
+import com.dergoogler.mmrl.wx.ui.component.ModuleScope
+import com.dergoogler.mmrl.wx.ui.component.NavButton
+import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
+import com.dergoogler.mmrl.wx.ui.component.linkString
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AdditionalConfigEditorScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.PluginsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
+import dev.mmrlx.compose.ui.Badge
+import dev.mmrlx.compose.ui.BadgeVariant
+import dev.mmrlx.compose.ui.list.List
+import dev.mmrlx.compose.ui.list.component.InputDialogItem
+import dev.mmrlx.compose.ui.list.component.RadioDialogItem
+import dev.mmrlx.compose.ui.list.component.RadioDialogOption
+import dev.mmrlx.compose.ui.list.component.SwitchItem
+import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.DialogDescription
+import dev.mmrlx.compose.ui.list.component.item.Supporting
+import dev.mmrlx.compose.ui.list.component.item.Title
+import dev.mmrlx.compose.ui.list.component.item.VerticalDividerSwitch
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.text.FormatText
+import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 
 
-private val Context.interceptorList: List<RadioOptionItem<String?>>
+private val Context.interceptorList: List<RadioDialogOption<String?>>
     get() = listOf(
-        RadioOptionItem(
+        RadioDialogOption(
             value = "native",
-            title = getString(R.string.controlled_by_native)
+            title = getString(R.string.controlled_by_native),
+            desc = getString(R.string.controlled_by_native_desc)
         ),
-        RadioOptionItem(
+        RadioDialogOption(
             value = "javascript",
-            title = getString(R.string.controlled_by_javascript)
+            title = getString(R.string.controlled_by_javascript),
+            desc = getString(R.string.controlled_by_javascript_desc)
+        ),
+        RadioDialogOption(
+            value = "javascript-full",
+            title = getString(R.string.controlled_by_javascript_full),
+            desc = getString(R.string.controlled_by_javascript_full_desc)
+        ),
+    )
+
+private val Context.themeList: List<RadioDialogOption<String?>>
+    get() = listOf(
+        RadioDialogOption(
+            value = "mmrlx",
+            title = "MMRL X"
+        ),
+        RadioDialogOption(
+            value = "md3",
+            title = "Material Design 3",
         ),
     )
 
 @Destination<RootGraph>()
 @Composable
-fun ConfigEditorScreen(module: LocalModule) {
-    val navigator = LocalDestinationsNavigator.current
+fun ConfigEditorScreen(moduleId: String) {
+    ModuleScope(moduleId) {
+        ConfigEditorContent()
+    }
+}
+
+@Composable
+fun ConfigEditorContent() {
+    val browser = LocalUriHandler.current
+    val module = LocalModule.current
     val userPrefs = LocalUserPreferences.current
     val context = LocalContext.current
-    val modId = module.id
 
-
-    val (webUIConfig, saveWebUIConfig) = rememberConfigFile(modId.WebUIConfig)
-    val (moduleConfig, saveModuleConfig) = rememberConfigFile(modId.ModuleConfig)
-
-    var exportBottomSheet by remember { mutableStateOf(false) }
-    if (exportBottomSheet) ExportBottomSheet(
-        onClose = { exportBottomSheet = false },
-        onModuleExport = {
-            context.shareText(moduleConfig.getOverrideConfigFile(modId)?.readText() ?: "{}")
-        },
-        onConfigExport = {
-            context.shareText(webUIConfig.getOverrideConfigFile(modId)?.readText() ?: "{}")
-        }
-    )
+    val navigator = LocalDestinationsNavigator.current
+    val config = remember { module.webrootConfig }
 
     Scaffold(
-        topBar = {
-            NavigateUpTopBar(
-                title = "Config",
-                subtitle = module.name,
+        toolbar = {
+            NavigateUpToolbar(
+                title = {
+                    ToolbarTitle(
+                        title = "Config",
+                        subtitle = module.name
+                    )
+                },
                 onBack = { navigator.popBackStack() },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            exportBottomSheet = true
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.file_export),
-                            contentDescription = null
-                        )
-                    }
-                }
             )
         },
-        contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
-        Column(
+        contentWindowInsets = WindowInsets.systemBars,
+    ) {
+        List(
             modifier = Modifier
-                .padding(innerPadding)
+                .scaffoldHazeSource()
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
+                .scaffoldPadding()
         ) {
-            ListHeader(title = stringResource(R.string.webui_config))
-
-            ListEditTextItem(
-                title = stringResource(R.string.webui_config_title_title),
-                desc = webUIConfig.title ?: stringResource(R.string.webui_config_title_desc),
-                itemTextStyle = ListItemDefaults.itemStyle.apply {
-                    if (webUIConfig.title == null) {
-                        copy(
-                            descTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                fontStyle = FontStyle.Italic
-                            )
-                        )
-                    }
-                },
-                value = webUIConfig.title ?: "",
-                onConfirm = {
-                    saveWebUIConfig { _ ->
-                        "title" change it
-                    }
+            DebugAlert(
+                modifier = Modifier.padding(8.dp),
+                title = "Documentation",
+            ) {
+                FormatText("We recommend checking our documentation at %y to make sure your module is working as expected.") {
+                    linkString("https://mmrl.dev/guide/webuix/config")
                 }
-            )
-
-            ListEditTextItem(
-                title = stringResource(R.string.webui_config_icon_title),
-                desc = webUIConfig.icon ?: stringResource(R.string.webui_config_icon_desc),
-                itemTextStyle = ListItemDefaults.itemStyle.apply {
-                    if (webUIConfig.icon == null) {
-                        copy(
-                            descTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                fontStyle = FontStyle.Italic
-                            )
-                        )
-                    }
-                },
-                value = webUIConfig.icon ?: "",
-                onConfirm = {
-                    saveWebUIConfig { _ ->
-                        "icon" change it
-                    }
-                }
-            )
-
-            ListButtonItem(
-                title = stringResource(R.string.plugins),
-                desc = stringResource(R.string.plugins_desc),
-                onClick = {
-                    navigator.navigate(PluginsScreenDestination(module))
-                }
-            )
-
-            if (webUIConfig.additionalConfig.isNotNullOrEmpty()) {
-                ListButtonItem(
-                    title = stringResource(R.string.webui_additional_config),
-                    desc = stringResource(R.string.webui_additional_config_desc),
-                    onClick = {
-                        navigator.navigate(AdditionalConfigEditorScreenDestination(module))
-                    }
-                )
             }
 
-            val hasNoJsBackInterceptor = webUIConfig.backInterceptor != "javascript"
+            InputDialogItem(
+                value = config.title ?: "",
+                onConfirm = {
+                    config.set("title", it)
+                }
+            ) {
+                Title(R.string.webui_config_title_title)
+                Description(config.title ?: stringResource(R.string.webui_config_title_desc)) {
+                    if (config.title == null) {
+                        it.copy(
+                            fontStyle = FontStyle.Italic
+                        )
+                    } else it
+                }
+            }
 
-            ListSwitchItem(
-                enabled = hasNoJsBackInterceptor && !userPrefs.disableGlobalExitConfirm,
-                title = stringResource(R.string.webui_config_exit_confirm_title),
-                desc = stringResource(R.string.webui_config_exit_confirm_desc),
-                checked = hasNoJsBackInterceptor && webUIConfig.exitConfirm,
-                onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "exitConfirm" change isChecked
+            InputDialogItem(
+                value = config.icon ?: "",
+                onConfirm = {
+                    config.set("icon", it)
+                }
+            ) {
+                Title(R.string.webui_config_icon_title)
+                Description(config.icon ?: stringResource(R.string.webui_config_icon_desc)) {
+                    if (config.icon == null) {
+                        it.copy(
+                            fontStyle = FontStyle.Italic
+                        )
+                    } else it
+                }
+            }
+
+            NavButton(
+                route = ShortcutCreateScreenDestination(module.id),
+                title = R.string.create_shortcut,
+                desc = R.string.create_shortcut_desc
+            )
+
+            RadioDialogItem(
+                selection = config.theme,
+                options = context.themeList,
+                onConfirm = {
+                    if (it.value == null) {
+                        Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
+                            .show()
+                        return@RadioDialogItem
                     }
-                },
-                base = {
+
+                    config.set("theme", it.value)
+                }
+            ) {
+                Title(R.string.webui_config_theme_title)
+                Description(R.string.webui_config_theme_desc)
+            }
+
+            val hasNoJsBackInterceptor =
+                !listOf("javascript", "javascript-full").contains(config.backInterceptor)
+
+            SwitchItem(
+                enabled = hasNoJsBackInterceptor && !userPrefs.disableGlobalExitConfirm,
+                checked = hasNoJsBackInterceptor && config.exitConfirm,
+                onChange = { isChecked ->
+                    config.set("exitConfirm", isChecked)
+                }
+            ) {
+                Title(R.string.webui_config_exit_confirm_title)
+                Description(R.string.webui_config_exit_confirm_desc)
+
+                Supporting {
                     if (userPrefs.disableGlobalExitConfirm) {
-                        labels = listOf { LabelItem(stringResource(R.string.globally_disabled)) }
+                        Badge(
+                            text = stringResource(R.string.globally_disabled),
+                            variant = BadgeVariant.Warning
+                        )
                     }
                 }
-            )
+            }
 
-            val backHandler = webUIConfig.backHandler ?: true
 
-            ListSwitchItem(
-                title = stringResource(R.string.webui_config_back_handler_title),
-                desc = stringResource(R.string.webui_config_back_handler_desc),
+            val backHandler = config.backHandler ?: true
+
+            SwitchItem(
                 checked = backHandler,
                 onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "backHandler" change isChecked
-                    }
-                },
-            )
+                    config.set("backHandler", isChecked)
+                }
+            ) {
+                Title(R.string.webui_config_back_handler_title)
+                Description(R.string.webui_config_back_handler_desc)
+            }
 
-            ListRadioCheckItem(
-                enabled = backHandler,
-                title = stringResource(R.string.webui_config_back_interceptor_title),
-                desc = stringResource(R.string.webui_config_back_interceptor_desc),
-                value = webUIConfig.backInterceptor as String?,
+            RadioDialogItem(
+                selection = config.backInterceptor,
                 options = context.interceptorList,
                 onConfirm = {
                     if (it.value == null) {
                         Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
                             .show()
-                        return@ListRadioCheckItem
+                        return@RadioDialogItem
                     }
 
-                    saveWebUIConfig { _ ->
-                        "backInterceptor" change it.value
-                    }
+                    config.set("backInterceptor", it.value)
                 }
-            )
+            ) {
+                Title(R.string.webui_config_back_interceptor_title)
+                Description(R.string.webui_config_back_interceptor_desc)
+            }
 
-            val pullToRefresh = webUIConfig.pullToRefresh
+            val pullToRefresh = config.pullToRefresh
 
-            ListSwitchItem(
-                title = stringResource(R.string.webui_config_pull_to_refresh_title),
-                desc = stringResource(R.string.webui_config_pull_to_refresh_desc),
+            SwitchItem(
                 checked = pullToRefresh,
                 onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "pullToRefresh" change isChecked
-                    }
+                    config.set("pullToRefresh", isChecked)
                 }
-            )
+            ) {
+                Title(R.string.webui_config_pull_to_refresh_title)
+                Description(R.string.webui_config_pull_to_refresh_desc)
+            }
 
-            ListSwitchItem(
-                enabled = pullToRefresh && webUIConfig.useNativeRefreshInterceptor,
-                title = stringResource(R.string.webui_config_pull_to_refresh_helper_title),
-                desc = stringResource(R.string.webui_config_pull_to_refresh_helper_desc),
-                checked = webUIConfig.pullToRefreshHelper && webUIConfig.useNativeRefreshInterceptor,
-                onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "pullToRefreshHelper" change isChecked
-                    }
-                }
-            )
-
-            ListRadioCheckItem(
-                enabled = pullToRefresh,
-                title = stringResource(R.string.webui_config_refresh_interceptor_title),
-                desc = stringResource(R.string.webui_config_refresh_interceptor_desc),
-                value = webUIConfig.refreshInterceptor,
-                options = context.interceptorList,
-                onConfirm = { item ->
-                    if (item.value == null) {
+            RadioDialogItem(
+                selection = config.refreshInterceptor,
+                options = context.interceptorList.filterIndexed { i, _ -> i != 2 },
+                onConfirm = {
+                    if (it.value == null) {
                         Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
                             .show()
-                        return@ListRadioCheckItem
+                        return@RadioDialogItem
                     }
 
-                    saveWebUIConfig { _ ->
-                        "refreshInterceptor" change item.value
-                    }
+                    config.set("refreshInterceptor", it.value)
                 }
-            )
+            ) {
+                Title(R.string.webui_config_refresh_interceptor_title)
+                Description(R.string.webui_config_refresh_interceptor_desc)
+            }
 
-            ListSwitchItem(
-                title = stringResource(R.string.webui_config_window_resize_title),
-                desc = stringResource(R.string.webui_config_window_resize_desc),
-                checked = webUIConfig.windowResize,
+            SwitchItem(
+                checked = config.windowResize,
                 onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "windowResize" change isChecked
-                    }
+                    config.set("windowResize", isChecked)
                 }
-            )
+            ) {
+                Title(R.string.webui_config_window_resize_title)
+                Description(R.string.webui_config_window_resize_desc)
+            }
 
-            ListSwitchItem(
-                title = stringResource(R.string.webui_config_auto_style_statusbars_title),
-                desc = stringResource(R.string.webui_config_auto_style_statusbars_desc),
-                checked = webUIConfig.autoStatusBarsStyle,
+//            SwitchItem(
+//                checked = config.autoStatusBarsStyle,
+//                onChange = { isChecked ->
+//                    config.set("autoStatusBarsStyle", isChecked)
+//                }
+//            ) {
+//                Title(R.string.webui_config_auto_style_statusbars_title)
+//                Description(R.string.webui_config_auto_style_statusbars_desc)
+//            }
+
+            SwitchItem(
+                checked = config.killShellWhenBackground,
                 onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "autoStatusBarsStyle" change isChecked
-                    }
+                    config.set("killShellWhenBackground", isChecked)
                 }
-            )
+            ) {
+                Title(R.string.webui_config_kill_shell_when_background)
+                Description(R.string.webui_config_kill_shell_when_background_desc)
+            }
 
-            ListSwitchItem(
-                title = stringResource(R.string.webui_config_kill_shell_when_background),
-                desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
-                checked = webUIConfig.killShellWhenBackground,
-                onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "killShellWhenBackground" change isChecked
-                    }
-                }
-            )
-
-            ListEditTextSwitchItem(
-                title = stringResource(R.string.webui_config_history_fallback_title),
-                desc = stringResource(R.string.webui_config_history_fallback_desc),
-                value = webUIConfig.historyFallbackFile,
-                checked = webUIConfig.historyFallback,
-                onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "historyFallback" change isChecked
-                    }
+            InputDialogItem(
+                value = config.historyFallbackFile,
+                onConfirm = {
+                    config.set("historyFallbackFile", it.value)
                 },
+            ) {
+                Title(R.string.webui_config_history_fallback_title)
+                Description(R.string.webui_config_history_fallback_desc)
+
+                VerticalDividerSwitch(
+                    checked = config.historyFallback,
+                    onChange = { isChecked ->
+                        config.set("historyFallback", isChecked)
+                    },
+                )
+            }
+
+            InputDialogItem(
+                value = config.contentSecurityPolicy,
                 onConfirm = {
-                    saveWebUIConfig { _ ->
-                        "historyFallbackFile" change it
+                    config.set("contentSecurityPolicy", it.value)
+                },
+            ) {
+                Title(R.string.webui_config_content_security_policy_title)
+                DialogDescription {
+                    FormatText(stringResource(R.string.webui_config_content_security_policy_dialog_desc)) {
+                        linkString("CSP Builder", "https://mmrl.dev/csp.html")
                     }
                 }
-            )
+                Description(R.string.webui_config_content_security_policy_desc)
+            }
 
-            ListEditTextItem(
-                title = stringResource(R.string.webui_config_content_security_policy_title),
-                desc = stringResource(R.string.webui_config_content_security_policy_desc),
-                value = webUIConfig.contentSecurityPolicy,
-                onConfirm = {
-                    saveWebUIConfig { _ ->
-                        "contentSecurityPolicy" change it
-                    }
-                }
-            )
-
-            ListSwitchItem(
-                title = stringResource(R.string.webui_config_caching_title),
-                desc = stringResource(R.string.webui_config_caching_desc),
-                checked = webUIConfig.caching,
+            SwitchItem(
+                checked = config.caching,
                 onChange = { isChecked ->
-                    saveWebUIConfig {
-                        "caching" change isChecked
-                    }
+                    config.set("caching", isChecked)
                 }
-            )
+            ) {
+                Title(R.string.webui_config_caching_title)
+                Description(R.string.webui_config_caching_desc)
+            }
 
-            ListEditTextItem(
-                enabled = webUIConfig.caching,
-                title = stringResource(R.string.webui_config_caching_max_age_title),
-                desc = stringResource(R.string.webui_config_caching_max_age_desc),
-                value = webUIConfig.cachingMaxAge.toString(),
+            InputDialogItem(
+                value = config.cachingMaxAge.toString(),
                 onValid = {
                     !Regex("^[0-9]+$").matches(it)
                 },
                 onConfirm = {
-                    saveWebUIConfig { _ ->
-                        "cachingMaxAge" change it.toInt()
-                    }
+                    config.set("cachingMaxAge", it.value.toInt())
                 }
-            )
-
-
-            ListHeader(title = stringResource(R.string.module_config))
-
-            val engine by remember(moduleConfig) {
-                derivedStateOf {
-                    moduleConfig.getWebuiEngine(context)
-                }
+            ) {
+                Title(R.string.webui_config_caching_max_age_title)
+                Description(R.string.webui_config_caching_max_age_desc)
             }
-
-            ListRadioCheckItem(
-                title = stringResource(R.string.settings_webui_engine),
-                value = engine,
-                options = listOf(
-                    RadioOptionItem(
-                        value = "wx",
-                        title = stringResource(R.string.settings_webui_engine_wx)
-                    ),
-                    RadioOptionItem(
-                        value = "ksu",
-                        title = stringResource(R.string.settings_webui_engine_ksu)
-                    ),
-                    RadioOptionItem(
-                        value = null,
-                        title = stringResource(R.string.settings_webui_engine_undefined)
-                    )
-                ),
-                onConfirm = {
-                    saveModuleConfig { _ ->
-                        "webui-engine" change it.value
-                    }
-                }
-            )
         }
     }
-}
-
-@Composable
-private fun ExportBottomSheet(
-    onClose: () -> Unit,
-    onModuleExport: () -> Unit,
-    onConfigExport: () -> Unit,
-) = BottomSheet(
-    onDismissRequest = onClose
-) {
-    Text(
-        modifier = Modifier.padding(vertical = 16.dp, horizontal = 25.dp),
-        text = stringResource(R.string.export_config),
-        style = MaterialTheme.typography.headlineSmall.copy(color = MaterialTheme.colorScheme.primary)
-    )
-
-    ListButtonItem(
-        title = stringResource(R.string.export_module_config_json),
-        onClick = onModuleExport
-    )
-
-    ListButtonItem(
-        title = stringResource(R.string.export_webui_config_json),
-        onClick = onConfigExport
-    )
-
-    Spacer(Modifier.height(16.dp))
 }

@@ -16,6 +16,13 @@ const val MIN_SDK = 26
 
 val Project.commitId: String get() = exec("git rev-parse --short HEAD")
 val Project.commitCount: Int get() = exec("git rev-list --count HEAD").toInt()
+val Project.branchName: String
+    get() = exec("git rev-parse --abbrev-ref HEAD")
+        .takeIf { it != "HEAD" }
+        ?: "detached"
+val Project.originUrl: String
+    get() = exec("git remote get-url origin")
+        .removeSuffix(".git")
 
 fun Project.exec(command: String): String = providers.exec {
     commandLine(command.split(" "))

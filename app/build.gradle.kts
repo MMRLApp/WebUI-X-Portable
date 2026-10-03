@@ -1,5 +1,5 @@
 import app.cash.licensee.ViolationAction
-import com.android.build.gradle.internal.api.ApkVariantOutputImpl
+import com.android.build.api.variant.impl.VariantOutputImpl
 
 plugins {
     alias(libs.plugins.self.application)
@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.self.hilt)
     alias(libs.plugins.licensee)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -16,7 +17,7 @@ val basePackageName = "$mmrlBaseApplicationId.wx"
 
 android {
     namespace = basePackageName
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = namespace
@@ -54,13 +55,41 @@ android {
         signingConfigs.getByName("debug")
     }
 
-    flavorDimensions += "distribution"
+    flavorDimensions += listOf("distribution")
 
     productFlavors {
         create("official") {
             dimension = "distribution"
             applicationId = basePackageName
             resValue("string", "app_name", baseAppName)
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("internal") {
+            dimension = "distribution"
+            applicationIdSuffix  = ".internal"
+            resValue("string", "app_name", "[ᛁ] $baseAppName")
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("alpha") {
+            dimension = "distribution"
+            applicationIdSuffix  = ".alpha"
+            resValue("string", "app_name", "[ᚨ] $baseAppName")
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("beta") {
+            dimension = "distribution"
+            applicationIdSuffix  = ".beta"
+            resValue("string", "app_name", "[ᛒ] $baseAppName")
+            buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
+        }
+
+        create("rc") {
+            dimension = "distribution"
+            applicationIdSuffix  = ".rc"
+            resValue("string", "app_name", "[ᚱ] $baseAppName")
             buildConfigField("Boolean", "IS_SPOOFED_BUILD", "false")
         }
 
@@ -85,10 +114,9 @@ android {
             buildConfigField("Boolean", "IS_GOOGLE_PLAY_BUILD", "false")
             isDebuggable = false
             isJniDebuggable = false
-            versionNameSuffix = "-release"
             renderscriptOptimLevel = 3
             multiDexEnabled = true
-
+            versionNameSuffix = "-release"
             manifestPlaceholders["webuiPermissionId"] = mmrlBaseApplicationId
         }
 
@@ -103,13 +131,12 @@ android {
             buildConfigField("Boolean", "IS_DEV_VERSION", "true")
             buildConfigField("Boolean", "IS_GOOGLE_PLAY_BUILD", "false")
             applicationIdSuffix = ".debug"
-            versionNameSuffix = "-debug"
             isJniDebuggable = true
             isDebuggable = true
             renderscriptOptimLevel = 0
             isMinifyEnabled = false
             multiDexEnabled = true
-
+            versionNameSuffix = "-debug"
             manifestPlaceholders["webuiPermissionId"] = "$mmrlBaseApplicationId.debug"
         }
 
@@ -119,6 +146,8 @@ android {
             buildConfigField("String", "BUILD_TOOLS_VERSION", "\"${BUILD_TOOLS_VERSION}\"")
             buildConfigField("String", "MIN_SDK", "\"$MIN_SDK\"")
             buildConfigField("String", "LATEST_COMMIT_ID", "\"${commitId}\"")
+            buildConfigField("String", "LATEST_BRANCH", "\"${branchName}\"")
+            buildConfigField("String", "ORIGIN", "\"${originUrl}\"")
 
             manifestPlaceholders["__packageName__"] = basePackageName
         }
@@ -126,6 +155,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        resValues = true
     }
 
     compileOptions {
@@ -133,26 +163,26 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    packaging.resources.excludes += setOf(
-        "META-INF/**",
-        "okhttp3/**",
-        //"kotlin/**",
-        "org/**",
-        "**.properties",
-        "**.bin",
-        "**/*.proto"
-    )
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/**",
+                "okhttp3/**",
+                //"kotlin/**",
+                "org/**",
+                "**.properties",
+                "**.bin",
+                "**/*.proto"
+            )
+            pickFirsts += listOf(
+                "tables/**"
+            )
+        }
+    }
 
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
-    }
-
-    applicationVariants.configureEach {
-        outputs.configureEach {
-            (this as? ApkVariantOutputImpl)?.outputFileName =
-                "WebUI-X-$versionName-$flavorName.apk"
-        }
     }
 }
 
@@ -161,11 +191,35 @@ licensee {
     violationAction(ViolationAction.IGNORE)
 }
 
+androidComponents {
+    onVariants { variant ->
+        val variantName = variant.name
+
+        // Use maybeCreate to dynamically generate the source set if it doesn't exist
+        android.sourceSets.maybeCreate(variantName).apply {
+            java.srcDirs(
+                "build/generated/ksp/$variantName/java",
+                "build/generated/ksp/$variantName/kotlin"
+            )
+        }
+
+        // Your existing APK renaming logic
+        val distributionFlavor = variant.productFlavors
+            .firstOrNull { it.first == "distribution" }
+            ?.second
+
+        variant.outputs.filterIsInstance<VariantOutputImpl>().forEach { output ->
+            output.outputFileName.set(
+                output.versionName.map { vName ->
+                    "WebUI-X-$vName-$distributionFlavor.apk"
+                }
+            )
+        }
+    }
+}
+
 dependencies {
-    implementation(projects.webui)
-    implementation(projects.modconf)
     implementation(projects.jna)
-    implementation(projects.hwui)
     implementation(libs.mmrl.ext)
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.platform)
@@ -180,9 +234,11 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.hiddenApiBypass)
+    implementation(libs.kotlin.parcelize.runtime)
 
     implementation(libs.semver)
     implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
 
     implementation(libs.rikka.refine.runtime)
     implementation(libs.rikka.shizuku.api)
@@ -247,4 +303,14 @@ dependencies {
 
     implementation(libs.composedestinations.core)
     ksp(libs.composedestinations.ksp)
+
+    implementation(libs.mmrlx.ui)
+    implementation(libs.mmrlx.utilities)
+    implementation(libs.mmrlx.webui.core)
+    implementation(libs.mmrlx.webui.lua)
+    implementation(libs.mmrlx.webui.dex)
+    implementation(libs.mmrlx.nio)
+
+    implementation("com.github.MMRLApp.RootThread:thread:0.0.3")
+    implementation("org.jsoup:jsoup:1.18.3")
 }

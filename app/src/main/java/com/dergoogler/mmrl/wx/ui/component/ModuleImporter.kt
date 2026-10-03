@@ -17,13 +17,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.dergoogler.mmrl.ext.systemBarsPaddingEnd
-import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.content.LocalModule
-import com.dergoogler.mmrl.platform.file.ExtFile
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.rememberConfirm
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.util.getBaseDir
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
+import dev.mmrlx.nio.ExtFile
 import java.io.BufferedInputStream
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -31,7 +32,8 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 @Composable
-fun ModuleImporter() {
+fun ModuleImporter(viewModel: ModulesViewModel) {
+    val prefs = LocalUserPreferences.current
     val context = LocalContext.current
     val interactionSource = remember { MutableInteractionSource() }
     val confirm = rememberConfirm()
@@ -39,7 +41,7 @@ fun ModuleImporter() {
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
-            val result = importZipToModules(context, uri)
+            val result = importZipToModules(context, uri, viewModel, prefs.webuiEngine)
 
             confirm(
                 ConfirmData(
@@ -78,7 +80,12 @@ data class ResultData(
     val message: String,
 )
 
-fun importZipToModules(context: Context, zipUri: Uri): ResultData {
+fun importZipToModules(
+    context: Context,
+    zipUri: Uri,
+    viewModel: ModulesViewModel,
+    engine: WebUIEngine,
+): ResultData {
     val tempZipName = "temp_module_import_${System.currentTimeMillis()}.zip"
     val zipFile = ExtFile(context.cacheDir, tempZipName)
 
@@ -94,15 +101,14 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
             )
         }
 
-        val newModule: LocalModule? = PlatformManager.moduleManager.getModuleInfo(zipFile.path)
-        if (newModule == null) {
-            return ResultData(
-                title = "Failed",
-                message = "Could not parse module information from the ZIP file. It might be corrupted or not a valid module."
-            )
-        }
+        val baseDir = viewModel.adbPath
 
-        val existingModule: LocalModule? = PlatformManager.moduleManager.getModuleById(newModule.id)
+        val newModule: Module = Module.fromZip(baseDir, zipFile, engine) ?: return ResultData(
+            title = "Failed",
+            message = "Could not parse module information from the ZIP file. It might be corrupted or not a valid module."
+        )
+
+        val existingModule: Module? = viewModel.findById(newModule.id)
         if (existingModule != null) {
             return ResultData(
                 title = "Failed",
@@ -110,9 +116,7 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
             )
         }
 
-        val baseDir = context.getBaseDir()
-
-        val targetDir = ExtFile(baseDir, "modules/${newModule.id}")
+        val targetDir = ExtFile(baseDir.baseDir, "modules/${newModule.id}")
         if (targetDir.exists()) {
             if (!targetDir.delete()) {
                 return ResultData(
@@ -135,6 +139,7 @@ fun importZipToModules(context: Context, zipUri: Uri): ResultData {
 
         val successMessage = "Module '${newModule.name}' imported successfully."
         Log.i("ModuleImport", successMessage) // Log success
+        viewModel.refreshModules()
         return ResultData(
             title = "Success",
             message = successMessage

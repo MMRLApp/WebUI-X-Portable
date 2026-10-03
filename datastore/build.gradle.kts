@@ -1,15 +1,13 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.protobuf)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.dergoogler.mmrl.datastore"
-    compileSdk = 35
+    namespace = "com.dergoogler.mmrl.wx.datastore"
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -34,10 +32,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
     }
 }
 

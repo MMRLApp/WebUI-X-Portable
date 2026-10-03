@@ -3,6 +3,7 @@ package com.dergoogler.mmrl.wx.ui.navigation
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.dergoogler.mmrl.wx.R
+import com.ramcosta.composedestinations.generated.destinations.HomeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModulesScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SettingsScreenDestination
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
@@ -13,6 +14,12 @@ enum class MainDestination(
     @DrawableRes val icon: Int,
     @DrawableRes val iconFilled: Int,
 ) {
+    Home(
+        direction = HomeScreenDestination,
+        label = R.string.home,
+        icon = R.drawable.home,
+        iconFilled = R.drawable.home_filled
+    ),
     Modules(
         direction = ModulesScreenDestination,
         label = R.string.modules,

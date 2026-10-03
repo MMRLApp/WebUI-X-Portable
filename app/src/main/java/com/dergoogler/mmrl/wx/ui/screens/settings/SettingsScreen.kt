@@ -1,66 +1,61 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
-import com.dergoogler.mmrl.ui.component.listItem.dsl.List
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Section
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.TextEditDialogItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.DialogDescription
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
-import com.dergoogler.mmrl.ui.component.toolbar.Toolbar
-import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.wx.R
-import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.FeaturedManager
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.LinkButton
 import com.dergoogler.mmrl.wx.ui.component.NavButton
-import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
+import com.dergoogler.mmrl.wx.ui.component.SettingsPage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppThemeScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.BehaviorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DeveloperScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.LicensesScreenDestination
+import dev.mmrlx.compose.ui.list.List
+import dev.mmrlx.compose.ui.list.component.InputDialogItem
+import dev.mmrlx.compose.ui.list.component.RadioDialogItem
+import dev.mmrlx.compose.ui.list.component.Section
+import dev.mmrlx.compose.ui.list.component.item.Description
+import dev.mmrlx.compose.ui.list.component.item.DialogDescription
+import dev.mmrlx.compose.ui.list.component.item.Icon
+import dev.mmrlx.compose.ui.list.component.item.Title
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.toolbar.Toolbar
+import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
+import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>()
 @Composable
-fun SettingsScreen() {
-    val userPreferences = LocalUserPreferences.current
-    val viewModel = LocalSettings.current
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+fun SettingsScreen() = SettingsPage { prefs, update ->
+    val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
+        toolbar = {
             Toolbar(
                 title = {
                     ToolbarTitle(title = stringResource(id = R.string.settings))
                 },
             )
         },
-        contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
+        bottomBar = {
+            BottomNavigation()
+        },
+    ) {
         List(
             modifier = Modifier
-                .padding(innerPadding)
+                .scaffoldHazeSource()
+                .scaffoldPadding()
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
@@ -82,14 +77,14 @@ fun SettingsScreen() {
                 )
 
                 val manager: FeaturedManager? =
-                    FeaturedManager.managers.find { userPreferences.workingMode == it.workingMode }
+                    FeaturedManager.managers.find { prefs.workingMode == it.workingMode }
 
-                manager.nullable { mng ->
+                manager?.let { mng ->
                     RadioDialogItem(
                         selection = mng.workingMode,
                         options = FeaturedManager.managers.map { it.toRadioDialogItem() },
                         onConfirm = {
-                            viewModel.setWorkingMode(it.value)
+                            update { copy(workingMode = it.value) }
                         },
                     ) {
                         Icon(
@@ -100,37 +95,10 @@ fun SettingsScreen() {
                     }
                 }
 
-                /* RadioDialogItem(
-                    selection = userPreferences.webuiEngine,
-                    options = listOf(
-                        RadioDialogItem(
-                            value = WebUIEngine.WX,
-                            title = stringResource(R.string.settings_webui_engine_wx)
-                        ),
-                        RadioDialogItem(
-                            value = WebUIEngine.KSU,
-                            title = stringResource(R.string.settings_webui_engine_ksu)
-                        ),
-                        RadioDialogItem(
-                            value = WebUIEngine.PREFER_MODULE,
-                            title = stringResource(R.string.settings_webui_engine_prefer_module)
-                        )
-                    ),
+                InputDialogItem(
+                    value = prefs.datePattern,
                     onConfirm = {
-                        viewModel.setWebUIEngine(it.value)
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.engine)
-                    )
-                    Title(R.string.settings_webui_engine)
-                    Description(R.string.settings_webui_engine_desc)
-                } */
-
-                TextEditDialogItem(
-                    value = userPreferences.datePattern,
-                    onConfirm = {
-                        viewModel.setDatePattern(it)
+                        update { copy(datePattern = it.value) }
                     },
                     onValid = {
                         System.currentTimeMillis()

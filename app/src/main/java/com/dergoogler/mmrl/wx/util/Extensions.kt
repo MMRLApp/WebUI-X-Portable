@@ -3,7 +3,6 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -14,22 +13,25 @@ import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
-import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
-import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.stub.IServiceManager
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
-import com.dergoogler.mmrl.webui.interfaces.WXInterface
-import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.ui.activity.modconf.ModConfActivity
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
+import com.dergoogler.mmrl.wx.model.module.Module
+import dev.mmrlx.nio.Path
+import dev.mmrlx.thread.RootArgs
+import dev.mmrlx.thread.RootCallable
+import dev.mmrlx.thread.RootThread
 import kotlinx.coroutines.CoroutineScope
+import org.luaj.LuaTable
+import org.luaj.LuaValue
+import org.luaj.Varargs
+import org.luaj.lib.VarArgFunction
 import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import kotlin.reflect.full.memberProperties
@@ -39,6 +41,8 @@ fun Context.extractZipFromAssets(
     assetName: String,
     outputDir: File,
 ) {
+    if (outputDir.exists()) return
+
     if (!outputDir.exists()) {
         outputDir.mkdirs()
     }
@@ -70,7 +74,7 @@ fun Context.extractZipFromAssets(
     }
 }
 
-val LocalModule.versionDisplay
+val Module.versionDisplay
     get(): String {
         val included = "\\(.*?${versionCode}.*?\\)".toRegex()
             .containsMatchIn(version)
@@ -109,7 +113,7 @@ private suspend fun init(
     platform: Platform,
     context: Context,
     self: PlatformManager,
-): IServiceManager? {
+): IServiceManager {
     if (platform.isNonRoot) {
         return self.from(
             NonRootProvider(
@@ -142,24 +146,6 @@ suspend fun initPlatform(
     init(platform, context, this)
 }
 
-
-fun UserPreferences.launchModConf(context: Context, modId: ModId) {
-    val baseDir = context.getBaseDir().path
-
-    val intent = Intent(context, ModConfActivity::class.java).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-        putModId(modId)
-        putBaseDir(baseDir)
-    }
-
-    context.startActivity(intent)
-}
-
-fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
-    val baseDir = context.getBaseDir().path
-    context.launchWebUIX<WebUIActivity>(modId, baseDir)
-}
-
 fun Map<String, Any?>?.getBoolProp(key: String, def: Boolean = false): Boolean {
     val value = this?.get(key)
 
@@ -181,6 +167,10 @@ inline fun <reified T> Map<String, Any?>?.getProp(key: String, def: T): T {
 }
 
 inline fun <reified T> Map<String, Any?>?.getPropOrNull(key: String): T? = getProp(key, null)
+
+@Throws(BrickException::class)
+fun Context.getNonRootBaseDir(): File =
+    getExternalFilesDir(null) ?: throw BrickException("Failed to get filesDir")
 
 fun Context.getBaseDir(
     platform: Platform = PlatformManager.platform,
@@ -245,7 +235,31 @@ inline fun <reified T : Any> Map<String, Any?>.toDataClass(): T {
     return ctor.callBy(args)
 }
 
-inline fun <reified T : WXInterface> WXInterface.scrambleClassName(): String {
-    val className = T::class.simpleName ?: name
-    return className.toList().shuffled().joinToString("")
+fun <T> rootSync(args: Map<String, Any?>? = null, block: RootCallable<T>): T {
+    if (args == null) return RootThread.submit(block).get()
+    val mArgs = RootArgs.of(args)
+    return RootThread.submit(block, mArgs).get()
+}
+
+fun <T> RootCallable<T>.sync(args: Map<String, Any?>? = null): T = rootSync(args, this)
+
+fun File.inputStream0(): InputStream =
+    rootSync { FileInputStream(this).use { readBytes() } }.inputStream()
+
+fun LuaTable.set(key: String, value: Boolean) = set(key, LuaValue.valueOf(value))
+
+inline fun <T> Varargs.map(transform: (LuaValue) -> T): List<T> =
+    (1..this.narg()).map { transform(this.arg(it)) }
+
+inline fun <T : Any> Varargs.mapNotLuaNil(transform: (LuaValue) -> T?): List<T> =
+    (1..this.narg())
+        .map { this.arg(it) }
+        .filterNot { it.isnil() }
+        .mapNotNull { transform(it) }
+
+class PathVarArgFunction(private val basePath: String) : VarArgFunction() {
+    override fun invoke(args: Varargs): LuaValue {
+        val elements = args.mapNotLuaNil { it.checkjstring() }.toTypedArray()
+        return valueOf(Path.parse(basePath, *elements))
+    }
 }

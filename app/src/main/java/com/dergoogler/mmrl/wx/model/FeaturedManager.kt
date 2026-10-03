@@ -4,10 +4,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import com.dergoogler.mmrl.datastore.model.WorkingMode
-import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
-import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.compose.ui.list.component.RadioDialogOption
 
 data class FeaturedManager(
     @StringRes val name: Int,
@@ -15,13 +14,7 @@ data class FeaturedManager(
     val workingMode: WorkingMode,
 ) {
     @Composable
-    fun toRadioOption() = RadioOptionItem(
-        title = stringResource(name),
-        value = workingMode
-    )
-
-    @Composable
-    fun toRadioDialogItem() = RadioDialogItem(
+    fun toRadioDialogItem() = RadioDialogOption(
         title = stringResource(name),
         value = workingMode
     )

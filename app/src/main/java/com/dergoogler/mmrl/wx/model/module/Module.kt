@@ -1,0 +1,446 @@
+@file:Suppress("RedundantNullableReturnType")
+
+package com.dergoogler.mmrl.wx.model.module
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.BitmapFactory
+import android.graphics.drawable.Icon
+import android.widget.Toast
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.model.module.ModulePath.Companion.PROP_FILE
+import com.dergoogler.mmrl.wx.util.set
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.inputStream
+import dev.mmrlx.utilities.obj.asOrDefault
+import org.apache.commons.compress.archivers.zip.ZipFile
+import org.luaj.LuaTable
+import java.io.File
+import java.io.InputStream
+import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity as MxWebUIActivity
+
+data class Module(
+    val adbPath: AdbPath,
+    private val properties: Map<String, Any>,
+    private val context: Context? = null,
+    private val webuiEngine: WebUIEngine,
+) : Comparable<Module> {
+    val id: String = properties["id"].asOrDefault("")
+    val path: ModulePath = ModulePath(adbPath, id)
+    val webrootConfig: WebrootConfig = WebrootConfig(this)
+    val name: String = properties.get(NA, "name")
+    val version: String = properties.get(NA, "version")
+    val versionCode: Int = properties.get(-1, "versionCode")
+    val author: String = properties.get(NA, "author")
+    val description: String = properties.get(NA, "description")
+
+    private val metaModuleBoolean = properties.get(false, "metamodule")
+    private val metaModuleInt = properties.get(0, "metamodule")
+    val metaModule: Boolean = metaModuleBoolean || metaModuleInt != 0
+
+    val banner: SuFile? =
+        properties.get<String?>(null, "banner", "cover").relativeModuleOrWebrootDir
+    val icon: SuFile? =
+        properties.get<String?>(null, "webuiIcon", "icon").relativeModuleOrWebrootDir
+
+    val hasWebUI: Boolean by lazy {
+        val webroot = SuFile(path.webrootDir)
+        val index = webroot.resolve("index.html")
+        webroot.exists() && index.isFile
+    }
+//
+//    val state: ModuleState by lazy {
+//        SuFile(path.removeFile).apply {
+//            if (exists()) return@lazy ModuleState.REMOVE
+//        }
+//
+//        SuFile(path.disableFile).apply {
+//            if (exists()) return@lazy ModuleState.DISABLE
+//        }
+//
+//        SuFile(path.updateFile).apply {
+//            if (exists()) return@lazy ModuleState.UPDATE
+//        }
+//
+//        return@lazy ModuleState.ENABLE
+//    }
+
+    val state: com.dergoogler.mmrl.platform.content.State by lazy {
+        SuFile(path.removeFile).apply {
+            if (exists()) return@lazy com.dergoogler.mmrl.platform.content.State.REMOVE
+        }
+
+        SuFile(path.disableFile).apply {
+            if (exists()) return@lazy com.dergoogler.mmrl.platform.content.State.DISABLE
+        }
+
+        SuFile(path.updateFile).apply {
+            if (exists()) return@lazy com.dergoogler.mmrl.platform.content.State.UPDATE
+        }
+
+        return@lazy com.dergoogler.mmrl.platform.content.State.ENABLE
+    }
+
+    val lastUpdated: Long by lazy {
+        path.files.map { SuFile(it) }.forEach {
+            if (it.exists()) {
+                return@lazy it.lastModified()
+            }
+        }
+
+        return@lazy 0L
+    }
+
+    val size: Long by lazy {
+        val directory = SuFile(adbPath.modulesDir, id)
+        calculateSizeFast(directory)
+    }
+
+    private val shortcutManager = context?.getSystemService(ShortcutManager::class.java)
+    val shortcutId get() = "shortcut_${id}_${webuiEngine.name.lowercase()}"
+
+    fun hasShortcut(): Boolean {
+        if (context == null) return false
+
+        if (shortcutManager == null) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_not_supported),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        if (shortcutManager.pinnedShortcuts.any { it.id == shortcutId }) {
+            return true
+        }
+
+        return false
+    }
+
+    fun createShortcut(
+        webuiContext: Boolean = false,
+        title: String = if (this.webrootConfig.title.isNullOrBlank()) name else this.webrootConfig.title!!,
+        iconUri: String? = this.icon?.path,
+    ): Boolean {
+        if (context == null) return false
+
+        val shortcutManager = context.getSystemService(ShortcutManager::class.java)
+        val shortcutId = "shortcut_${id}"
+
+        if (!shortcutManager.isRequestPinShortcutSupported) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_not_supported),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        if (shortcutManager.pinnedShortcuts.any { it.id == shortcutId }) {
+            if (!webuiContext) Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_already_exists),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        val bitmap = loadShortcutBitmap(webuiContext, iconUri)
+        if (bitmap == null) {
+            Toast.makeText(
+                context,
+                context.getString(R.string.shortcut_icon_invalid),
+                Toast.LENGTH_SHORT
+            )
+                .show()
+            return false
+        }
+
+        val shortcutIntent = Intent(context, MxWebUIActivity::class.java).apply {
+                    putExtra("MODULE_ID", id)
+                    action = Intent.ACTION_VIEW
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                }
+
+        val shortcut = ShortcutInfo.Builder(context, shortcutId)
+            .setShortLabel(title)
+            .setLongLabel(title)
+            .setIcon(Icon.createWithAdaptiveBitmap(bitmap))
+            .setIntent(shortcutIntent)
+            .build()
+
+        shortcutManager.requestPinShortcut(shortcut, null)
+        return true
+    }
+
+    private fun loadShortcutBitmap(
+        webuiContext: Boolean,
+        iconUri: String?,
+    ) = runCatching {
+        if (context == null) return@runCatching null
+        if (iconUri != null && !webuiContext) {
+            context.contentResolver.openInputStream(iconUri.toUri()).use { input ->
+                input?.let { BitmapFactory.decodeStream(it) }
+            }
+        } else {
+            icon?.inputStream()?.buffered()?.use { BitmapFactory.decodeStream(it) }
+        }
+    }.getOrNull()
+
+
+    private fun calculateSizeFast(file: SuFile): Long {
+        // skip symbolic links entirely
+        if (file.isSymlink()) return 0L
+        if (file.isFile) return file.length()
+
+        var totalSize = 0L
+        val children = file.listFiles()
+
+        for (child in children) {
+            // skip symlinks before checking if it's a file or directory
+            if (child.isSymlink()) continue
+
+            totalSize += if (child.isFile) {
+                child.length()
+            } else {
+                calculateSizeFast(child)
+            }
+        }
+        return totalSize
+    }
+
+    override fun compareTo(other: Module): Int = id.compareTo(other.id)
+
+    private val String?.relativeModuleOrWebrootDir: SuFile?
+        get() {
+            if (this.isNullOrBlank()) return null
+
+            val webrootFile = SuFile(path.webrootDir, this)
+            if (webrootFile.isFile) return webrootFile
+
+            val moduleFile = SuFile(path.moduleDir, this)
+            if (moduleFile.isFile) return moduleFile
+
+            return null
+        }
+
+    private inline fun <reified T> Map<String, Any>.get(
+        defaultValue: T,
+        vararg aliases: String,
+    ): T {
+        for (alias in aliases) {
+            this[alias]?.let {
+                return it.asOrDefault(defaultValue)
+            }
+        }
+
+        for (alias in aliases) {
+            val value = webrootConfig.get<T?>(alias, defaultValue)
+            if (value != null) {
+                return value
+            }
+        }
+
+        return defaultValue
+    }
+
+    fun toLuaTable(): LuaTable {
+        val table = LuaTable()
+
+        table.set("adbPath", adbPath.toLuaTable())
+        table.set("id", id)
+        table.set("name", name)
+        table.set("version", version)
+        table.set("versionCode", versionCode)
+        table.set("author", author)
+        table.set("description", description)
+        table.set("metamodule", metaModule)
+        table.set("hasWebUI", hasWebUI)
+        table.set("path", path.toLuaTable())
+        // table.set("banner", banner)
+        // table.set("icon", icon)
+        // table.set("webrootConfig", webrootConfig.toLuaTable())
+
+        return table
+    }
+
+    companion object {
+        private const val NA = "N/A"
+        internal fun readProps(input: InputStream): Map<String, Any> {
+            val result = linkedMapOf<String, Any>()
+
+            input.bufferedReader().useLines { lines ->
+                lines.forEach { raw ->
+                    val line = raw.trim()
+
+                    if (line.isEmpty()) return@forEach
+                    if (line.startsWith("#") || line.startsWith("!")) return@forEach
+
+                    var separatorIndex = -1
+                    var escaped = false
+
+                    for (i in line.indices) {
+                        val c = line[i]
+
+                        if (escaped) {
+                            escaped = false
+                            continue
+                        }
+
+                        if (c == '\\') {
+                            escaped = true
+                            continue
+                        }
+
+                        if (c == '=' || c == ':') {
+                            separatorIndex = i
+                            break
+                        }
+                    }
+
+                    val key: String
+                    val rawValue: String
+
+                    if (separatorIndex >= 0) {
+                        key = line.substring(0, separatorIndex)
+                            .replace("\\=", "=")
+                            .replace("\\:", ":")
+                            .trim()
+
+                        rawValue = line.substring(separatorIndex + 1).trim()
+                    } else {
+                        key = line
+                        rawValue = ""
+                    }
+
+                    result[key] = parseValue(rawValue)
+                }
+            }
+
+            return result
+        }
+
+        private fun parseValue(value: String): Any {
+            val v = value.trim()
+
+            return when {
+                v.equals("true", ignoreCase = true) -> true
+                v.equals("false", ignoreCase = true) -> false
+
+                v.toIntOrNull() != null -> v.toInt()
+
+                v.toLongOrNull() != null -> v.toLong()
+
+                v.toDoubleOrNull() != null -> v.toDouble()
+
+                else -> v
+            }
+        }
+
+        val Empty get() = Module(AdbPath.Empty, emptyMap(), webuiEngine = WebUIEngine.MX)
+
+        @Composable
+        fun rememberBasePath(): State<ModuleUIState> {
+            val prefs = LocalUserPreferences.current
+            val context = LocalContext.current
+
+            return produceState<ModuleUIState>(
+                initialValue = ModuleUIState.Loading,
+                prefs.workingMode
+            ) {
+                val initialized = SuFile.AutoInit(context)
+
+                if (!initialized) {
+                    value = ModuleUIState.Error.SuInitFailed()
+                    return@produceState
+                }
+
+                val basePath: String? = prefs.getAdbPath(context)
+
+                if (basePath == null) {
+                    value = ModuleUIState.Error.MissingAdbPath()
+                    return@produceState
+                }
+
+                val baseFileDir = SuFile(basePath)
+
+                if (!baseFileDir.exists()) {
+                    value = ModuleUIState.Error.ModuleNotFound()
+                    return@produceState
+                }
+
+                value = ModuleUIState.ReadyBasePath(baseFileDir)
+            }
+        }
+
+        @Composable
+        fun rememberCreate(id: String): State<ModuleUIState> {
+            val prefs = LocalUserPreferences.current
+            val context = LocalContext.current
+
+            return produceState<ModuleUIState>(
+                initialValue = ModuleUIState.Loading,
+                id,
+                prefs.workingMode
+            ) {
+                val initialized = SuFile.AutoInit(context)
+
+                if (!initialized) {
+                    value = ModuleUIState.Error.SuInitFailed()
+                    return@produceState
+                }
+
+                val basePath: String? = prefs.getAdbPath(context)
+
+                if (basePath == null) {
+                    value = ModuleUIState.Error.MissingAdbPath()
+                    return@produceState
+                }
+
+                val adbPath = AdbPath(basePath)
+
+                val moduleDir = SuFile(adbPath.modulesDir, id)
+
+                if (!moduleDir.exists()) {
+                    value = ModuleUIState.Error.ModuleNotFound()
+                    return@produceState
+                }
+
+                val propsFile = SuFile(moduleDir, "module.prop")
+
+                if (!propsFile.exists()) {
+                    value = ModuleUIState.Error.InvalidModule()
+                    return@produceState
+                }
+
+                val props = propsFile.inputStream()
+                    .use { readProps(it) }
+
+                value = ModuleUIState.Ready(
+                    Module(adbPath, props, context, prefs.webuiEngine)
+                )
+            }
+        }
+
+        fun fromZip(adbPath: AdbPath, file: File, engine: WebUIEngine): Module? {
+            val zipFile = ZipFile.Builder().setFile(file).get()
+            val entry = zipFile.getEntry(PROP_FILE) ?: return null
+            return zipFile.getInputStream(entry).use {
+                Module(adbPath, readProps(it), webuiEngine = engine)
+            }
+        }
+    }
+}

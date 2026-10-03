@@ -1,0 +1,397 @@
+@file:Suppress("PropertyName")
+
+package com.dergoogler.mmrl.wx.model.module
+
+import androidx.compose.runtime.mutableStateMapOf
+import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.readText
+import dev.mmrlx.nio.writeText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.float
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
+import org.json.JSONArray
+import org.json.JSONObject
+import kotlin.reflect.typeOf
+
+class WebrootConfig(
+    private val module: Module,
+) {
+
+    @Contextual
+    @IgnoredOnParcel
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private val sourceConfigFile: SuFile
+        get() = SuFile(module.path.webrootConfig)
+
+    private val destConfigFile: SuFile
+        get() = SuFile(module.path.configDir, "config.webroot.json")
+
+    /**
+     * Compose observable map.
+     *
+     * Any reads inside composition automatically trigger recomposition
+     * when values change.
+     */
+    @PublishedApi
+    internal val _map = mutableStateMapOf<String, JsonElement>()
+
+    init {
+        loadSync()
+    }
+
+    operator fun get(key: String): JsonElement? = resolvePath(key)
+
+    inline fun <reified T> get(key: String, default: T): T =
+        resolvePath(key).getOrDefault(default)
+
+    inline fun <reified T> JsonElement?.getOrDefault(default: T): T {
+        if (this == null) return default
+
+        @Suppress("UNCHECKED_CAST")
+        return runCatching {
+            when (T::class) {
+
+                JsonObject::class -> this as? JsonObject ?: return default
+                JsonArray::class -> this as? JsonArray ?: return default
+                JsonPrimitive::class -> this as? JsonPrimitive ?: return default
+
+                String::class -> jsonPrimitive.content
+                Boolean::class -> jsonPrimitive.boolean
+                Int::class -> jsonPrimitive.int
+                Long::class -> jsonPrimitive.long
+                Float::class -> jsonPrimitive.float
+                Double::class -> jsonPrimitive.double
+                Short::class -> jsonPrimitive.int.toShort()
+                Byte::class -> jsonPrimitive.int.toByte()
+
+                List::class -> {
+                    val elementType = typeOf<T>().arguments.first().type!!
+
+                    (this as? JsonArray)?.map { element ->
+                        when (elementType.classifier) {
+                            String::class -> element.jsonPrimitive.content
+                            Int::class -> element.jsonPrimitive.int
+                            Long::class -> element.jsonPrimitive.long
+                            Boolean::class -> element.jsonPrimitive.boolean
+                            Double::class -> element.jsonPrimitive.double
+                            Float::class -> element.jsonPrimitive.float
+                            else -> element
+                        }
+                    } as T
+                }
+
+                else -> return default
+            } as T
+        }.getOrDefault(default)
+    }
+
+    operator fun set(key: String, value: JsonElement) {
+        _map[key] = value
+        saveSync()
+    }
+
+    inline fun <reified T> set(key: String, value: T) {
+        val json = when (value) {
+            null -> JsonNull
+
+            is JsonElement -> value
+
+            is String -> JsonPrimitive(value)
+            is Boolean -> JsonPrimitive(value)
+            is Number -> JsonPrimitive(value)
+
+            is List<*> -> JsonArray(
+                value.map { it.toJsonElement() }
+            )
+
+            is Set<*> -> JsonArray(
+                value.map { it.toJsonElement() }
+            )
+
+            is Array<*> -> JsonArray(
+                value.map { it.toJsonElement() }
+            )
+
+            is Map<*, *> -> JsonObject(
+                value.entries.associate { (k, v) ->
+                    k.toString() to v.toJsonElement()
+                }
+            )
+
+            else -> throw IllegalArgumentException(
+                "Unsupported type: ${value!!::class}"
+            )
+        }
+
+        set(key, json)
+    }
+
+    @PublishedApi
+    internal fun Any?.toJsonElement(): JsonElement {
+        return when (this) {
+            null -> JsonNull
+
+            is JsonElement -> this
+
+            is String -> JsonPrimitive(this)
+            is Boolean -> JsonPrimitive(this)
+            is Number -> JsonPrimitive(this)
+
+            is List<*> -> JsonArray(
+                map { it.toJsonElement() }
+            )
+
+            is Set<*> -> JsonArray(
+                map { it.toJsonElement() }
+            )
+
+            is Array<*> -> JsonArray(
+                map { it.toJsonElement() }
+            )
+
+            is Map<*, *> -> JsonObject(
+                entries.associate { (k, v) ->
+                    k.toString() to v.toJsonElement()
+                }
+            )
+
+            else -> throw IllegalArgumentException(
+                "Unsupported JSON value: ${this::class}"
+            )
+        }
+    }
+
+    fun remove(key: String): JsonElement? {
+        val prev = _map.remove(key)
+
+        if (prev != null) {
+            saveSync()
+        }
+
+        return prev
+    }
+
+    operator fun contains(key: String): Boolean = key in _map
+
+    fun putAll(map: Map<String, JsonElement>) {
+        _map.clear()
+        _map.putAll(map)
+        saveSync()
+    }
+
+    fun clear() {
+        _map.clear()
+        saveSync()
+    }
+
+    suspend fun reload(): Unit = withContext(Dispatchers.IO) {
+        loadSync()
+    }
+
+    suspend fun save(): Unit = withContext(Dispatchers.IO) {
+        saveSync()
+    }
+
+    @PublishedApi
+    internal fun resolvePath(path: String): JsonElement? {
+        val segments = path.split(".")
+
+        if (segments.size == 1) {
+            return _map[path]
+        }
+
+        var current: JsonElement = JsonObject(_map.toMap())
+
+        for (i in segments.indices) {
+            if (current !is JsonObject) {
+                return JsonObject(emptyMap())
+            }
+
+            val remaining = segments.drop(i).joinToString(".")
+
+            val literal = current[remaining]
+            if (literal != null) {
+                return literal
+            }
+
+            current = current[segments[i]] ?: return JsonObject(emptyMap())
+        }
+
+        return current
+    }
+
+    private fun loadSync() {
+        runCatching {
+            val merged = mutableMapOf<String, JsonElement>()
+
+            val source = sourceConfigFile
+
+            if (source.exists() && source.isFile) {
+                json.parseToJsonElement(source.readText())
+                    .let { it as? JsonObject }
+                    ?.forEach { (key, value) ->
+                        merged[key] = value
+                    }
+            }
+
+            val dest = destConfigFile
+
+            if (dest.exists() && dest.isFile) {
+                json.parseToJsonElement(dest.readText())
+                    .let { it as? JsonObject }
+                    ?.forEach { (key, value) ->
+                        merged[key] = value
+                    }
+            }
+
+            _map.clear()
+            _map.putAll(merged)
+
+        }.onFailure {
+            it.printStackTrace()
+        }
+    }
+
+    private fun saveSync() {
+        runCatching {
+            val file = destConfigFile
+
+            val parent = file.parentFile
+
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs()
+            }
+
+            val jsonObject = buildJsonObject {
+                _map.forEach { (k, v) ->
+                    put(k, v)
+                }
+            }
+
+            file.writeText(jsonObject.toString())
+        }.onFailure {
+            it.printStackTrace()
+        }
+    }
+}
+
+val WebrootConfig.historyFallback
+    get() = get("historyFallback", false)
+
+val WebrootConfig.historyFallbackFile
+    get() = get("historyFallbackFile", "index.html")
+
+const val DEFAULT_CSP = "default-src 'self' data: blob: {domain}; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' {domain}; " +
+        "img-src 'self' ksu:; " +
+        "style-src 'self' 'unsafe-inline' {domain}; " +
+        "connect-src *; "
+
+val WebrootConfig.contentSecurityPolicy
+    get() = get(
+        "contentSecurityPolicy",
+        DEFAULT_CSP
+    )
+
+val WebrootConfig.autoStatusBarsStyle
+    get() = get("autoStatusBarsStyle", true)
+
+val WebrootConfig.autoAddInsets
+    get() = get("autoAddInsets", true)
+
+val WebrootConfig.windowResize
+    get() = get("windowResize", true)
+
+val WebrootConfig.caching
+    get() = get("caching", true)
+
+val WebrootConfig.exitConfirm
+    get() = get("exitConfirm", true)
+
+val WebrootConfig.pullToRefresh
+    get() = get("pullToRefresh", false)
+
+val WebrootConfig.cachingMaxAge
+    get() = get("cachingMaxAge", 86400)
+
+val WebrootConfig.killShellWhenBackground
+    get() = get("killShellWhenBackground", true)
+
+val WebrootConfig.title
+    get() = get<String?>("title", null)
+
+val WebrootConfig.icon
+    get() = get<String?>("icon", null)
+
+val WebrootConfig.theme
+    get() = get<String?>("theme", "md3")
+
+val WebrootConfig.refreshInterceptor
+    get() = get<String?>("refreshInterceptor", "native")
+
+val WebrootConfig.backInterceptor
+    get() = get<String>("backInterceptor", "native")
+
+val WebrootConfig.backHandler
+    get() = get<Boolean?>("backHandler", true)
+
+val WebrootConfig.permissions
+    get() = get<List<String>>("permissions", emptyList())
+
+val WebrootConfig.dex
+    get(): List<WebUIDexFile> {
+        val entries = get("dex", JsonArray(emptyList()))
+
+        return entries.mapNotNull { entry ->
+            if (entry !is JsonObject) {
+                return@mapNotNull null
+            }
+
+            val path: String? =
+                entry["path"].getOrDefault(null)
+
+            val className: String? =
+                entry["className"].getOrDefault(null)
+
+            WebUIDexFile(
+                path = path,
+                className = className,
+            )
+        }
+    }
+
+fun WebrootConfig.toJSONObject() = JSONObject().apply {
+    put("historyFallback", historyFallback)
+    put("historyFallbackFile", historyFallbackFile)
+    put("contentSecurityPolicy", contentSecurityPolicy)
+    put("autoStatusBarsStyle", autoStatusBarsStyle)
+    put("autoAddInsets", autoAddInsets)
+    put("windowResize", windowResize)
+    put("caching", caching)
+    put("exitConfirm", exitConfirm)
+    put("pullToRefresh", pullToRefresh)
+    put("cachingMaxAge", cachingMaxAge)
+    put("killShellWhenBackground", killShellWhenBackground)
+    put("title", title)
+    put("icon", icon)
+    put("theme", theme)
+    put("refreshInterceptor", refreshInterceptor)
+    put("backInterceptor", backInterceptor)
+    put("backHandler", backHandler)
+    put("permissions", JSONArray(permissions))
+}

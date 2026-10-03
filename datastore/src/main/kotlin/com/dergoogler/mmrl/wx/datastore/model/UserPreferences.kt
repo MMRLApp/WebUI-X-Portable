@@ -7,8 +7,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
 import com.dergoogler.mmrl.datastore.model.DarkMode
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.ui.theme.Colors
 import com.dergoogler.mmrl.ui.theme.Colors.Companion.getColorScheme
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -33,13 +31,35 @@ data class UserPreferences(
     @ProtoNumber(21) val webUiDevUrl: String = "https://127.0.0.1:8080",
     @ProtoNumber(22) val developerMode: Boolean = false,
     @ProtoNumber(23) val useWebUiDevUrl: Boolean = false,
+    @Deprecated("Use DevTools instead")
     @ProtoNumber(35) val enableErudaConsole: Boolean = false,
-    @ProtoNumber(37) val webuiEngine: WebUIEngine = WebUIEngine.PREFER_MODULE,
+    @Deprecated("Force MX to be used")
+    @ProtoNumber(37) val webuiEngine: WebUIEngine = WebUIEngine.MX,
+    @Deprecated("Use DevTools instead")
     @ProtoNumber(38) val enableAutoOpenEruda: Boolean = false,
     @ProtoNumber(39) val forceKillWebUIProcess: Boolean = true,
     @ProtoNumber(40) val disableGlobalExitConfirm: Boolean = false,
     @ProtoNumber(41) val enableDevTools: Boolean = false,
+    @Deprecated("The Console Interceptor have been replaced with CDP")
+    @ProtoNumber(42) val disableConsoleInterceptor: Boolean = false,
+    @ProtoNumber(43) val adbPath: String = "/data/adb",
+    @ProtoNumber(44) val hideFingerprintInHome: Boolean = true,
+    @ProtoNumber(45) val hideUnixNameInHome: Boolean = true,
+    @ProtoNumber(46) val enableContextMenuInWebUI: Boolean = true,
+    @ProtoNumber(47) val optOutAppEvents: Boolean = false,
+    @ProtoNumber(48) val logEventPayload: Boolean = false,
 ) {
+    fun getAdbPath(context: Context): String {
+        if (workingMode == WorkingMode.MODE_NON_ROOT) {
+            return context.filesDir.path
+        }
+
+        return adbPath
+    }
+
+    val isNonRoot: Boolean
+        get() = workingMode == WorkingMode.MODE_NON_ROOT
+
     fun isDarkMode() = when (darkMode) {
         DarkMode.AlwaysOff -> false
         DarkMode.AlwaysOn -> true

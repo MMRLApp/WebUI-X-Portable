@@ -1,162 +1,204 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ExperimentalComposeApi
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dergoogler.mmrl.datastore.model.ModulesMenu
-import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
-import com.dergoogler.mmrl.ui.component.SearchTopBar
-import com.dergoogler.mmrl.ui.component.text.TextRow
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.ModulesMenu
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
+import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
-import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
+import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
+import com.dergoogler.mmrl.wx.ui.screens.modules.components.ModuleItem
+import com.dergoogler.mmrl.wx.ui.screens.modules.components.SkeletonModuleItem
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import dev.mmrlx.compose.ui.PullToRefreshBox
+import dev.mmrlx.compose.ui.PullToRefreshDefaults.Indicator
+import dev.mmrlx.compose.ui.ext.with
+import dev.mmrlx.compose.ui.icon.Icon
+import dev.mmrlx.compose.ui.icon.IconButton
+import dev.mmrlx.compose.ui.rememberPullToRefreshState
+import dev.mmrlx.compose.ui.scaffold.Scaffold
+import dev.mmrlx.compose.ui.text.rememberInputState
+import dev.mmrlx.compose.ui.toolbar.SearchableToolbar
+import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
+import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
+import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
-@Destination<RootGraph>(start = true)
+@Destination<RootGraph>
 @Composable
-fun ModulesScreen(
-    viewModel: ModulesViewModel = hiltViewModel(),
-) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+fun ModulesScreen() {
+    val viewModel = LocalModulesViewModel.current
+    val prefs = LocalUserPreferences.current
+    val scrollBehavior = ToolbarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
-    val state by viewModel.screenState.collectAsStateWithLifecycle()
-    val list by viewModel.local.collectAsStateWithLifecycle()
+    val ptrState = rememberPullToRefreshState()
+
+    val modules by viewModel.local.collectAsStateWithLifecycle()
+    val isLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isSearch by viewModel.isSearch.collectAsStateWithLifecycle()
+
+    LaunchedEffect(viewModel.refreshDone) {
+        viewModel.refreshDone.collect {
+            ptrState.animateToHidden()
+        }
+    }
 
     Scaffold(
-        topBar = {
-            TopBar(
-                isSearch = viewModel.isSearch,
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        toolbar = {
+            ModuleScreenToolbar(
+                isSearch = isSearch,
                 query = query,
                 onQueryChange = viewModel::search,
                 onOpenSearch = viewModel::openSearch,
                 onCloseSearch = viewModel::closeSearch,
                 setMenu = viewModel::setModulesMenu,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
             )
         },
+        bottomBar = { BottomNavigation() },
         floatingActionButton = {
-            if (viewModel.platform != Platform.NonRoot) return@Scaffold
-
-            ModuleImporter()
+            if (prefs.workingMode != WorkingMode.MODE_NON_ROOT) return@Scaffold
+            ModuleImporter(viewModel)
         },
-        contentWindowInsets = WindowInsets.none
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier.padding(innerPadding)
+    ) {
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            state = ptrState,
+            isRefreshing = isRefreshing && isLoaded,
+            onRefresh = viewModel::refreshModules,
+            indicator = {
+                Indicator(
+                    modifier = Modifier
+                        .padding(top = this@Scaffold.scaffoldTopPadding)
+                        .align(Alignment.TopCenter),
+                    isRefreshing = isRefreshing && isLoaded,
+                    state = ptrState,
+                )
+            }
         ) {
-            if (isLoading) {
-                Loading()
-            }
-
-            if (list.isEmpty() && !isLoading) {
-                PageIndicator(
-                    icon = if (viewModel.isSearch) R.drawable.mood_search else R.drawable.mood_cry,
-                    text = if (viewModel.isSearch) R.string.search_empty else R.string.modules_empty,
-                )
-            }
-
-            PullToRefreshBox(
-                isRefreshing = state.isRefreshing,
-                onRefresh = viewModel::getLocalAll
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .with(this@Scaffold) { it.scaffoldHazeSource() },
+                contentPadding = PaddingValues(
+                    top = this@Scaffold.scaffoldTopPadding + 8.dp,
+                    start = 8.dp,
+                    end = 8.dp,
+                    bottom = this@Scaffold.scaffoldBottomPadding + 8.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                ModulesList(
-                    list = list,
-                    isProviderAlive = viewModel.isProviderAlive,
-                    platform = viewModel.platform,
-                    state = listState,
-                )
+                when {
+                    !isLoaded -> {
+                        items(6) { SkeletonModuleItem() }
+                    }
+
+                    modules.isEmpty() -> {
+                        item {
+                            PageIndicator(
+                                icon = if (isSearch) R.drawable.mood_search else R.drawable.mood_cry,
+                                text = if (isSearch) R.string.search_empty else R.string.modules_empty,
+                            )
+                        }
+                    }
+
+                    else -> {
+
+                        if (prefs.developerMode { useWebUiDevUrl }) {
+                            item {
+                                DebugAlert(
+                                    "Remote URL",
+                                    "You currently have a remote URL set. Modules might not work as expected."
+                                )
+                            }
+                        }
+
+                        items(
+                            items = modules.filter { it.hasWebUI },
+                            key = { it.id },
+                        ) { module ->
+                            ModuleItem(module = module)
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TopBar(
+private fun ModuleScreenToolbar(
     isSearch: Boolean,
     query: String,
     onQueryChange: (String) -> Unit,
     onOpenSearch: () -> Unit,
     onCloseSearch: () -> Unit,
     setMenu: (ModulesMenu) -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
+    scrollBehavior: ToolbarScrollBehavior,
 ) {
-    var currentQuery by remember { mutableStateOf(query) }
-    DisposableEffect(isSearch) {
-        onDispose { currentQuery = "" }
+    val state = rememberInputState(query)
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { state.text.toString() }
+            .distinctUntilChanged()
+            .collect { text ->
+                if (text != query) onQueryChange(text)
+            }
     }
 
-    SearchTopBar(
+    LaunchedEffect(query) {
+        if (state.text.toString() != query) {
+            state.setTextAndPlaceCursorAtEnd(query)
+        }
+    }
+
+    SearchableToolbar(
+        state = state,
         isSearch = isSearch,
-        query = currentQuery,
-        onQueryChange = {
-            onQueryChange(it)
-            currentQuery = it
-        },
-        onClose = {
-            onCloseSearch()
-            currentQuery = ""
-        },
         title = {
-            TextRow(
-                leadingContent = {
-                    Icon(
-                        modifier = Modifier.size(30.dp),
-                        painter = painterResource(id = R.drawable.launcher_outline),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.surfaceTint
-                    )
-                }
-            ) {
-                Text(stringResource(R.string.app_name))
-            }
+            ToolbarTitle(title = stringResource(R.string.modules))
         },
         scrollBehavior = scrollBehavior,
+        onClose = onCloseSearch,
         actions = {
             if (!isSearch) {
-                IconButton(
-                    onClick = onOpenSearch
-                ) {
+                IconButton(onClick = onOpenSearch) {
                     Icon(
-                        painter = painterResource(id = R.drawable.search),
-                        contentDescription = null
+                        painter = painterResource(R.drawable.search),
+                        contentDescription = null,
                     )
                 }
             }
-
-            ModulesMenu(
-                setMenu = setMenu
-            )
-        }
+            com.dergoogler.mmrl.wx.ui.screens.modules.components.ModulesMenu(setMenu = setMenu)
+        },
     )
 }

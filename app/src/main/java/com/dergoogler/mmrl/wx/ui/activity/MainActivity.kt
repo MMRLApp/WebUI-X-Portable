@@ -2,15 +2,15 @@ package com.dergoogler.mmrl.wx.ui.activity
 
 import android.os.Bundle
 import androidx.compose.animation.Crossfade
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.dergoogler.mmrl.datastore.model.WorkingMode
-import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isSetup
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isSetup
+import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.screens.MainScreen
 import com.dergoogler.mmrl.wx.util.BaseActivity
 import com.dergoogler.mmrl.wx.util.setBaseContent
@@ -29,16 +29,12 @@ class MainActivity : BaseActivity() {
 
         splashScreen.setKeepOnScreenCondition { isLoading }
 
-        setBaseContent {
-            val userPreferences by userPreferencesRepository.data
-                .collectAsStateWithLifecycle(initialValue = null)
-
-            val preferences = if (userPreferences == null) {
-                return@setBaseContent
-            } else {
+        setBaseContent(
+            preferencesLoaded = {
                 isLoading = false
-                checkNotNull(userPreferences)
             }
+        ) {
+            val preferences = LocalUserPreferences.current
 
             Crossfade(
                 targetState = preferences.workingMode.isSetup,
