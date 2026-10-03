@@ -45,7 +45,7 @@ internal fun NonRootItem(developerMode: Boolean = false) {
                         bottomStart = CornerSize(15.dp),
                         bottomEnd = CornerSize(0.dp),
                     ),
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
                 modifier =
                     Modifier
                         .absolute(Alignment.TopEnd),
@@ -53,7 +53,7 @@ internal fun NonRootItem(developerMode: Boolean = false) {
                 Text(
                     text = "USER!DEV",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier =
                         Modifier
                             .padding(horizontal = 16.dp, vertical = 8.dp),
