@@ -21,10 +21,10 @@ import dev.mmrlx.compose.ui.dialog.Footer
 import dev.mmrlx.compose.ui.dialog.Title
 import dev.mmrlx.compose.ui.dialog.rememberDialog
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
-import dev.mmrlx.webui.PureJavaScriptInterface
+import dev.mmrlx.webui.WebUI
 
 @Composable
-internal fun PureJavaScriptInterface.Confirm(
+fun WebUI.Confirm(
     title: String,
     description: String?,
     onConfirm: () -> Unit,
@@ -73,7 +73,7 @@ internal fun PureJavaScriptInterface.Confirm(
 
 
 @Composable
-fun PureJavaScriptInterface.Md3Confirm(
+internal fun WebUI.Md3Confirm(
     title: String,
     description: String?,
     onConfirm: () -> Unit,
@@ -110,7 +110,7 @@ fun PureJavaScriptInterface.Md3Confirm(
 }
 
 @Composable
-fun PureJavaScriptInterface.MXConfirm(
+internal fun WebUI.MXConfirm(
     title: String,
     description: String?,
     onConfirm: () -> Unit,

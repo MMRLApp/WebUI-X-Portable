@@ -45,10 +45,10 @@ import dev.mmrlx.compose.ui.list.DialogItemSlot
 import dev.mmrlx.compose.ui.text.OutlinedInput
 import dev.mmrlx.compose.ui.text.rememberInputState
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
-import dev.mmrlx.webui.PureJavaScriptInterface
+import dev.mmrlx.webui.WebUI
 
 @Composable
-internal fun PureJavaScriptInterface.Prompt(
+internal fun WebUI.Prompt(
     title: String,
     description: String?,
     value: String,
@@ -115,7 +115,7 @@ internal fun PureJavaScriptInterface.Prompt(
 }
 
 @Composable
-internal fun PureJavaScriptInterface.Md3Prompt(
+internal fun WebUI.Md3Prompt(
     title: String,
     description: String?,
     value: String,
@@ -203,7 +203,7 @@ internal fun PureJavaScriptInterface.Md3Prompt(
 }
 
 @Composable
-internal fun PureJavaScriptInterface.MXPrompt(
+internal fun WebUI.MXPrompt(
     title: String,
     description: String?,
     value: String,

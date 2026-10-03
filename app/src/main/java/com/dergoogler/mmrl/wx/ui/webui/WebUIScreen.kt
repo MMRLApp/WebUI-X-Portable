@@ -127,7 +127,7 @@ fun WebUIScreen() {
             .registerJavascriptInterface(FileOutputInterface::class.java)
             .registerJavascriptInterface(com.dergoogler.mmrl.wx.ui.webui.interfaces.ModuleInterface::class.java)
             // end
-            .backHandlers(colorScheme)
+            .backHandlers()
             .client {
                 onUntrustedUrl { uri ->
                     browser.open(uri)
