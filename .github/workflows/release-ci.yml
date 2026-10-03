@@ -92,6 +92,15 @@ jobs:
               echo ${{ secrets.KEY_STORE }} | base64 --decode > ${{ github.workspace }}/key.jks
           fi
 
+      - name: Set up credentials for private packages
+        shell: bash
+        run: |
+          [ -f gradle.properties ] && [ "$(tail -c1 gradle.properties)" != "" ] && echo >> gradle.properties
+          {
+            echo "gpr.user=${{ secrets.ACTOR }}"
+            echo "gpr.key=${{ secrets.GH_TOKEN }}"
+          } >> gradle.properties
+        
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
