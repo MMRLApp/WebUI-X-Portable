@@ -17,7 +17,6 @@ import androidx.navigation.NavBackStackEntry
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.ui.component.events.BloodDripOverlay
 import com.dergoogler.mmrl.wx.ui.component.events.SnowfallOverlay
 import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
@@ -59,13 +58,13 @@ fun MainScreen() {
 
     if (!prefs.optOutAppEvents) {
         with(LocalDate.now()) {
-            if (month == Month.OCTOBER) {
-                BloodDripOverlay(
-                    streakCount = dayOfMonth * 4,
-                )
-
-                return@with
-            }
+//            if (month == Month.OCTOBER) {
+//                BloodDripOverlay(
+//                    streakCount = dayOfMonth * 4,
+//                )
+//
+//                return@with
+//            }
 
             if (month == Month.DECEMBER) {
                 if (dayOfMonth in 24..26) {
