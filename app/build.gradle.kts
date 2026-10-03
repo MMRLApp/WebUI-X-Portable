@@ -17,7 +17,7 @@ val basePackageName = "$mmrlBaseApplicationId.wx"
 
 android {
     namespace = basePackageName
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = namespace
@@ -238,6 +238,7 @@ dependencies {
 
     implementation(libs.semver)
     implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
 
     implementation(libs.rikka.refine.runtime)
     implementation(libs.rikka.shizuku.api)
