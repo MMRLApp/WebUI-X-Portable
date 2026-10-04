@@ -1,53 +1,32 @@
 package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 
-import android.webkit.WebResourceResponse
-import androidx.compose.material3.ColorScheme
 import com.dergoogler.mmrl.wx.model.WebColors
-import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.WebUIResourceRequest
-import java.io.IOException
+import com.dergoogler.mmrl.wx.ui.webui.mdColorScheme
+import com.dergoogler.mmrl.wx.util.MimeUtil
+import dev.mmrlx.webui.RouteRegistry
 
-open class InternalPathHandler(
-    webui: WebUI,
-    colorScheme: ColorScheme,
-) : KsuPathHandler(webui) {
-    override val id = "/internal/"
+fun RouteRegistry.internalPathHandler() {
+    val webColors = WebColors(mdColorScheme)
 
-    val webColors = WebColors(colorScheme)
-    val assetsPathHandler = AssetsPathHandler(this)
+    route("/internal/insets.css") {
+        insets.css.asStyleResponse()
+    }
 
-    override fun handle(
-        request: WebUIResourceRequest,
-    ): WebResourceResponse {
-        val path = request.path
+    route("/internal/colors.css") {
+        webColors.allCssColors.asStyleResponse()
+    }
+
+    route("/internal/assets/*asset") {
+        val filePath = request.params["asset"] ?: return@route notFoundResponse
 
         try {
-            if (path.matches(Regex("insets\\.css"))) {
-                return insets.css.asStyleResponse()
-            }
-
-            if (path.matches(Regex("colors\\.css"))) {
-                return webColors.allCssColors.asStyleResponse()
-            }
-
-            if (path.matches(Regex("^assets(/.*)?$"))) {
-                return assetsPathHandler.handle(
-                    WebUIResourceRequest(
-                        method = request.method,
-                        isForMainFrame = request.isForMainFrame(),
-                        url = request.url,
-                        path = path.removePrefix("assets/"),
-                        requestHeaders = request.getRequestHeaders(),
-                        isRedirect = request.isRedirect(),
-                        hasGesture = request.hasGesture()
-                    )
-                )
-            }
-
-            return notFoundResponse
-        } catch (e: IOException) {
-            console.debugError("Error opening internal asset path: $path", e)
-            return notFoundResponse
+            val inputStream = kontext.assets.open(filePath)
+            val mimeType = MimeUtil.getMimeFromFileName(filePath)
+            response(mimeType = mimeType, data = inputStream)
+        } catch (e: Exception) {
+            console.error("Failed to open $filePath from the assets: $e")
+            notFoundResponse
         }
     }
 }
+

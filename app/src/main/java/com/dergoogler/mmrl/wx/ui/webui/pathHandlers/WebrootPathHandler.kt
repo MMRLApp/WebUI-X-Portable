@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.webui.pathHandlers
 
 import android.util.Log
-import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.isNotNullOrBlank
 import com.dergoogler.mmrl.wx.model.module.DEFAULT_CSP
 import com.dergoogler.mmrl.wx.model.module.caching
@@ -17,41 +16,30 @@ import com.dergoogler.mmrl.wx.ui.webui.util.addInjection
 import com.dergoogler.mmrl.wx.ui.webui.util.asResponse
 import com.dergoogler.mmrl.wx.ui.webui.util.errorResponse
 import dev.mmrlx.nio.SuFile
+import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.security.ContentSecurityPolicyManager
-import dev.mmrlx.webui.ResponseStatus
-import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.RouteRegistry
 import dev.mmrlx.webui.WebUIInsets
-import dev.mmrlx.webui.WebUIResourceRequest
 import java.io.IOException
 
-class WebrootPathHandler(
-    webui: WebUI,
-) : KsuPathHandler(webui) {
-    override val id = "/"
+fun RouteRegistry.webrootPathHandler() {
+    val configBase = module.path.configDir
+    val configStyleBase = sufile(configBase, "style")
+    val configJsBase = sufile(configBase, "js")
+    val customJsHead = sufile(configJsBase, "head")
+    val customJsBody = sufile(configJsBase, "body")
 
-    private val configBase get() = module.path.configDir
-    private val configStyleBase get() = sufile(configBase, "style")
-    private val configJsBase get() = sufile(configBase, "js")
-    private val customJsHead get() = sufile(configJsBase, "head")
-    private val customJsBody get() = sufile(configJsBase, "body")
+    SuFile.createDirectories(customJsHead, customJsBody, configStyleBase)
 
-    private val config get() = module.webrootConfig
+    val directory = sufile(sufile(module.path.webrootDir).getCanonicalDirPath())
 
-    private val directory get() = sufile(sufile(module.path.webrootDir).getCanonicalDirPath())
+    val config = module.webrootConfig
 
-    init {
-        SuFile.createDirectories(customJsHead, customJsBody, configStyleBase)
-    }
-
-    private val reversedPaths = listOf(
-        "mmrl/", "internal/", ".adb/", ".local/", ".config/", ".${module.id}/", "__root__/"
-    )
-
-    private val jsExtensionRegex = Regex("^[cm]?js$")
-    private val staticExtensions =
+    val jsExtensionRegex = Regex("^[cm]?js$")
+    val staticExtensions =
         listOf("js", "cjs", "mjs", "css", "png", "jpg", "jpeg", "gif", "svg", "woff", "woff2")
 
-    private fun MutableList<Injection>.addScriptInjections(
+    fun MutableList<Injection>.addScriptInjections(
         dir: SuFile,
         type: InjectionType,
         urlBase: String,
@@ -70,25 +58,23 @@ class WebrootPathHandler(
         }
     }
 
-    override fun handle(
-        request: WebUIResourceRequest,
-    ): WebResourceResponse {
-        val path = request.path.ifEmpty { "index.html" }
+    route("/favicon.ico") {
+        response(
+            module.icon?.inputStream()
+        )
+    }
 
-        reversedPaths.forEach {
-            if (path.endsWith(it)) return response(
-                status = ResponseStatus.UNAUTHORIZED,
-                data = null
-            )
-        }
+    route("/") {
+        val path = (if (request.path == "/") {
+            "index.html"
+        } else request.path).removePrefix("/")
 
         val contentSecurityPolicy = ContentSecurityPolicyManager(DEFAULT_CSP, baseUri.toString())
-        val mergedCsp = contentSecurityPolicy.mergeToString(config.contentSecurityPolicy)
+        val mergedCsp =
+            contentSecurityPolicy.mergeToString(config.contentSecurityPolicy)
 
         val isCspDisabled =
             config.contentSecurityPolicy.isBlank() || config.contentSecurityPolicy.trim() == "*"
-
-        if (path.endsWith("favicon.ico") || path.startsWith("favicon.ico")) return notFoundResponse
 
         try {
             val file = directory.getCanonicalFileIfChild(path) ?: run {
@@ -96,7 +82,7 @@ class WebrootPathHandler(
                     "webrootPathHandler",
                     "The requested file: $path is outside the mounted directory: $directory",
                 )
-                return forbiddenResponse
+                return@route forbiddenResponse
             }
 
             if (!file.exists() && config.historyFallback) {
@@ -111,7 +97,7 @@ class WebrootPathHandler(
                     )
                 }
 
-                return fallbackResponse
+                return@route fallbackResponse
             }
 
             val injections = buildList {
@@ -169,10 +155,10 @@ class WebrootPathHandler(
             headers["ETag"] = "${file.length()}-${file.lastModified()}"
             response.setResponseHeaders(headers)
 
-            return response
+            return@route response
         } catch (e: IOException) {
             console.debugError("Error opening webroot path: $path", e)
-            return errorResponse(
+            return@route errorResponse(
                 title = "Failed",
 
                 description = {

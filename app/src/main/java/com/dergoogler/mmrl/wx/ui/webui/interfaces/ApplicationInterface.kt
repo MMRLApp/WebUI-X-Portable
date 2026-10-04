@@ -13,66 +13,61 @@ import dev.mmrlx.compose.layout.addOverlayView
 import dev.mmrlx.utilities.json.getAs
 import dev.mmrlx.utilities.json.getByPathOrDefault
 import dev.mmrlx.utilities.json.jsonObject
-import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.interfaces.prebuilt.WebUIApplicationInterface
-import dev.mmrlx.webui.javascript.annotation.ExportMethod
-import dev.mmrlx.webui.javascript.annotation.ExportVariable
+import dev.mmrlx.webui.JavaScriptRegistry
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import org.json.JSONObject
+import kotlinx.coroutines.withContext
 
-class ApplicationInterface(webui: WebUI) : WebUIApplicationInterface(webui) {
-
-    @ExportMethod
-    fun getCurrentRootManager(): JSONObject {
-        return jsonObject {
-            "name" to settings.workingMode.toString
-            "versionName" to "-1"
-            "versionCode" to -1
-        }
+fun JavaScriptRegistry.appInterface() = namespace("webui") {
+    val currentRootManager = jsonObject {
+        "name" to settings.workingMode.toString
+        "versionName" to "-1"
+        "versionCode" to -1
     }
 
-    @ExportMethod
-    fun createShortcut(): Boolean = module.createShortcut(true)
+    property("currentRootManager", currentRootManager)
+    function("getCurrentRootManager") {
+        currentRootManager
+    }
 
-    @ExportVariable
-    val hasShortcut: Boolean = module.hasShortcut()
+    function("createShortcut") {
+        module.createShortcut(true)
+    }
 
-    @ExportMethod
-    suspend fun prompt(
-        options: JSONObject?,
-    ): Promise<String?> {
-        return Promise(Dispatchers.Main) {
-            val theme = options.getAs<String?>("theme", null)
-            val title = options.getAs<String>("title", "Confirm")
-            val launchKeyboard = options.getAs<Boolean>("launchKeyboard", true)
-            val confirmText = options.getByPathOrDefault<String>("buttons.confirmText", "Confirm")
-            val cancelText = options.getByPathOrDefault<String>("buttons.cancelText", "Cancel")
-            val defaultValue = options.getAs<String>("defaultValue", "")
-            val supportingText = options.getAs<String?>("supportingText", null)
-            val message = options.getAs<String?>("message", null)
+    property("hasShortcut", module.hasShortcut())
 
-            val keyboardType = options.getAs<String>("keyboardType", "done").let {
-                KeyboardType.fromString(it)
-            }
-            val imeAction = options.getAs<String>("imeAction", "text").let {
-                ImeAction.fromString(it)
-            }
+    asyncFunction("prompt") {
+        val deferred = CompletableDeferred<String?>()
+        val options = checkObject(0)
 
-            if (message == null) {
-                reject(Exception("Message must not null"))
-                return@Promise
-            }
+        val theme = options.getAs<String?>("theme", null)
+        val title = options.getAs<String>("title", "Confirm")
+        val launchKeyboard = options.getAs<Boolean>("launchKeyboard", true)
+        val confirmText = options.getByPathOrDefault<String>("buttons.confirmText", "Confirm")
+        val cancelText = options.getByPathOrDefault<String>("buttons.cancelText", "Cancel")
+        val defaultValue = options.getAs<String>("defaultValue", "")
+        val supportingText = options.getAs<String?>("supportingText", null)
+        val message = options.getAs<String?>("message", null)
+            ?: throw IllegalArgumentException("Message must not null")
 
+        val keyboardType = options.getAs<String>("keyboardType", "done").let {
+            KeyboardType.fromString(it)
+        }
+        val imeAction = options.getAs<String>("imeAction", "text").let {
+            ImeAction.fromString(it)
+        }
+
+        withContext(Dispatchers.Main) {
             activity.addOverlayView {
-                this@ApplicationInterface.Prompt(
+                this@appInterface.Prompt(
                     title = title,
                     description = message,
                     value = defaultValue,
                     onConfirm = {
-                        resolve(it)
+                        deferred.complete(it)
                     },
                     onClose = {
-                        resolve(null)
+                        deferred.complete(null)
                     },
                     confirmText = confirmText,
                     cancelText = cancelText,
@@ -84,26 +79,31 @@ class ApplicationInterface(webui: WebUI) : WebUIApplicationInterface(webui) {
                 )
             }
         }
+
+        return@asyncFunction deferred.await()
     }
 
-    @ExportMethod
-    suspend fun confirm(options: JSONObject?): Promise<Boolean> {
-        return Promise(Dispatchers.Main) {
-            val theme = options.getAs<String?>("theme", null)
-            val title = options.getAs<String>("title", "Confirm")
-            val confirmText = options.getByPathOrDefault("buttons.confirmText", "Confirm")
-            val cancelText = options.getByPathOrDefault("buttons.cancelText", "Cancel")
-            val message = options.getAs<String?>("message", null)
+    asyncFunction("confirm") {
+        val deferred = CompletableDeferred<Boolean>()
+        val options = checkObject(0)
 
+        val theme = options.getAs<String?>("theme", null)
+        val title = options.getAs<String>("title", "Confirm")
+        val confirmText = options.getByPathOrDefault("buttons.confirmText", "Confirm")
+        val cancelText = options.getByPathOrDefault("buttons.cancelText", "Cancel")
+        val message = options.getAs<String?>("message", null)
+            ?: throw IllegalArgumentException("Message must not null")
+
+        withContext(Dispatchers.Main) {
             activity.addOverlayView {
-                this@ApplicationInterface.Confirm(
+                this@appInterface.Confirm(
                     title = title,
                     description = message,
                     onConfirm = {
-                        resolve(true)
+                        deferred.complete(true)
                     },
                     onClose = {
-                        resolve(false)
+                        deferred.complete(false)
                     },
                     confirmText = confirmText,
                     cancelText = cancelText,
@@ -111,5 +111,7 @@ class ApplicationInterface(webui: WebUI) : WebUIApplicationInterface(webui) {
                 )
             }
         }
+
+        return@asyncFunction deferred.await()
     }
 }

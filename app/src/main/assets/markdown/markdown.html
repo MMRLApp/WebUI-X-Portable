@@ -17,7 +17,7 @@
 <script type="module">
   import { Marked } from "https://desc.mmrl.dev/internal/assets/markdown/marked/index.mjs";
   import markedAlert from "https://desc.mmrl.dev/internal/assets/markdown/marked/alert.mjs";
-  fetch("https://desc.mmrl.dev/internal/readme.md")
+  fetch("https://desc.mmrl.dev/readme.md")
     .then((response) => response.text())
     .then((text) => {
       const html = new Marked()

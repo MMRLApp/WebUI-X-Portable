@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.crash.components
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -11,6 +10,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.internalPathHandler
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.insets
@@ -43,9 +43,10 @@ fun MarkdownView(
         ) {
             it
                 .settings {
-                    useDefaultFileSystem = false
-                    useDefaultApplicationInterface = false
                     darkMode = userPrefs.isDarkMode()
+                    extra = mapOf(
+                        "mdColorScheme" to scheme
+                    )
                 }
                 .client {
                     onUntrustedUrl { uri ->
@@ -57,15 +58,9 @@ fun MarkdownView(
                 }
                 .chromeClient { }
                 .insets(insets)
-                .registerPathHandler(
-                    MarkdownPathHandler::class.java
-                ) {
-                    add(
-                        String::class.java to content
-                    )
-                    add(
-                        ColorScheme::class.java to scheme
-                    )
+                .registerRoutes {
+                    internalPathHandler()
+                    markdownPathHandler(content)
                 }
         }
 

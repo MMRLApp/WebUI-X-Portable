@@ -2,7 +2,6 @@ package com.dergoogler.mmrl.wx.ui.webui
 
 import android.os.Build
 import android.system.OsConstants.O_RDONLY
-import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,16 +15,17 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.ui.webui.components.ContextMenu
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.ApplicationInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.FileSystemInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.KernelSUInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileInputInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.FileOutputInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.ModuleInterface
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.InternalPathHandler
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.SuPathHandler
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.WebrootPathHandler
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.IconPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.appInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.fileSystemInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.kernelSUInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.legacyFileInputInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.legacyFileOutputInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.legacyModuleInterface
+import com.dergoogler.mmrl.wx.ui.webui.interfaces.moduleInterface
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.internalPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.iconPathHandler
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.suRoute
+import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.webrootPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.util.dexPlugin
 import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
 import dev.mmrlx.compose.webui.WebUIView
@@ -34,7 +34,6 @@ import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFileInputStream
 import dev.mmrlx.nio.SuFileOutputStream
 import dev.mmrlx.nio.SuRandomAccessFile
-import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIContextMenu
 
 @Composable
@@ -121,12 +120,16 @@ fun WebUIScreen() {
                     "mdColorScheme" to colorScheme,
                 )
             }
-            // legacy interfaces
-            .registerJavascriptInterface(ModuleInterface::class.java)
-            .registerJavascriptInterface(FileInputInterface::class.java)
-            .registerJavascriptInterface(FileOutputInterface::class.java)
-            .registerJavascriptInterface(com.dergoogler.mmrl.wx.ui.webui.interfaces.ModuleInterface::class.java)
-            // end
+            .registerJavaScriptInterfaces {
+                moduleInterface()
+                kernelSUInterface()
+                appInterface()
+                fileSystemInterface()
+                // legacy
+                legacyModuleInterface()
+                legacyFileInputInterface()
+                legacyFileOutputInterface()
+            }
             .backHandlers()
             .client {
                 onUntrustedUrl { uri ->
@@ -142,42 +145,32 @@ fun WebUIScreen() {
             .chromeClient { }
             .luaPlugin()
             .dexPlugin()
-            .registerJavascriptInterface(
-                KernelSUInterface::class.java
-            )
-            .registerJavascriptInterface(
-                ApplicationInterface::class.java
-            )
-            .registerJavascriptInterface(
-                FileSystemInterface::class.java
-            )
-            .registerPathHandler(
-                InternalPathHandler::class.java
-            ) {
-                add(
-                    ColorScheme::class.java to colorScheme
-                )
+            .registerRoutes {
+                // ksu://icon/
+                iconPathHandler()
             }
-            .registerPathHandler(IconPathHandler::class.java)
-            .registerSuPathHandler(
-                "/.${module.id}/",
-                module.path.moduleDir
-            )
-            .registerSuPathHandler(
-                "/.adb/",
-                module.adbPath.baseDir
-            )
-            .registerSuPathHandler(
-                "/.config/",
-                module.adbPath.configDir
-            )
-            .registerSuPathHandler(
-                "/.local/",
-                module.adbPath.localDir
-            )
-            .registerPathHandler(
-                WebrootPathHandler::class.java
-            )
+            .registerRoutes {
+                internalPathHandler()
+                suRoute(
+                    "/.${module.id}/",
+                    module.path.moduleDir
+                )
+
+                suRoute(
+                    "/.adb/",
+                    module.adbPath.baseDir
+                )
+                suRoute(
+                    "/.config/",
+                    module.adbPath.configDir
+                )
+                suRoute(
+                    "/.local/",
+                    module.adbPath.localDir
+                )
+
+                webrootPathHandler()
+            }
     }
 
     WebUIView(wstate)
@@ -189,15 +182,5 @@ fun WebUIScreen() {
             menu = currentMenu,
             onDismiss = { contextMenu = null }
         )
-    }
-}
-
-private fun WebUI.registerSuPathHandler(
-    path: String,
-    directory: String,
-): WebUI {
-    return this.registerPathHandler(SuPathHandler::class.java) {
-        add(String::class.java to path)
-        add(String::class.java to directory)
     }
 }

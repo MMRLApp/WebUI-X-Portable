@@ -4,66 +4,37 @@ import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.sanitizedIdWithFileOutputStream
 import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
 import com.dergoogler.mmrl.wx.ui.webui.util.requirePermission
-import dev.mmrlx.webui.JavaScriptInterface
-import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.javascript.annotation.ExportMethod
+import dev.mmrlx.webui.JavaScriptRegistry
 import java.io.BufferedOutputStream
-import java.io.OutputStream
 
-class FileOutputInterface(
-    webui: WebUI,
-) : JavaScriptInterface(webui) {
-    override val prototypeClass = "FileOutputInterface"
-    override val propertyName = module.sanitizedIdWithFileOutputStream
+/** Legacy file output stream interface. `open` returns a stream handle, or `null` on failure. */
+fun JavaScriptRegistry.legacyFileOutputInterface() = namespace(module.sanitizedIdWithFileOutputStream) {
+    function("open") {
+        val path = checkString(0)
+        val append = optBoolean(1, false)
 
-    @ExportMethod
-    fun open(path: String, append: Boolean): JSObject? =
         requirePermission(Permissions.WX.IO, "open") {
             try {
-                val stream = outputStream(path, append)
-                FileOutputInterfaceStream(this, stream)
+                val stream = BufferedOutputStream(outputStream(path, append))
+
+                newObject {
+                    function("write") {
+                        runCatching { stream.write(checkInt(0)) }
+                            .onFailure { console.error("Failed to write byte", it) }
+                    }
+                    function("flush") {
+                        runCatching { stream.flush() }
+                            .onFailure { console.error("Failed to flush stream", it) }
+                    }
+                    function("close") {
+                        runCatching { stream.close() }
+                            .onFailure { console.error("Failed to close stream", it) }
+                    }
+                }
             } catch (e: Exception) {
                 console.error(e)
                 null
             }
-        }
-
-    @ExportMethod
-    fun open(path: String): JSObject? = open(path, false)
-}
-
-class FileOutputInterfaceStream(
-    webui: WebUI,
-    outputStream: OutputStream,
-) : JavaScriptInterface.JSObject, WebUI by webui {
-    private val bufferedOutputStream = BufferedOutputStream(outputStream)
-
-    fun getStream(): OutputStream = bufferedOutputStream
-
-    @ExportMethod
-    fun write(b: Int) {
-        try {
-            bufferedOutputStream.write(b)
-        } catch (e: Exception) {
-            console.error("Failed to write byte", e)
-        }
-    }
-
-    @ExportMethod
-    fun flush() {
-        try {
-            bufferedOutputStream.flush()
-        } catch (e: Exception) {
-            console.error("Failed to flush stream", e)
-        }
-    }
-
-    @ExportMethod
-    fun close() {
-        try {
-            bufferedOutputStream.close()
-        } catch (e: Exception) {
-            console.error("Failed to close stream", e)
         }
     }
 }

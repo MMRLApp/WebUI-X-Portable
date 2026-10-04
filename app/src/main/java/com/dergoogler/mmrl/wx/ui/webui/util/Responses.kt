@@ -1,14 +1,14 @@
 package com.dergoogler.mmrl.wx.ui.webui.util
 
-import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.wx.util.MimeUtil
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
+import dev.mmrlx.utilities.io.emptyInputStream
+import dev.mmrlx.webui.WebResourceResponse
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
 
 enum class ResponseStatus(val code: Int, val reasonPhrase: String) {
@@ -110,7 +110,7 @@ fun SuFile.asResponse(injects: List<Injection>? = null): WebResourceResponse {
         status.code,
         status.reasonPhrase,
         headers,
-        null
+        emptyInputStream()
     )
 
     return when (status) {
@@ -148,28 +148,28 @@ fun SuFile.handleSvgzStream(
     return if (extension == "svgz") GZIPInputStream(stream) else stream
 
 }
-
-fun String.asStyleResponse(): WebResourceResponse {
-    val inputStream: InputStream =
-        ByteArrayInputStream(this.toByteArray(StandardCharsets.UTF_8))
-
-    return WebResourceResponse(
-        "text/css",
-        "UTF-8",
-        inputStream
-    )
-}
-
-fun String.asScriptResponse(): WebResourceResponse {
-    val inputStream: InputStream =
-        ByteArrayInputStream(this.toByteArray(StandardCharsets.UTF_8))
-
-    return WebResourceResponse(
-        "text/javascript",
-        "UTF-8",
-        inputStream
-    )
-}
+//
+//fun String.asStyleResponse(): WebResourceResponse {
+//    val inputStream: InputStream =
+//        ByteArrayInputStream(this.toByteArray(StandardCharsets.UTF_8))
+//
+//    return WebResourceResponse(
+//        mimeType= "text/css",
+//        encoding = "UTF-8",
+//        data = inputStream
+//    )
+//}
+//
+//fun String.asScriptResponse(): WebResourceResponse {
+//    val inputStream: InputStream =
+//        ByteArrayInputStream(this.toByteArray(StandardCharsets.UTF_8))
+//
+//    return WebResourceResponse(
+//        "text/javascript",
+//        "UTF-8",
+//        inputStream
+//    )
+//}
 
 val notFoundResponse = WebResourceResponse(
     null,
@@ -177,7 +177,7 @@ val notFoundResponse = WebResourceResponse(
     ResponseStatus.NOT_FOUND.code,
     ResponseStatus.NOT_FOUND.reasonPhrase,
     headers,
-    null
+    emptyInputStream()
 )
 
 val forbiddenResponse = WebResourceResponse(
@@ -186,5 +186,5 @@ val forbiddenResponse = WebResourceResponse(
     ResponseStatus.FORBIDDEN.code,
     ResponseStatus.FORBIDDEN.reasonPhrase,
     headers,
-    null
+    emptyInputStream()
 )

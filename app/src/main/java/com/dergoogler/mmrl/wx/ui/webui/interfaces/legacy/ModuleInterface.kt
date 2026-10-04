@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy
 
-import android.app.Activity
 import android.os.Build
 import androidx.core.app.ShareCompat
 import androidx.core.content.pm.PackageInfoCompat
@@ -12,10 +11,7 @@ import com.dergoogler.mmrl.wx.ui.webui.sanitizedId
 import com.dergoogler.mmrl.wx.ui.webui.workingMode
 import com.squareup.moshi.JsonClass
 import dev.mmrlx.utilities.json.jsonObject
-import dev.mmrlx.webui.JavaScriptInterface
-import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.javascript.annotation.ExportMethod
-import org.json.JSONObject
+import dev.mmrlx.webui.JavaScriptRegistry
 
 @JsonClass(generateAdapter = true)
 internal data class Manager(
@@ -24,147 +20,75 @@ internal data class Manager(
     val versionCode: Int,
 )
 
-class ModuleInterface(
-    webui: WebUI,
-) : JavaScriptInterface(webui) {
+/** Legacy `window.$<moduleId>` interface. */
+fun JavaScriptRegistry.legacyModuleInterface() {
+    val name = "$${module.sanitizedId}"
 
-    override val prototypeClass = "ModuleInterface"
-    override val propertyName = "$${module.sanitizedId}"
+    namespace(name) {
+        fun controller() = WindowCompat.getInsetsController(activity.window, webview)
 
-    private fun getWindowInsetsController(activity: Activity): WindowInsetsControllerCompat =
-        WindowCompat.getInsetsController(
-            activity.window,
-            webview
-        )
+        controller().systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 
-    init {
-        with(activity) {
-            getWindowInsetsController(this).systemBarsBehavior =
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        }
-    }
-
-    @ExportMethod
-    fun getManager(): JSONObject {
-        deprecated("$propertyName.getManager()", "webui.getCurrentRootManager()")
-
-        return jsonObject {
-            "name" to settings.workingMode.toString
-            "versionName" to "-1"
-            "versionCode" to -1
-        }
-    }
-
-    @ExportMethod
-    fun getMmrl(): JSONObject {
-        deprecated("$propertyName.getMmrl()", "webui.getCurrentApplication()")
-
-        val packageInfo = kontext.packageManager.getPackageInfo(kontext.packageName, 0)
-        val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
-        val versionName = packageInfo.versionName ?: "unknown"
-
-        return jsonObject {
-            "name" to packageInfo.packageName
-            "versionName" to versionName
-            "versionCode" to versionCode
-        }
-    }
-
-    @Deprecated("Use window.getComputedStyle(document.body).getPropertyValue('--window-inset-top') instead")
-    @ExportMethod
-    fun getWindowTopInset(): Int {
-        deprecated(
-            "$propertyName.getWindowTopInset()",
-            "window.getComputedStyle(document.body).getPropertyValue('--window-inset-top')"
-        )
-        return 0
-    }
-
-    @Deprecated("Use window.getComputedStyle(document.body).getPropertyValue('--window-inset-bottom') instead")
-    @ExportMethod
-    fun getWindowBottomInset(): Int {
-        deprecated(
-            "$propertyName.getWindowBottomInset()",
-            "window.getComputedStyle(document.body).getPropertyValue('--window-inset-bottom')"
-        )
-        return 0
-    }
-
-    @Deprecated("Use window.getComputedStyle(document.body).getPropertyValue('--window-inset-left') instead")
-    @ExportMethod
-    fun getWindowLeftInset(): Int {
-        deprecated(
-            "$propertyName.getWindowLeftInset()",
-            "window.getComputedStyle(document.body).getPropertyValue('--window-inset-left')"
-        )
-        return 0
-    }
-
-    @Deprecated("Use window.getComputedStyle(document.body).getPropertyValue('--window-inset-right') instead")
-    @ExportMethod
-    fun getWindowRightInset(): Int {
-        deprecated(
-            "$propertyName.getWindowRightInset()",
-            "window.getComputedStyle(document.body).getPropertyValue('--window-inset-right')"
-        )
-        return 0
-    }
-
-    @ExportMethod
-    fun createShortcut(): Boolean {
-        deprecated("$propertyName.createShortcut()", "webui.createShortcut()")
-        return module.createShortcut(true)
-    }
-
-    @ExportMethod
-    fun hasShortcut(): Boolean {
-        deprecated("$propertyName.hasShortcut()", "webui.hasShortcut")
-        return module.hasShortcut()
-    }
-
-    @ExportMethod
-    fun isLightNavigationBars(): Boolean = with(activity) {
-            getWindowInsetsController(this).isAppearanceLightNavigationBars
+        function("getManager") {
+            deprecated("$name.getManager()", "webui.getCurrentRootManager()")
+            jsonObject {
+                "name" to settings.workingMode.toString
+                "versionName" to "-1"
+                "versionCode" to -1
+            }
         }
 
-    @ExportMethod
-    fun isDarkMode(): Boolean = settings.darkMode
-
-    @ExportMethod
-    fun setLightNavigationBars(isLight: Boolean) = webview.post {
-        with(activity) {
-            getWindowInsetsController(this).isAppearanceLightNavigationBars = isLight
-        }
-    }
-
-    @ExportMethod
-    fun isLightStatusBars(): Boolean = with(activity) {
-            getWindowInsetsController(this).isAppearanceLightStatusBars
+        function("getMmrl") {
+            deprecated("$name.getMmrl()", "webui.getCurrentApplication()")
+            val packageInfo = kontext.packageManager.getPackageInfo(kontext.packageName, 0)
+            jsonObject {
+                "name" to packageInfo.packageName
+                "versionName" to (packageInfo.versionName ?: "unknown")
+                "versionCode" to PackageInfoCompat.getLongVersionCode(packageInfo)
+            }
         }
 
-    @ExportMethod
-    fun setLightStatusBars(isLight: Boolean) = webview.post {
-        with(activity) {
-            getWindowInsetsController(this).isAppearanceLightStatusBars = isLight
+        listOf("Top", "Bottom", "Left", "Right").forEach { side ->
+            function("getWindow${side}Inset") {
+                deprecated(
+                    "$name.getWindow${side}Inset()",
+                    "window.getComputedStyle(document.body).getPropertyValue('--window-inset-${side.lowercase()}')"
+                )
+                0
+            }
         }
-    }
 
-    @ExportMethod
-    fun getSdk(): Int = Build.VERSION.SDK_INT
+        function("createShortcut") {
+            deprecated("$name.createShortcut()", "webui.createShortcut()")
+            module.createShortcut(true)
+        }
 
-    @ExportMethod
-    fun shareText(text: String) {
-        ShareCompat.IntentBuilder(kontext)
-            .setType("text/plain")
-            .setText(text)
-            .startChooser()
-    }
+        function("hasShortcut") {
+            deprecated("$name.hasShortcut()", "webui.hasShortcut")
+            module.hasShortcut()
+        }
 
-    @ExportMethod
-    fun shareText(text: String, type: String) {
-        ShareCompat.IntentBuilder(kontext)
-            .setType(type)
-            .setText(text)
-            .startChooser()
+        function("isLightNavigationBars") { controller().isAppearanceLightNavigationBars }
+        function("isLightStatusBars") { controller().isAppearanceLightStatusBars }
+        function("isDarkMode") { settings.darkMode }
+        function("getSdk") { Build.VERSION.SDK_INT }
+
+        function("setLightNavigationBars") {
+            val light = checkBoolean(0)
+            webview.post { controller().isAppearanceLightNavigationBars = light }
+        }
+
+        function("setLightStatusBars") {
+            val light = checkBoolean(0)
+            webview.post { controller().isAppearanceLightStatusBars = light }
+        }
+
+        function("shareText") {
+            ShareCompat.IntentBuilder(kontext)
+                .setType(optString(1, "text/plain"))
+                .setText(checkString(0))
+                .startChooser()
+        }
     }
 }

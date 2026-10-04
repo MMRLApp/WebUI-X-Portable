@@ -1,10 +1,10 @@
 package com.dergoogler.mmrl.wx.ui.webui.util
 
-import android.webkit.WebResourceResponse
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.wx.R
+import dev.mmrlx.webui.RouteScope
+import dev.mmrlx.webui.WebResourceResponse
 import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.PathHandler
 import kotlinx.html.DIV
 import kotlinx.html.body
 import kotlinx.html.button
@@ -21,7 +21,7 @@ import kotlinx.html.stream.appendHTML
 import kotlinx.html.title
 import kotlinx.html.ul
 
-internal fun PathHandler.errorResponse(
+internal fun RouteScope.errorResponse(
     title: String,
     description: (DIV.(WebUI) -> Unit)? = null,
     tryFollowing: List<String> = emptyList(),

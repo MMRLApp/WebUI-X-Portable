@@ -5,7 +5,7 @@ import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.Module
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuRandomAccessFile
-import dev.mmrlx.webui.JavaScriptInterface
+import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIFactories
 import dev.mmrlx.webui.WebUISettings
@@ -47,7 +47,7 @@ val WebUI.mdColorScheme: ColorScheme
         ?: throw IllegalStateException("MD Color Scheme not set")
 
 
-fun JavaScriptInterface.deprecated(method: String, replaceWith: String? = null) {
+fun JavaScriptFunctionScope.deprecated(method: String, replaceWith: String? = null) {
     console.warn(
         "[DEPRECATED] The `$method` method will be removed in future versions.${if (replaceWith != null) " Use `$replaceWith` instead." else ""}",
     )
@@ -72,7 +72,7 @@ val Module.sanitizedIdWithFile
 val Module.sanitizedIdWithFileInputStream get(): String = "${sanitizedIdWithFile}InputStream"
 val Module.sanitizedIdWithFileOutputStream get(): String = "${sanitizedIdWithFile}OutputStream"
 
-fun <R> JavaScriptInterface.runTry(
+fun <R> JavaScriptFunctionScope.runTry(
     message: String = "Unknown Error",
     default: R,
     block: () -> R,
@@ -83,18 +83,18 @@ fun <R> JavaScriptInterface.runTry(
     default
 }
 
-fun <R> JavaScriptInterface.runTry(
+fun <R> JavaScriptFunctionScope.runTry(
     message: String = "Unknown Error",
     block: () -> R,
 ): R? = runTry(message, null, block)
 
-fun <R, T> JavaScriptInterface.runTryJsWith(
+fun <R, T> JavaScriptFunctionScope.runTryJsWith(
     with: T,
     message: String = "Unknown Error",
     block: T.() -> R,
 ): R? = runTryJsWith(with, message, null, block)
 
-fun <R, T> JavaScriptInterface.runTryJsWith(
+fun <R, T> JavaScriptFunctionScope.runTryJsWith(
     with: T,
     message: String = "Unknown Error",
     default: R,

@@ -5,12 +5,52 @@ import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Confirm
 import com.dergoogler.mmrl.wx.ui.webui.mdColorScheme
 import com.dergoogler.mmrl.wx.ui.webui.module
 import dev.mmrlx.compose.layout.addOverlayView
-import dev.mmrlx.webui.JavaScriptInterface
-import dev.mmrlx.webui.PureJavaScriptInterface
+import dev.mmrlx.webui.JavaScriptFunctionScope
+import dev.mmrlx.webui.JavaScriptScope
 
 private val requestedPermissions = mutableSetOf<String>()
 
-fun <T> PureJavaScriptInterface.requirePermission(
+fun JavaScriptScope.dangerousFunction(
+    name: String,
+    permission: Permissions.Name,
+    block: JavaScriptFunctionScope.() -> Any?,
+) = function(name) {
+    requirePermission(permission, name) {
+        block()
+    }
+}
+
+fun JavaScriptScope.dangerousFunction(
+    name: String,
+    permission: Permissions.Group,
+    block: JavaScriptFunctionScope.() -> Any?,
+) = function(name) {
+    requirePermission(permission, name) {
+        block()
+    }
+}
+
+fun JavaScriptScope.dangerousAsyncFunction(
+    name: String,
+    permission: Permissions.Name,
+    block: JavaScriptFunctionScope.() -> Any?,
+) = asyncFunction(name) {
+    requirePermission(permission, name) {
+        block()
+    }
+}
+
+fun JavaScriptScope.dangerousAsyncFunction(
+    name: String,
+    permission: Permissions.Group,
+    block: JavaScriptFunctionScope.() -> Any?,
+) = asyncFunction(name) {
+    requirePermission(permission, name) {
+        block()
+    }
+}
+
+fun <T> JavaScriptScope.requirePermission(
     name: Permissions.Group,
     method: String? = null,
     block: () -> T,
@@ -21,7 +61,7 @@ fun <T> PureJavaScriptInterface.requirePermission(
     block,
 )
 
-fun <T> PureJavaScriptInterface.requirePermission(
+fun <T> JavaScriptScope.requirePermission(
     name: Permissions.Name,
     method: String? = null,
     block: () -> T,
@@ -32,55 +72,20 @@ fun <T> PureJavaScriptInterface.requirePermission(
     block,
 )
 
-fun <T> PureJavaScriptInterface.requirePermission(
+fun <T> JavaScriptScope.requirePermission(
     group: Permissions.Group,
     method: String? = null,
     default: T,
     block: () -> T,
 ): T = requirePermission(
-    interfaceId = id,
+    interfaceId = namespaceName,
     group = group,
     method = method,
     default = default,
     block = block,
 )
 
-fun <T> JavaScriptInterface.requirePermission(
-    name: Permissions.Group,
-    method: String? = null,
-    block: () -> T,
-): T? = requirePermission(
-    name,
-    method,
-    null,
-    block,
-)
-
-fun <T> JavaScriptInterface.requirePermission(
-    name: Permissions.Name,
-    method: String? = null,
-    block: () -> T,
-): T? = requirePermission(
-    Permissions.Group(setOf(name)),
-    method,
-    null,
-    block,
-)
-
-fun <T> JavaScriptInterface.requirePermission(
-    group: Permissions.Group,
-    method: String? = null,
-    default: T,
-    block: () -> T,
-): T = requirePermission(
-    interfaceId = propertyName ?: "[\"$id\"]",
-    group = group,
-    method = method,
-    default = default,
-    block = block,
-)
-
-private fun <T> PureJavaScriptInterface.requirePermission(
+private fun <T> JavaScriptScope.requirePermission(
     interfaceId: String,
     group: Permissions.Group,
     method: String? = null,
@@ -120,7 +125,7 @@ private fun <T> PureJavaScriptInterface.requirePermission(
         }
     }
 
-    mainThread {
+    activity.runOnUiThread {
         activity.addOverlayView {
             Md3Confirm(
                 title = "Missing permission",

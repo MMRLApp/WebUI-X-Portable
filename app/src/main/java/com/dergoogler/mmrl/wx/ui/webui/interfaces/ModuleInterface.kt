@@ -2,40 +2,16 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces
 
 import com.dergoogler.mmrl.wx.model.module.toJSONObject
 import com.dergoogler.mmrl.wx.ui.webui.module
-import dev.mmrlx.webui.JavaScriptInterface
-import dev.mmrlx.webui.WebUI
-import dev.mmrlx.webui.javascript.annotation.ExportVariable
+import dev.mmrlx.webui.JavaScriptRegistry
 
-class ModuleInterface(
-    webui: WebUI,
-) : JavaScriptInterface(webui) {
-    override val prototypeClass = "Module"
-    override val propertyName = "mod"
+fun JavaScriptRegistry.moduleInterface() = namespace("mod") {
+    property("adbPath", module.adbPath.toJSONObject())
+    property("path", module.path.toJSONObject())
+    property("id", module.id)
+    property("author", module.author)
+    property("version", module.version)
+    property("versionCode", module.versionCode)
+    property("description", module.description)
+    property("config", module.webrootConfig.toJSONObject())
 
-    @ExportVariable
-    val adbPath = module.adbPath.toJSONObject()
-
-    @ExportVariable
-    val path = module.path.toJSONObject()
-
-    @ExportVariable
-    override val id  = module.id
-
-    @ExportVariable
-    val name = module.name
-
-    @ExportVariable
-    val author = module.author
-
-    @ExportVariable
-    val version = module.version
-
-    @ExportVariable
-    val versionCode = module.versionCode
-
-    @ExportVariable
-    val description = module.description
-
-    @ExportVariable
-    val config = module.webrootConfig.toJSONObject()
 }
