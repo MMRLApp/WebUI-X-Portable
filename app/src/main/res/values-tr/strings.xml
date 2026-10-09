@@ -139,4 +139,6 @@
     <string name="beta"></string>
     <string name="stack_trace_truncated"></string>
     <string name="network"></string>
+    <string name="settings_security_enable_devtools"></string>
+    <string name="dom"></string>
 </resources>
