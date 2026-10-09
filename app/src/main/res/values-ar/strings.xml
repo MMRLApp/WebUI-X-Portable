@@ -19,9 +19,7 @@
     <string name="settings_developer_mode_desc">يقوم بعرض معرف الإضافة والمزيد</string>
     <string name="settings_webui_remote_url">رابط واجهة الويب</string>
     <string name="settings_webui_remote_url_desc">لتسهيل عملية تصحيح الأخطاء. قم باضافة رابط مخصص (https://localhost). انقر على الملاحظة ادناه للمزيد من المعلومات</string>
-    <string name="settings_webui_remote_url_alert_desc">
-سيستخدم WebUI X العنوان الذي تقدمه باستمرار لجميع الوحدات ويتجاوز جميع أخطاء SSL. لاحظ أن هذه الميزة تتطلب خادم ويب محليًا بتوقيع ذاتي، وهي مخصصة لأغراض التصحيح فقط، وليست مخصصة للاستخدام اليومي، وتُستخدم على مسؤوليتك الخاصة.
-</string>
+    <string name="settings_webui_remote_url_alert_desc">سيستخدم WebUI X العنوان الذي تقدمه باستمرار لجميع الوحدات ويتجاوز جميع أخطاء SSL. لاحظ أن هذه الميزة تتطلب خادم ويب محليًا بتوقيع ذاتي، وهي مخصصة لأغراض التصحيح فقط، وليست مخصصة للاستخدام اليومي، وتُستخدم على مسؤوليتك الخاصة.</string>
     <string name="invalid_ip">هذا ليس نطاقآ محليا صالحآ!</string>
     <string name="settings_security_inject_eruda">حقن Eruda</string>
     <string name="non_root_note">
