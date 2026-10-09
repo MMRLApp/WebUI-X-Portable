@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.dergoogler.mmrl.ext.managerVersion
-import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
@@ -28,6 +28,8 @@ import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.suRoute
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.webrootPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.util.dexPlugin
 import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
+import com.dergoogler.mmrl.wx.util.withNewRootShell
+import com.topjohnwu.superuser.ShellUtils
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.rememberWebUIState
 import dev.mmrlx.nio.SuFile
@@ -50,18 +52,20 @@ fun WebUIScreen() {
     var contextMenu by remember { mutableStateOf<WebUIContextMenu?>(null) }
 
     val userAgent = remember {
-        val mmrlVersion = context.managerVersion.second
+        val versionCode = context.managerVersion.second
 
-        val platform = prefs.workingMode.toString
+        val platform = prefs.workingMode
 
-        val platformVersion = PlatformManager.get(-1) {
-            moduleManager.versionCode
+        val platformVersion = if (platform == WorkingMode.MODE_NON_ROOT) {
+            -1
+        } else {
+            (withNewRootShell { ShellUtils.fastCmd(this, "su -V") }).toIntOrNull() ?: -1
         }
 
         val osVersion = Build.VERSION.RELEASE
         val deviceModel = Build.MODEL
 
-        "WebUI X/$mmrlVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
+        "WebUI X/$versionCode (Linux; Android $osVersion; $deviceModel; ${platform.toString}/$platformVersion)"
     }
 
     val isDebug = prefs.developerMode
