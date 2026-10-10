@@ -60,7 +60,8 @@ fun InputStream.detectImageType(): ImageType {
     ) return ImageType.WEBP
 
     // SVG
-    val text = header.copyOf(count).toString(Charsets.UTF_8).trimStart('\uFEFF', ' ', '\t', '\r', '\n')
+    val text =
+        header.copyOf(count).toString(Charsets.UTF_8).trimStart('\uFEFF', ' ', '\t', '\r', '\n')
     if (text.startsWith("<svg", ignoreCase = true) ||
         (text.startsWith("<?xml", ignoreCase = true) && "<svg" in text)
     ) return ImageType.SVG

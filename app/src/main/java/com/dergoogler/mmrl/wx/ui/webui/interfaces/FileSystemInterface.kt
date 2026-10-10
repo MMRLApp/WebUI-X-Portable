@@ -10,12 +10,10 @@ import com.dergoogler.mmrl.wx.ui.webui.util.dangerousAsyncFunction
 import com.dergoogler.mmrl.wx.ui.webui.util.dangerousFunction
 import com.dergoogler.mmrl.wx.util.PermissionParser
 import dev.mmrlx.nio.inputStream
+import dev.mmrlx.nio.writeText
 import dev.mmrlx.utilities.json.getAs
-import dev.mmrlx.utilities.json.toByteArray
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptRegistry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.nio.charset.Charset
 
@@ -29,44 +27,14 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
         val mode = PermissionParser.parse(options?.opt("mode") ?: 0)
 
         val stream = inputStream(path, flags, mode)
-
-        newObject {
-            // read() | read(array) | read(array, off, len)
-            asyncFunction("read") {
-                withContext(Dispatchers.IO) {
-                    when {
-                        isNull(0) -> stream.read()
-                        size == 1 -> stream.read(checkArray(0).toByteArray())
-                        else -> stream.read(
-                            checkArray(0).toByteArray(), checkInt(1), checkInt(2)
-                        )
-                    }
-                }
-            }
-            asyncFunction("skip") {
-                val n = checkLong(0)
-                withContext(Dispatchers.IO) { stream.skip(n) }
-            }
-            function("mark") { stream.mark(checkInt(0)) }
-            asyncFunction("reset") { withContext(Dispatchers.IO) { stream.reset() } }
-            function("markSupported") { stream.markSupported() }
-            asyncFunction("available") { withContext(Dispatchers.IO) { stream.available() } }
-            asyncFunction("close") { withContext(Dispatchers.IO) { stream.close() } }
-        }
+        stream.toJSObject()
     }
 
     dangerousAsyncFunction("outputstream", Permissions.MX.IO) {
         val path = checkString(0)
-
-        val fos = outputStream(path, false) // overwrite (use true for append)
-
-        newObject {
-            function("write") { fos.write(checkArray(0).toByteArray()) }
-            function("close") {
-                fos.flush()
-                fos.close()
-            }
-        }
+        val overwrite = optBoolean(1, false)
+        val fos = outputStream(path, overwrite)
+        fos.toJSObject()
     }
 
     dangerousAsyncFunction("readFile", Permissions.MX.IO) {
@@ -75,9 +43,7 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
         val charset = options.charset()
         val flags = options.getAs<Int>("flags", OsConstants.O_RDONLY)
         val mode = PermissionParser.parse(options?.opt("mode") ?: 0)
-
         sufile(path).inputStream(flags, mode).reader(charset).use { it.readText() }
-
     }
 
     dangerousAsyncFunction("readFileSync", Permissions.MX.IO) {
@@ -86,9 +52,7 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
         val charset = options.charset()
         val flags = options.getAs<Int>("flags", OsConstants.O_RDONLY)
         val mode = PermissionParser.parse(options?.opt("mode") ?: 0)
-
         sufile(path).inputStream(flags, mode).reader(charset).use { it.readText() }
-
     }
 
     dangerousAsyncFunction("writeFile", Permissions.MX.IO) {
@@ -100,10 +64,7 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
             "flags", OsConstants.O_CREAT or OsConstants.O_WRONLY or OsConstants.O_TRUNC
         )
         val mode = PermissionParser.parse(options?.opt("mode") ?: 438)
-
-
-//        sufile(path).writeNIOText(data, flags, mode, charset)
-
+        sufile(path).writeText(data, charset, flags, mode)
     }
 
     dangerousAsyncFunction("access", Permissions.MX.IO) {
