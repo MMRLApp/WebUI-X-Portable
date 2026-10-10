@@ -17,4 +17,9 @@ constructor(
     @ProtoNumber(7) val showCover: Boolean = true,
     @ProtoNumber(8) val showIcon: Boolean = true,
     @ProtoNumber(9) val showSize: Boolean = true,
-)
+    @ProtoNumber(10) val pinnedModules: List<String> = emptyList(),
+) {
+    companion object {
+        const val MAX_PINNED = 3
+    }
+}

@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +31,9 @@ import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
+import com.dergoogler.mmrl.wx.ui.component.PopupMenu
+import com.dergoogler.mmrl.wx.ui.component.PopupMenuItem
+import com.dergoogler.mmrl.wx.ui.component.rememberPopupMenuState
 import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import com.dergoogler.mmrl.wx.ui.screens.modules.components.ModuleItem
 import com.dergoogler.mmrl.wx.ui.screens.modules.components.SkeletonModuleItem
@@ -43,6 +48,7 @@ import dev.mmrlx.compose.ui.rememberPullToRefreshState
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 import dev.mmrlx.compose.ui.text.rememberInputState
 import dev.mmrlx.compose.ui.toolbar.SearchableToolbar
+import dev.mmrlx.compose.ui.toolbar.Toolbar
 import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
 import dev.mmrlx.compose.ui.toolbar.ToolbarScrollBehavior
 import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
@@ -63,6 +69,10 @@ fun ModulesScreen() {
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val isSearch by viewModel.isSearch.collectAsStateWithLifecycle()
+    val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
+    val moduleIds = remember(modules) { modules.map { it.id }.toSet() }
+
+    BackHandler(enabled = selectedIds.isNotEmpty()) { viewModel.clearSelection() }
 
     LaunchedEffect(viewModel.refreshDone) {
         viewModel.refreshDone.collect {
@@ -73,7 +83,23 @@ fun ModulesScreen() {
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         toolbar = {
-            ModuleScreenToolbar(
+            if (selectedIds.isNotEmpty()) {
+                val pinnedIds = prefs.modulesMenu.pinnedModules.filter { it in moduleIds }
+                val unpinnedSelected = selectedIds.count { it !in pinnedIds }
+                val canPin = unpinnedSelected > 0 &&
+                        pinnedIds.size + unpinnedSelected <= ModulesMenu.MAX_PINNED
+                val canUnpin = selectedIds.any { it in pinnedIds }
+
+                SelectionToolbar(
+                    count = selectedIds.size,
+                    canPin = canPin,
+                    canUnpin = canUnpin,
+                    onClose = viewModel::clearSelection,
+                    onPin = viewModel::pinSelected,
+                    onUnpin = viewModel::unpinSelected,
+                    scrollBehavior = scrollBehavior,
+                )
+            } else ModuleScreenToolbar(
                 isSearch = isSearch,
                 query = query,
                 onQueryChange = viewModel::search,
@@ -153,6 +179,48 @@ fun ModulesScreen() {
             }
         }
     }
+}
+
+@Composable
+private fun SelectionToolbar(
+    count: Int,
+    canPin: Boolean,
+    canUnpin: Boolean,
+    onClose: () -> Unit,
+    onPin: () -> Unit,
+    onUnpin: () -> Unit,
+    scrollBehavior: ToolbarScrollBehavior,
+) {
+    val menu = rememberPopupMenuState()
+
+    Toolbar(
+        title = { ToolbarTitle(title = "$count selected") },
+        navigationIcon = {
+            IconButton(onClick = onClose) {
+                Icon(painter = painterResource(R.drawable.x), contentDescription = null)
+            }
+        },
+        scrollBehavior = scrollBehavior,
+        actions = {
+            if (canPin || canUnpin) {
+                IconButton(onClick = menu::open) {
+                    Icon(
+                        painter = painterResource(R.drawable.more_vertical),
+                        contentDescription = null,
+                    )
+
+                    PopupMenu(state = menu) {
+                        if (canPin) {
+                            PopupMenuItem(text = "Pin", icon = R.drawable.pin, onClick = onPin)
+                        }
+                        if (canUnpin) {
+                            PopupMenuItem(text = "Unpin", icon = R.drawable.unpin,onClick = onUnpin)
+                        }
+                    }
+                }
+            }
+        },
+    )
 }
 
 @Composable

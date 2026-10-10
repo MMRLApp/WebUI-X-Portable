@@ -1,6 +1,9 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules.components
 
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -52,6 +55,9 @@ internal fun ModuleItem0(
     module: Module,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null,
+    selected: Boolean = false,
+    pinned: Boolean = false,
+    selectionMode: Boolean = false,
     alpha: Float = 1f,
     decoration: TextDecoration = TextDecoration.None,
     indicator: @Composable() (BoxScope.() -> Unit)? = null,
@@ -64,11 +70,11 @@ internal fun ModuleItem0(
 
     val canWenUIAccessed = isAlive && (module.hasWebUI) && module.state != State.REMOVE
 
-    Column(
+    Box(
         modifier = Modifier
             .combinedClickable(
                 onClick = {
-                    if (canWenUIAccessed) {
+                    if (selectionMode || canWenUIAccessed) {
                         onClick()
                     }
                 },
@@ -76,7 +82,15 @@ internal fun ModuleItem0(
             )
             .fillMaxWidth()
             .flashlightCard()
+            .then(
+                if (selected) Modifier.border(
+                    2.dp,
+                    MaterialTheme.colorScheme.primary,
+                    RoundedCornerShape(12.dp)
+                ) else Modifier
+            )
     ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         if (menu.showCover && module.banner != null) {
             module.banner.exists { cover ->
                 LocalCover(
@@ -227,6 +241,19 @@ internal fun ModuleItem0(
                     }
                 }
             }
+        }
+    }
+
+        if (pinned) {
+            Icon(
+                painter = painterResource(R.drawable.pin),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .size(16.dp),
+                tint = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

@@ -66,6 +66,10 @@ class ModulesViewModel @Inject constructor(
                 .sortedWith(comparator(menu.option, menu.descending))
                 .let { if (menu.pinEnabled) it.sortedByDescending { m -> m.state == State.ENABLE } else it }
                 .let { if (menu.pinWebUI) it.sortedByDescending { m -> m.hasWebUI } else it }
+                .let { list ->
+                    val pinned = menu.pinnedModules
+                    list.sortedBy { m -> pinned.indexOf(m.id).let { i -> if (i < 0) Int.MAX_VALUE else i } }
+                }
 
             if (key.isBlank()) sorted
             else {
@@ -109,6 +113,40 @@ class ModulesViewModel @Inject constructor(
 
     fun setModulesMenu(value: ModulesMenu) {
         viewModelScope.launch { userPreferencesRepository.setModulesMenu(value) }
+    }
+
+    private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedIds: StateFlow<Set<String>> = _selectedIds.asStateFlow()
+
+    fun toggleSelection(id: String) {
+        _selectedIds.value = _selectedIds.value.let { if (id in it) it - id else it + id }
+    }
+
+    fun clearSelection() {
+        _selectedIds.value = emptySet()
+    }
+
+    fun pinSelected() {
+        viewModelScope.launch {
+            val menu = userPreferencesRepository.data.first().modulesMenu
+            val existing = sourceFlow.value.map { it.id }.toSet()
+            val pinned = menu.pinnedModules.filter { it in existing }
+            val toPin = _selectedIds.value.filter { it !in pinned }
+            if (pinned.size + toPin.size > ModulesMenu.MAX_PINNED) return@launch
+            userPreferencesRepository.setModulesMenu(menu.copy(pinnedModules = pinned + toPin))
+            clearSelection()
+        }
+    }
+
+    fun unpinSelected() {
+        viewModelScope.launch {
+            val menu = userPreferencesRepository.data.first().modulesMenu
+            val selected = _selectedIds.value
+            userPreferencesRepository.setModulesMenu(
+                menu.copy(pinnedModules = menu.pinnedModules.filter { it !in selected })
+            )
+            clearSelection()
+        }
     }
 
     fun refreshModules() {

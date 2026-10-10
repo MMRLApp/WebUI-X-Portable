@@ -2,6 +2,9 @@ package com.dergoogler.mmrl.wx.ui.screens.modules.components
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.platform.content.State
@@ -28,12 +31,20 @@ fun ModuleItem(module: Module) {
     val navigator = LocalDestinationsNavigator.current
 
     val removeDialog = rememberDialog()
+    val viewModel = LocalModulesViewModel.current
+    val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
+    val selectionMode = selectedIds.isNotEmpty()
 
     ModuleItem0(
         module = module,
+        selected = module.id in selectedIds,
+        pinned = module.id in prefs.modulesMenu.pinnedModules,
+        selectionMode = selectionMode,
         onClick = {
-            WebUIActivity.start(context, module.id)
+            if (selectionMode) viewModel.toggleSelection(module.id)
+            else WebUIActivity.start(context, module.id)
         },
+        onLongClick = { viewModel.toggleSelection(module.id) },
         indicator = {
             when (module.state) {
                 State.REMOVE,

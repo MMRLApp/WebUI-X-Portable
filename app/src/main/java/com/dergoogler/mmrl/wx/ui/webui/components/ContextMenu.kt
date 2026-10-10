@@ -63,7 +63,7 @@ import java.net.URL
 
 private const val TAG = "ContextMenu"
 
-private val LocalDismissRequest = staticCompositionLocalOf<(() -> Unit)?> { null }
+val LocalDismissRequest = staticCompositionLocalOf<(() -> Unit)?> { null }
 
 @Composable
 fun ContextMenu(
