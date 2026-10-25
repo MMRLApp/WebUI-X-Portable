@@ -63,6 +63,14 @@ fun BehaviorScreen() = SettingsPage { prefs, update ->
             }
 
             SwitchItem(
+                checked = prefs.allowWebUiFullscreen,
+                onChange = { update { copy(allowWebUiFullscreen = it) } }
+            ) {
+                Title(R.string.settings_allow_fullscreen_webui)
+                Description(R.string.settings_allow_fullscreen_webui_desc)
+            }
+
+            SwitchItem(
                 checked = prefs.forceKillWebUIProcess,
                 onChange = { update { copy(forceKillWebUIProcess = it) } }
             ) {
@@ -88,6 +96,8 @@ fun BehaviorScreen() = SettingsPage { prefs, update ->
                 Title(R.string.settings_opt_out_app_events)
                 Description(R.string.settings_opt_out_app_events_desc)
             }
+
+
         }
     }
 }

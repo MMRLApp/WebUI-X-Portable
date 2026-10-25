@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
 import com.dergoogler.mmrl.wx.ui.webui.isRootMode
 import com.dergoogler.mmrl.wx.ui.webui.module
+import com.dergoogler.mmrl.wx.ui.webui.preferences
 import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
 import com.dergoogler.mmrl.wx.ui.webui.util.dangerousFunction
 import com.dergoogler.mmrl.wx.ui.webui.util.packages
@@ -120,6 +121,8 @@ fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
     }
 
     function("fullScreen") {
+        if (!preferences.allowWebUiFullscreen) return@function null
+
         val enable = checkBoolean(0)
         webview.post {
             if (enable) hideSystemUI(activity.window) else showSystemUI(activity.window)

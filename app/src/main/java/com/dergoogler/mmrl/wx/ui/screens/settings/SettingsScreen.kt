@@ -21,6 +21,7 @@ import com.ramcosta.composedestinations.generated.destinations.AppThemeScreenDes
 import com.ramcosta.composedestinations.generated.destinations.BehaviorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.DeveloperScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.LicensesScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SecurityScreenDestination
 import dev.mmrlx.compose.ui.list.List
 import dev.mmrlx.compose.ui.list.component.InputDialogItem
 import dev.mmrlx.compose.ui.list.component.RadioDialogItem
@@ -74,6 +75,13 @@ fun SettingsScreen() = SettingsPage { prefs, update ->
                     icon = R.drawable.activity,
                     title = R.string.behavior,
                     desc = R.string.behavior_desc
+                )
+
+                NavButton(
+                    route = SecurityScreenDestination,
+                    icon = R.drawable.shield,
+                    title = R.string.settings_security,
+                    desc = R.string.settings_security_desc
                 )
 
                 val manager: FeaturedManager? =

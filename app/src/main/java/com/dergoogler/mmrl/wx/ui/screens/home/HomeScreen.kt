@@ -118,7 +118,7 @@ fun HomeScreen() {
                             Title(R.string.unix_name)
 
                             SensitiveDescription(
-                                enabled = true,
+                                enabled = userPreferences.hideUnixNameInHome,
                                 text = "${uname.sysname} ${uname.release} ${uname.version} ${uname.machine}"
                             )
                         }
@@ -133,7 +133,7 @@ fun HomeScreen() {
                             Icon(painter = painterResource(R.drawable.fingerprint))
                             Title(R.string.fingerprint)
                             SensitiveDescription(
-                                enabled = true,
+                                enabled = userPreferences.hideFingerprintInHome,
                                 text = Build.FINGERPRINT
                             )
                         }

@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
 import androidx.compose.material3.ColorScheme
+import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.Module
 import dev.mmrlx.nio.SuFile
@@ -11,14 +12,15 @@ import dev.mmrlx.webui.WebUIFactories
 import dev.mmrlx.webui.WebUISettings
 import dev.mmrlx.webui.extra
 
+val WebUI.preferences: UserPreferences
+    get() = settings.preferences
+
+val WebUISettings.preferences: UserPreferences
+    get() = extra<UserPreferences>("preferences")
+        ?: throw IllegalStateException("Preferences not set")
+
 val WebUI.module: Module
     get() = settings.extra<Module>("module") ?: throw IllegalStateException("Module not set")
-
-val WebUISettings.enableErudaConsole: Boolean
-    get() = debug && extra<Boolean>("enableEruda", false)
-
-val WebUISettings.autoOpenEruda: Boolean
-    get() = enableErudaConsole && extra<Boolean>("autoOpenEruda", false)
 
 val WebUISettings.disableGlobalExitConfirm: Boolean
     get() = extra<Boolean>("disableGlobalExitConfirm", false)

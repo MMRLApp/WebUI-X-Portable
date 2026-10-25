@@ -116,12 +116,11 @@ fun WebUIScreen() {
 
                 extra = mapOf(
                     "module" to module,
-                    "enableEruda" to prefs.enableErudaConsole,
-                    "autoOpenEruda" to prefs.enableAutoOpenEruda,
                     "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
                     "isRootMode" to prefs.workingMode.isRoot,
                     "workingMode" to prefs.workingMode,
                     "mdColorScheme" to colorScheme,
+                    "preferences" to prefs,
                 )
             }
             .registerJavaScriptInterfaces {

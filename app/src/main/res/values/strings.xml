@@ -243,4 +243,6 @@
     <string name="settings_opt_out_app_events_desc">Opt-out for in-app events like Halloween, Winter (Christmas), Fall etc.</string>
     <string name="settings_log_event_payload">Log Event Payload</string>
     <string name="settings_log_event_payload_desc">Logs the payload from a executed event into the console.</string>
+    <string name="settings_allow_fullscreen_webui">Allow Fullscreen WebUI</string>
+    <string name="settings_allow_fullscreen_webui_desc">Allow WebUi\'s to enter fullscreen. Disabling this could result in broken UI/UX</string>
 </resources>
