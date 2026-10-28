@@ -2,7 +2,7 @@
 <resources>
     <string name="app_theme_dark_theme_light">Clair</string>
     <string name="app_theme_dark_theme_dark">Sombre</string>
-    <string name="invalid_ip">Il ne s\'agit pas d\'un domaine local valide !</string>
+    <string name="invalid_ip">Il ne s\'agit pas d\'un domaine local valide !</string>
     <string name="settings_security_inject_eruda">Injecter Eruda</string>
     <string name="app_name">WebUI X</string>
     <string name="missing_mod_id">L\'ID du module est manquant</string>
@@ -22,7 +22,7 @@
     <string name="settings_webui_remote_url">URL distante de l\'interface WebUI</string>
     <string name="settings_webui_remote_url_desc">Pour simplifier le débogage, indiquez un domaine local tel que http://localhost. Voir l\'alerte ci-dessus pour plus d\'informations.</string>
     <string name="settings_webui_remote_url_alert_desc">WebUI X utilisera systématiquement l\'adresse fournie pour tous les modules et contournera toutes les erreurs SSL. Notez qu\'un serveur web local auto-signé est nécessaire pour utiliser cette fonctionnalité, qui est destinée à des fins de débogage uniquement, n\'est pas destinée à un usage quotidien et est utilisée à vos propres risques.</string>
-    <string name="welcome">Bienvenue !</string>
+    <string name="welcome">Bienvenue !</string>
     <string name="select">Sélectionner</string>
     <string name="continue_with">Continuer avec %1$s</string>
     <string name="select_your_platform">Sélectionnez votre plateforme</string>
@@ -58,7 +58,7 @@
     <string name="notification_platform_service">Service de plateforme</string>
     <string name="settings_date_pattern">Modèle de date</string>
     <string name="settings_date_pattern_desc">Utilisez votre propre format de date</string>
-    <string name="settings_date_pattern_dialog_desc">Le modèle de date sera analysé comme suit :\n[color=primary]%1$s[/color]</string>
+    <string name="settings_date_pattern_dialog_desc">Le modèle de date sera analysé comme suit :\n[color=primary]%1$s[/color]</string>
     <string name="controlled_by_native">Contrôle natif</string>
     <string name="delete">Supprimer</string>
     <string name="webui_config_exit_confirm_title">Confirmer la sortie</string>
