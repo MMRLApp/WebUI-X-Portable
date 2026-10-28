@@ -19,14 +19,10 @@
     <string name="settings_developer_mode_desc">يقوم بعرض معرف الإضافة والمزيد</string>
     <string name="settings_webui_remote_url">رابط واجهة الويب</string>
     <string name="settings_webui_remote_url_desc">لتسهيل عملية تصحيح الأخطاء. قم باضافة رابط مخصص (https://localhost). انقر على الملاحظة ادناه للمزيد من المعلومات</string>
-    <string name="settings_webui_remote_url_alert_desc">
-سيستخدم WebUI X العنوان الذي تقدمه باستمرار لجميع الوحدات ويتجاوز جميع أخطاء SSL. لاحظ أن هذه الميزة تتطلب خادم ويب محليًا بتوقيع ذاتي، وهي مخصصة لأغراض التصحيح فقط، وليست مخصصة للاستخدام اليومي، وتُستخدم على مسؤوليتك الخاصة.
-</string>
+    <string name="settings_webui_remote_url_alert_desc">سيستخدم WebUI X العنوان الذي تقدمه باستمرار لجميع الوحدات ويتجاوز جميع أخطاء SSL. لاحظ أن هذه الميزة تتطلب خادم ويب محليًا بتوقيع ذاتي، وهي مخصصة لأغراض التصحيح فقط، وليست مخصصة للاستخدام اليومي، وتُستخدم على مسؤوليتك الخاصة.</string>
     <string name="invalid_ip">هذا ليس نطاقآ محليا صالحآ!</string>
     <string name="settings_security_inject_eruda">حقن Eruda</string>
-    <string name="non_root_note">
-للوصول إلى جميع ميزات WebUI X، يُطلب وجود جهاز Android بصلاحيات الروت. لا يوفر WebUI X تعليمات للروت ولا يتحمل أي مسؤولية عن أي ضرر قد يحدث أثناء عملية الروت أو نتيجة لاستخدام WebUI X نفسه.
-</string>
+    <string name="non_root_note">للوصول إلى جميع ميزات WebUI X، يُطلب وجود جهاز Android بصلاحيات الروت. لا يوفر WebUI X تعليمات للروت ولا يتحمل أي مسؤولية عن أي ضرر قد يحدث أثناء عملية الروت أو نتيجة لاستخدام WebUI X نفسه.</string>
     <string name="select">تحديد</string>
     <string name="continue_with">المتابعة مع %1$s</string>
     <string name="select_your_platform">اختر المنصة الخاصة بك</string>
