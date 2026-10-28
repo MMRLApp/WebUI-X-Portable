@@ -141,8 +141,8 @@
     <string name="network">Red</string>
     <string name="console">Consola</string>
     <string name="dom">DOM</string>
-    <string name="settings_log_event_payload_desc">Registra en la consola la carga útil de un evento ejecutado</string>
-    <string name="settings_log_event_payload">Registrar carga útil de evento</string>
+    <string name="settings_log_event_payload_desc">Registra en la consola la carga útil de un evento ejecutado.</string>
+    <string name="settings_log_event_payload">Registrar carga útil del evento</string>
     <string name="settings_opt_out_app_events_desc">Desactivar eventos dentro de la app tales como Halloween, Invierno (Navidad), Otoño, etc.</string>
     <string name="settings_opt_out_app_events">Desactivar eventos dentro de la app</string>
     <string name="copy_email_address">Copiar dirección de e-mail</string>
@@ -239,4 +239,10 @@
     <string name="settings_enable_context_menu">Activar menú contextual</string>
     <string name="settings_webui_engine_mx">WebUI MX</string>
     <string name="create_shortcut_desc">Cree su propio acceso directo para este módulo</string>
+    <string name="settings_allow_fullscreen_webui_desc">Permitir que la WebUI pase a pantalla completa. Desactivarlo podría resultar en una UI/UX con errores</string>
+    <string name="settings_allow_fullscreen_webui">Permitir WebUI en pantalla completa</string>
+    <string name="menu_show_size">Mostrar tamaño</string>
+    <string name="menu_show_icon">Mostrar icono</string>
+    <string name="menu_show_cover">Mostrar portada/encabezado</string>
+    <string name="create_shortcut">Crear acceso directo</string>
 </resources>
