@@ -136,4 +136,7 @@
     <string name="settings_force_kill_webui_process_desc">Немедленно завершает текущий процесс WebUI X. [bold]Это не затрагивает KSU WebUI.[/bold]</string>
     <string name="console">Консоль</string>
     <string name="network">Сеть</string>
+    <string name="settings_security_enable_devtools_desc"></string>
+    <string name="beta"></string>
+    <string name="stack_trace_truncated"></string>
 </resources>

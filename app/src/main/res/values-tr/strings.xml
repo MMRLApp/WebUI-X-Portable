@@ -134,4 +134,9 @@
     <string name="globally_disabled">Küresel olarak devre dışı</string>
     <string name="behavior">Davranış</string>
     <string name="behavior_desc">Uygulama özelliklerinin davranışını değiştir.</string>
+    <string name="console"></string>
+    <string name="settings_security_enable_devtools_desc"></string>
+    <string name="beta"></string>
+    <string name="stack_trace_truncated"></string>
+    <string name="network"></string>
 </resources>

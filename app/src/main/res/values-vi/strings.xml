@@ -123,4 +123,18 @@
     <string name="behavior_desc">Thay đổi hành vi của các tính năng ứng dụng.</string>
     <string name="webui_config_kill_shell_when_background">Dừng Shell</string>
     <string name="webui_config_kill_shell_when_background_desc">Dừng Shell khi WebUI chuyển sang chạy ngầm. Việc này giúp ngăn chặn mã thực thi dưới nền.</string>
+    <string name="setting_about"></string>
+    <string name="dex_source_type_dex"></string>
+    <string name="console"></string>
+    <string name="cache"></string>
+    <string name="settings_security_enable_devtools_desc"></string>
+    <string name="dex_source_type_apk"></string>
+    <string name="delete"></string>
+    <string name="beta"></string>
+    <string name="controlled_by_native"></string>
+    <string name="stack_trace_truncated"></string>
+    <string name="plugin_type"></string>
+    <string name="network"></string>
+    <string name="globally_disabled"></string>
+    <string name="dex_source_type_dex_desc"></string>
 </resources>
