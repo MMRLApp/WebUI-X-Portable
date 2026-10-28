@@ -126,4 +126,19 @@
     <string name="settings_webui_engine_prefer_module"></string>
     <string name="settings_webui_remote_url"></string>
     <string name="module_config"></string>
+    <string name="settings_date_pattern_dialog_desc"></string>
+    <string name="webui_config_refresh_interceptor_desc"></string>
+    <string name="settings_date_pattern"></string>
+    <string name="webui_config_title_desc"></string>
+    <string name="webui_config_pull_to_refresh_desc"></string>
+    <string name="settings_webui_engine_desc"></string>
+    <string name="sukisu"></string>
+    <string name="settings_security_inject_eruda_desc"></string>
+    <string name="settings_security_enable_devtools"></string>
+    <string name="webui_config_history_fallback_desc"></string>
+    <string name="settings_developer_mode_desc"></string>
+    <string name="webui_config_kill_shell_when_background_desc"></string>
+    <string name="webui_config_icon_desc"></string>
+    <string name="settings_date_pattern_desc"></string>
+    <string name="dom"></string>
 </resources>
