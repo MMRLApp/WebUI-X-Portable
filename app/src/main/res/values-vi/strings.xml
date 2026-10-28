@@ -137,4 +137,8 @@
     <string name="network"></string>
     <string name="globally_disabled"></string>
     <string name="dex_source_type_dex_desc"></string>
+    <string name="webui_config_title_desc"></string>
+    <string name="settings_security_enable_devtools"></string>
+    <string name="webui_config_icon_desc"></string>
+    <string name="dom"></string>
 </resources>
