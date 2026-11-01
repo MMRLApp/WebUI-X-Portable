@@ -3,16 +3,16 @@ package com.dergoogler.mmrl.wx.ui.screens.modules.components
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.wx.model.module.Module
+import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
-import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity
+import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
+import com.dergoogler.mmrl.wx.ui.webui.activity.BaseWebUIActivity
 import com.ramcosta.composedestinations.generated.destinations.ConfigEditorScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
 import dev.mmrlx.compose.ui.Text
@@ -25,7 +25,8 @@ import dev.mmrlx.compose.ui.dialog.rememberDialog
 import java.io.File
 
 @Composable
-fun ModuleItem(module: Module) {
+fun ModuleItem() {
+    val module = LocalModule.current
     val context = LocalContext.current
     val prefs = LocalUserPreferences.current
     val navigator = LocalDestinationsNavigator.current
@@ -35,6 +36,8 @@ fun ModuleItem(module: Module) {
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
     val selectionMode = selectedIds.isNotEmpty()
 
+    val launch = BaseWebUIActivity.launcher()
+
     ModuleItem0(
         module = module,
         selected = module.id in selectedIds,
@@ -42,7 +45,7 @@ fun ModuleItem(module: Module) {
         selectionMode = selectionMode,
         onClick = {
             if (selectionMode) viewModel.toggleSelection(module.id)
-            else WebUIActivity.start(context, module.id)
+            else launch()
         },
         onLongClick = { viewModel.toggleSelection(module.id) },
         indicator = {

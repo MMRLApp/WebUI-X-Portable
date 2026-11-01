@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DebugAlert
+import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.ui.component.PopupMenu
 import com.dergoogler.mmrl.wx.ui.component.PopupMenuItem
@@ -172,7 +174,9 @@ fun ModulesScreen() {
                             items = modules.filter { it.hasWebUI },
                             key = { it.id },
                         ) { module ->
-                            ModuleItem(module = module)
+                            CompositionLocalProvider(LocalModule provides module) {
+                                ModuleItem()
+                            }
                         }
                     }
                 }
@@ -214,7 +218,11 @@ private fun SelectionToolbar(
                             PopupMenuItem(text = "Pin", icon = R.drawable.pin, onClick = onPin)
                         }
                         if (canUnpin) {
-                            PopupMenuItem(text = "Unpin", icon = R.drawable.unpin,onClick = onUnpin)
+                            PopupMenuItem(
+                                text = "Unpin",
+                                icon = R.drawable.unpin,
+                                onClick = onUnpin
+                            )
                         }
                     }
                 }

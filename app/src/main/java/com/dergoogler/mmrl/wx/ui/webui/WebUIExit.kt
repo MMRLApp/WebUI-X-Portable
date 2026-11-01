@@ -8,7 +8,6 @@ import com.dergoogler.mmrl.wx.ui.webui.alerts.Confirm
 import dev.mmrlx.compose.layout.addOverlayView
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIInterceptorType
-import kotlin.system.exitProcess
 
 private fun WebUI.handleNativeExit(config: WebrootConfig) {
     if (webview.canGoBack()) {
@@ -17,7 +16,7 @@ private fun WebUI.handleNativeExit(config: WebrootConfig) {
     }
 
     if (settings.disableGlobalExitConfirm) {
-        exit()
+        exitSelf()
         return
     }
 
@@ -28,7 +27,7 @@ private fun WebUI.handleNativeExit(config: WebrootConfig) {
                     title = getString(R.string.exit),
                     description = getString(R.string.exit_desc),
                     onConfirm = {
-                        exit()
+                        exitSelf()
                     },
                     onClose = {},
                     confirmText = getString(R.string.confirm),
@@ -40,7 +39,7 @@ private fun WebUI.handleNativeExit(config: WebrootConfig) {
         }
     }
 
-    exit()
+    exitSelf()
 }
 
 fun WebUI.backHandlers(): WebUI {
@@ -73,15 +72,4 @@ fun WebUI.backHandlers(): WebUI {
                 }
             }
         }
-}
-
-fun WebUI.exit() {
-    if (!settings.forceKillWebUIProcess) {
-        activity.finish()
-        return
-    }
-
-    activity.finish()
-    android.os.Process.killProcess(android.os.Process.myPid())
-    exitProcess(0)
 }

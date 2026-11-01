@@ -26,7 +26,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile
 import org.luaj.LuaTable
 import java.io.File
 import java.io.InputStream
-import com.dergoogler.mmrl.wx.ui.webui.WebUIActivity as MxWebUIActivity
+import com.dergoogler.mmrl.wx.ui.webui.activity.ExistingProcessWebUIActivity as MxWebUIActivity
 
 data class Module(
     val adbPath: AdbPath,

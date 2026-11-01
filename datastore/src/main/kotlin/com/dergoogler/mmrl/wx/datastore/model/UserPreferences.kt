@@ -49,6 +49,7 @@ data class UserPreferences(
     @ProtoNumber(47) val optOutAppEvents: Boolean = false,
     @ProtoNumber(48) val logEventPayload: Boolean = false,
     @ProtoNumber(49) val allowWebUiFullscreen: Boolean = true,
+    @ProtoNumber(50) val webuiLaunchMode: WebUILaunchMode = WebUILaunchMode.NO_ACTIVITY,
 ) {
     fun getAdbPath(context: Context): String {
         if (workingMode == WorkingMode.MODE_NON_ROOT) {

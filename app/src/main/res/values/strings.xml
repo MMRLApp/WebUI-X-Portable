@@ -245,4 +245,12 @@
     <string name="settings_log_event_payload_desc">Logs the payload from a executed event into the console.</string>
     <string name="settings_allow_fullscreen_webui">Allow Fullscreen WebUI</string>
     <string name="settings_allow_fullscreen_webui_desc">Allow WebUi\'s to enter fullscreen. Disabling this could result in broken UI/UX</string>
+    <string name="choose_the_way_you_launch_a_webui">Choose the way you launch a WebUI</string>
+    <string name="webui_launch_mode">WebUI Launch Mode</string>
+    <string name="webui_launch_mode_1_title">Current Activity</string>
+    <string name="webui_launch_mode_1_desc">Loads the WebUI within the current activity and process. WebUI crashes or failures can affect the entire application.</string>
+    <string name="webui_launch_mode_2_title">Same Process</string>
+    <string name="webui_launch_mode_2_desc">Creates a new activity within the application\'s existing process. WebUI crashes or failures can still affect the entire application.</string>
+    <string name="webui_launch_mode_3_title">Separate Process</string>
+    <string name="webui_launch_mode_3_desc">Creates a new activity in an isolated process. WebUI crashes or failures are contained within that process, helping protect the main application.</string>
 </resources>

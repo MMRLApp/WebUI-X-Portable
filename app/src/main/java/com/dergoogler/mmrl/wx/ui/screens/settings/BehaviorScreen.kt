@@ -9,12 +9,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.datastore.model.WebUILaunchMode
 import com.dergoogler.mmrl.wx.ui.component.NavigateUpToolbar
 import com.dergoogler.mmrl.wx.ui.component.SettingsPage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import dev.mmrlx.compose.ui.list.List
 import dev.mmrlx.compose.ui.list.component.InputDialogItem
+import dev.mmrlx.compose.ui.list.component.RadioDialogItem
+import dev.mmrlx.compose.ui.list.component.RadioDialogOption
 import dev.mmrlx.compose.ui.list.component.SwitchItem
 import dev.mmrlx.compose.ui.list.component.item.Description
 import dev.mmrlx.compose.ui.list.component.item.DialogDescription
@@ -71,11 +74,39 @@ fun BehaviorScreen() = SettingsPage { prefs, update ->
             }
 
             SwitchItem(
-                checked = prefs.forceKillWebUIProcess,
+                enabled = prefs.webuiLaunchMode == WebUILaunchMode.SEPARATE_PROCESS,
+                checked = prefs.forceKillWebUIProcess && prefs.webuiLaunchMode == WebUILaunchMode.SEPARATE_PROCESS,
                 onChange = { update { copy(forceKillWebUIProcess = it) } }
             ) {
                 Title(R.string.settings_force_kill_webui_process)
                 Description(R.string.settings_force_kill_webui_process_desc)
+            }
+
+            RadioDialogItem(
+                selection = prefs.webuiLaunchMode,
+                options = listOf(
+                    RadioDialogOption(
+                        value = WebUILaunchMode.NO_ACTIVITY,
+                        title = stringResource(R.string.webui_launch_mode_1_title),
+                        desc = stringResource(R.string.webui_launch_mode_1_desc)
+                    ),
+                    RadioDialogOption(
+                        value = WebUILaunchMode.SAME_APP_PROCESS,
+                        title = stringResource(R.string.webui_launch_mode_2_title),
+                        desc = stringResource(R.string.webui_launch_mode_2_desc)
+                    ),
+                    RadioDialogOption(
+                        value = WebUILaunchMode.SEPARATE_PROCESS,
+                        title = stringResource(R.string.webui_launch_mode_3_title),
+                        desc = stringResource(R.string.webui_launch_mode_3_desc)
+                    )
+                ),
+                onConfirm = {
+                    update { copy(webuiLaunchMode = it.value) }
+                },
+            ) {
+                Title(R.string.webui_launch_mode)
+                Description(R.string.choose_the_way_you_launch_a_webui)
             }
 
             InputDialogItem(

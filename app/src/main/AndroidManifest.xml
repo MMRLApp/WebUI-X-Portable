@@ -84,7 +84,7 @@
         </activity>
 
         <activity
-            android:name="${__packageName__}.ui.activity.webui.WebUIActivity"
+            android:name="${__packageName__}.ui.webui.activity.NewProcessWebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:hardwareAccelerated="true"
@@ -101,7 +101,7 @@
         </activity>
 
         <activity
-            android:name="${__packageName__}.ui.webui.WebUIActivity"
+            android:name="${__packageName__}.ui.webui.activity.ExistingProcessWebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:hardwareAccelerated="true"
@@ -109,7 +109,6 @@
             android:exported="true"
             android:label="WebUI X"
             android:permission="${webuiPermissionId}.permission.WEBUI_X"
-            android:process="${webuiPermissionId}.process.webui"
             android:taskAffinity="${applicationId}.WEBUI_X">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
