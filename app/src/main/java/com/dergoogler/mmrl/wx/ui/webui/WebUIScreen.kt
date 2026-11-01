@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -222,6 +223,12 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
 
                 webrootPathHandler()
             }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            wstate.destroy()
+        }
     }
 
     WebUIView(wstate)
