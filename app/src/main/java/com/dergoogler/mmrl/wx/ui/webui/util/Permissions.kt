@@ -35,7 +35,8 @@ object Permissions {
         SHELL,
         PACKAGES,
         MODINFO,
-        IO;
+        IO,
+        PM;
 
         override val permissionName: String
             get() = "kernelsu.permission.$name"

@@ -1,21 +1,19 @@
 package com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu
 
-import android.content.pm.ApplicationInfo
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.view.Window
 import android.widget.Toast
-import androidx.core.content.pm.PackageInfoCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.wx.model.module.killShellWhenBackground
+import com.dergoogler.mmrl.wx.ui.webui.deprecatedFunction
 import com.dergoogler.mmrl.wx.ui.webui.isRootMode
 import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.preferences
 import com.dergoogler.mmrl.wx.ui.webui.util.Permissions
 import com.dergoogler.mmrl.wx.ui.webui.util.dangerousFunction
-import com.dergoogler.mmrl.wx.ui.webui.util.packages
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
@@ -241,70 +239,19 @@ fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
         currentModuleInfo.toString()
     }
 
-    function("listPackages") {
-        val type = checkString(0).lowercase()
-
-        JSONArray(
-            packages
-                .filter { appInfo ->
-                    val flags = appInfo.applicationInfo?.flags ?: 0
-                    val category = appInfo.applicationInfo?.category ?: 0
-
-                    when (type) {
-                        "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                        "user" -> (flags and ApplicationInfo.FLAG_SYSTEM) == 0
-                        "game" -> category == ApplicationInfo.CATEGORY_GAME ||
-                                (flags and ApplicationInfo.FLAG_IS_GAME) != 0
-
-                        else -> true
-                    }
-                }
-                .map { it.packageName }
-                .sorted()
-        ).toString()
+    deprecatedFunction("listPackages", replaceWith = "ksu.pm().listPackages(type: string)", once = true) {
+        listPackages()
     }
 
-    function("getPackagesInfo") {
-        // accepts an array, or the old JSON string
-        val packageNames = optArray(0) ?: JSONArray(checkString(0))
-        val appMap = packages.associateBy { it.packageName }
-        val jsonArray = JSONArray()
-
-        for (i in 0 until packageNames.length()) {
-            val pkgName = packageNames.getString(i)
-            val appInfo = appMap[pkgName]
-            val obj = JSONObject()
-
-            if (appInfo != null) {
-                val app = appInfo.applicationInfo
-                obj.put("packageName", appInfo.packageName)
-                obj.put("versionName", appInfo.versionName ?: "")
-                obj.put("versionCode", PackageInfoCompat.getLongVersionCode(appInfo))
-                obj.put("appLabel", pm.getApplicationLabel(appInfo.applicationInfo!!))
-                obj.put("category", app?.category ?: JSONObject.NULL)
-                obj.put("flags", app?.flags ?: JSONObject.NULL)
-                obj.put(
-                    "isSystem",
-                    if (app != null) (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0 else JSONObject.NULL
-                )
-                obj.put(
-                    "isGame",
-                    if (app != null) app.category == ApplicationInfo.CATEGORY_GAME ||
-                            (app.flags and ApplicationInfo.FLAG_IS_GAME) != 0 else JSONObject.NULL
-                )
-                obj.put("uid", app?.uid ?: JSONObject.NULL)
-            } else {
-                obj.put("packageName", pkgName)
-                obj.put("error", "Package not found or inaccessible")
-            }
-
-            jsonArray.put(obj)
-        }
-
-        jsonArray.toString()
+    deprecatedFunction("getPackagesInfo", replaceWith = "ksu.pm().getPackagesInfo(packages: string | string[])", once = true) {
+        getPackagesInfo()
     }
 
     dangerousFunction("io", Permissions.KSU.IO) {
         newObject { ksuIO(io) }
+    }
+
+    dangerousFunction("pm", Permissions.KSU.PM) {
+        newObject { ksuPm() }
     }
 }

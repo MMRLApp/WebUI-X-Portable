@@ -7,6 +7,7 @@ import com.dergoogler.mmrl.wx.model.module.Module
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.JavaScriptFunctionScope
+import dev.mmrlx.webui.JavaScriptScope
 import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIFactories
 import dev.mmrlx.webui.WebUISettings
@@ -48,11 +49,28 @@ val WebUI.mdColorScheme: ColorScheme
     get() = settings.extra<ColorScheme>("mdColorScheme")
         ?: throw IllegalStateException("MD Color Scheme not set")
 
+private val printedDeprecations = mutableSetOf<String>()
 
-fun JavaScriptFunctionScope.deprecated(method: String, replaceWith: String? = null) {
+fun JavaScriptFunctionScope.deprecated(
+    method: String,
+    replaceWith: String? = null,
+    once: Boolean = false,
+) {
+    if (once && !printedDeprecations.add(method)) return
+
     console.warn(
         "[DEPRECATED] The `$method` method will be removed in future versions.${if (replaceWith != null) " Use `$replaceWith` instead." else ""}",
     )
+}
+
+fun JavaScriptScope.deprecatedFunction(
+    name: String,
+    replaceWith: String? = null,
+    once: Boolean = true,
+    block: JavaScriptFunctionScope.() -> Any?,
+) = function(name) {
+    deprecated(name, replaceWith, once)
+    block()
 }
 
 val Module.sanitizedId: String
