@@ -142,7 +142,7 @@ fun ConfigEditorContent() {
             InputDialogItem(
                 value = config.title ?: "",
                 onConfirm = {
-                    config.set("title", it)
+                    config.set("title", it.value)
                 }
             ) {
                 Title(R.string.webui_config_title_title)
@@ -158,7 +158,7 @@ fun ConfigEditorContent() {
             InputDialogItem(
                 value = config.icon ?: "",
                 onConfirm = {
-                    config.set("icon", it)
+                    config.set("icon", it.value)
                 }
             ) {
                 Title(R.string.webui_config_icon_title)
