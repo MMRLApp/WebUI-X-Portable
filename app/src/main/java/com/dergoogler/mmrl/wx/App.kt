@@ -16,7 +16,7 @@ import java.io.File
 class App : LifecycleApplication() {
     init {
         val scope = newCoroutineScope(Dispatchers.IO, false)
-        scope.launch {
+        scope.launch(Dispatchers.IO) {
             SuFile.AutoInit(this@App)
         }
     }
