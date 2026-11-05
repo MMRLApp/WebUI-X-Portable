@@ -253,4 +253,34 @@
     <string name="webui_launch_mode_2_desc">Creates a new activity within the application\'s existing process. WebUI crashes or failures can still affect the entire application.</string>
     <string name="webui_launch_mode_3_title">Separate Process</string>
     <string name="webui_launch_mode_3_desc">Creates a new activity in an isolated process. WebUI crashes or failures are contained within that process, helping protect the main application.</string>
+    <string name="webui_config_per_file_header">Per File Headers</string>
+    <string name="webui_config_per_file_header_desc">Configure your own headers for the entire WebUI and files you want</string>
+    <string name="rules">Rules</string>
+    <string name="add_rule">Add rule</string>
+    <string name="delete_rule">Delete rule?</string>
+    <string name="dialog_delete_rule_no_undone">This rule and its headers will be removed. This can\'t be undone.</string>
+    <string name="how_rules_work">How rules work</string>
+    <string name="how_rules_work_info_1">Rules are checked top to bottom. An exact filename match wins first, then the first matching glob.</string>
+    <string name="how_rules_work_info_2">HTML files always get the default %1$s unless a rule defines one. Set its value to empty to send none.</string>
+    <string name="how_rules_work_info_3">Use {domain} as a placeholder for the module\'s base URL.</string>
+    <string name="no_rules_yet">No rules yet</string>
+    <string name="only_the_default_csp_is_applied_to_html_files">Only the default CSP is applied to HTML files.</string>
+    <string name="no_headers">No headers</string>
+    <string name="removed">removed</string>
+    <string name="a_rule_with_this_pattern_already_exists">A rule with this pattern already exists</string>
+    <string name="invalid_header_name">Invalid header name</string>
+    <string name="duplicate_header">Duplicate header</string>
+    <string name="no_line_breaks_allowed">No line breaks allowed</string>
+    <string name="edit_rule">Edit rule</string>
+    <string name="file_name_or_glob">File name or glob</string>
+    <string name="e_g_index_html_or_html_htm">e.g. index.html or *.{html,htm}</string>
+    <string name="headers">Headers</string>
+    <string name="no_headers_yet_add_one_below_or_pick_a_suggestion">No headers yet. Add one below or pick a suggestion.</string>
+    <string name="name">Name</string>
+    <string name="remove_header">Remove header</string>
+    <string name="value">Value</string>
+    <string name="empty_send_no_csp_for_these_files">Empty = send no CSP for these files</string>
+    <string name="add_header">Add header</string>
+    <string name="suggestions">Suggestions</string>
+    <string name="save">Save</string>
 </resources>

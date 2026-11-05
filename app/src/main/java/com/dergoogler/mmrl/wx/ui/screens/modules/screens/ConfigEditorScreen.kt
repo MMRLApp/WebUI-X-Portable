@@ -42,6 +42,7 @@ import com.dergoogler.mmrl.wx.ui.component.linkString
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.PerFileHeaderScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
 import dev.mmrlx.compose.ui.Badge
 import dev.mmrlx.compose.ui.BadgeVariant
@@ -344,6 +345,12 @@ fun ConfigEditorContent() {
                     )
                 }
             }
+
+            NavButton(
+                route = PerFileHeaderScreenDestination(module.id),
+                title = R.string.webui_config_per_file_header,
+                desc = R.string.webui_config_per_file_header_desc
+            )
 
             SwitchItem(
                 checked = config.caching,
