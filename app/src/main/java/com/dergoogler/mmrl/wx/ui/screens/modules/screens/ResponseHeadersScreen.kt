@@ -62,8 +62,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 
-// TODO: import DEFAULT_CSP from wherever getFileHeaders gets it
-
 private const val CSP = "Content-Security-Policy"
 
 private val SUGGESTED_HEADERS = listOf(
@@ -111,14 +109,14 @@ private fun List<HeaderRule>.toJson(): JsonObject = buildJsonObject {
 
 @Destination<RootGraph>()
 @Composable
-fun PerFileHeaderScreen(moduleId: String) {
+fun ResponseHeadersScreen(moduleId: String) {
     ModuleScope(moduleId) {
-        PerFileHeaderScreenContent()
+        ResponseHeadersScreenContent()
     }
 }
 
 @Composable
-fun PerFileHeaderScreenContent() {
+fun ResponseHeadersScreenContent() {
     val module = LocalModule.current
     val navigator = LocalDestinationsNavigator.current
     val config = remember { module.webrootConfig }
@@ -126,17 +124,16 @@ fun PerFileHeaderScreenContent() {
     // Order matters: after an exact filename match, the first matching glob wins.
     val rules = remember {
         mutableStateListOf<HeaderRule>().apply {
-            addAll(config.get("fileHeaders", JsonObject(emptyMap())).toRules())
+            addAll(config.get("responseHeaders", JsonObject(emptyMap())).toRules())
         }
     }
-
 
     var editing by remember { mutableStateOf<EditTarget?>(null) }
     var deleting by remember { mutableStateOf<Int?>(null) }
 
     // If config.set doesn't accept a JsonObject, change only this line (e.g. pass a Map).
     fun save() {
-        config["fileHeaders"] = rules.toList().toJson()
+        config["responseHeaders"] = rules.toList().toJson()
     }
 
     Scaffold(
@@ -144,7 +141,7 @@ fun PerFileHeaderScreenContent() {
             NavigateUpToolbar(
                 title = {
                     ToolbarTitle(
-                        title = stringResource(R.string.webui_config_per_file_header),
+                        title = stringResource(R.string.webui_config_response_headers),
                         subtitle = module.name
                     )
                 },

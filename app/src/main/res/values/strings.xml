@@ -253,8 +253,8 @@
     <string name="webui_launch_mode_2_desc">Creates a new activity within the application\'s existing process. WebUI crashes or failures can still affect the entire application.</string>
     <string name="webui_launch_mode_3_title">Separate Process</string>
     <string name="webui_launch_mode_3_desc">Creates a new activity in an isolated process. WebUI crashes or failures are contained within that process, helping protect the main application.</string>
-    <string name="webui_config_per_file_header">Per File Headers</string>
-    <string name="webui_config_per_file_header_desc">Configure your own headers for the entire WebUI and files you want</string>
+    <string name="webui_config_response_headers">Response Headers</string>
+    <string name="webui_config_response_headers_desc">Configure your own headers for the entire WebUI and files you want</string>
     <string name="rules">Rules</string>
     <string name="add_rule">Add rule</string>
     <string name="delete_rule">Delete rule?</string>

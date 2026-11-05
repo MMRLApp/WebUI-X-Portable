@@ -407,7 +407,7 @@ fun WebrootConfig.getFileHeaders(
     file: SuFile,
     isHtml: Boolean,
 ): MutableMap<String, String> {
-    val configHeaders = get("fileHeaders", JsonObject(emptyMap()))
+    val configHeaders = get("responseHeaders", JsonObject(emptyMap()))
 
     var matchedHeaders: Map<String, String>? = configHeaders[file.name]
         ?.jsonObject
