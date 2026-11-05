@@ -2,10 +2,14 @@
 
 package com.dergoogler.mmrl.wx.model.module
 
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
+import com.dergoogler.mmrl.ext.isNotNullOrBlank
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.readText
 import dev.mmrlx.nio.writeText
+import dev.mmrlx.utilities.security.ContentSecurityPolicyManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
@@ -21,6 +25,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.float
 import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import org.json.JSONArray
@@ -302,6 +307,7 @@ const val DEFAULT_CSP = "default-src 'self' data: blob: {domain}; " +
         "style-src 'self' 'unsafe-inline' {domain}; " +
         "connect-src *; "
 
+@Deprecated("")
 val WebrootConfig.contentSecurityPolicy
     get() = get(
         "contentSecurityPolicy",
@@ -394,4 +400,126 @@ fun WebrootConfig.toJSONObject() = JSONObject().apply {
     put("backInterceptor", backInterceptor)
     put("backHandler", backHandler)
     put("permissions", JSONArray(permissions))
+}
+
+fun WebrootConfig.getFileHeaders(
+    baseUri: Uri,
+    file: SuFile,
+    isHtml: Boolean,
+): MutableMap<String, String> {
+    val configHeaders = get("fileHeaders", JsonObject(emptyMap()))
+
+    var matchedHeaders: Map<String, String>? = configHeaders[file.name]
+        ?.jsonObject
+        ?.toHeaderMap(baseUri)
+        ?.also { Log.d("webrootPathHandler", "Exact match for ${file.name}: $it") }
+
+    if (matchedHeaders == null) {
+        for ((pattern, element) in configHeaders.entries) {
+            val regex = pattern.globToRegex()
+            val matches = regex.matches(file.name)
+            Log.d("webrootPathHandler", "Pattern '$pattern' (Regex: $regex) vs '${file.name}': $matches")
+            if (matches) {
+                matchedHeaders = element.jsonObject.toHeaderMap(baseUri)
+                Log.d("webrootPathHandler", "Glob match! Headers: $matchedHeaders")
+                break
+            }
+        }
+    }
+
+    val headers = mutableMapOf<String, String>()
+    matchedHeaders?.let { headers.putAll(it) }
+
+    val userDefinedCsp = headers.keys.any {
+        it.equals("Content-Security-Policy", ignoreCase = true)
+    }
+
+    if (isHtml && !userDefinedCsp) {
+        resolveDefaultCsp(baseUri)?.let { headers["Content-Security-Policy"] = it }
+    }
+
+    headers.entries.removeAll { (key, value) ->
+        key.equals("Content-Security-Policy", ignoreCase = true) && value.isBlank()
+    }
+
+    return headers
+}
+
+private fun WebrootConfig.resolveDefaultCsp(baseUri: Uri): String? {
+    val legacyCsp = contentSecurityPolicy.trim()
+
+    // "*" is the legacy way to disable the CSP entirely
+    if (legacyCsp == "*") return null
+
+    val cspManager = ContentSecurityPolicyManager(
+        DEFAULT_CSP,
+        baseUri.toString(),
+    )
+
+    return if (legacyCsp.isEmpty()) {
+        DEFAULT_CSP.replace("{domain}", baseUri.toString())
+    } else {
+        cspManager.mergeToString(legacyCsp)
+    }.takeIf { it.isNotNullOrBlank() }
+}
+
+private fun JsonObject.toHeaderMap(baseUri: Uri): Map<String, String> =
+    mapValues { (_, value) -> value.jsonPrimitive.content.replace("{domain}", baseUri.toString()) }
+
+fun String.globToRegex(): Regex {
+    val sb = StringBuilder("^")
+    var groupDepth = 0
+    var i = 0
+
+    while (i < this.length) {
+        when (val c = this[i]) {
+            '\\' -> {
+                if (++i < this.length) {
+                    sb.append(Regex.escape(this[i].toString()))
+                }
+            }
+
+            '*' -> {
+                if (i + 1 < this.length && this[i + 1] == '*') {
+                    sb.append(".*")
+                    i++
+                } else {
+                    sb.append("[^/]*")
+                }
+            }
+
+            '?' -> sb.append("[^/]")
+            '.' -> sb.append("\\.")
+
+            '{' -> {
+                groupDepth++
+                sb.append("(?:")
+            }
+
+            '}' -> {
+                if (groupDepth > 0) groupDepth--
+                sb.append(")")
+            }
+
+            // Treat both commas and pipes as OR inside braces
+            ',', '|' -> {
+                if (groupDepth > 0) {
+                    sb.append("|")
+                } else {
+                    if (c == '|') sb.append("\\|") else sb.append(",")
+                }
+            }
+
+            else -> {
+                if ("_$^+^()[]".contains(c)) {
+                    sb.append('\\').append(c)
+                } else {
+                    sb.append(c)
+                }
+            }
+        }
+        i++
+    }
+    sb.append("$")
+    return sb.toString().toRegex()
 }

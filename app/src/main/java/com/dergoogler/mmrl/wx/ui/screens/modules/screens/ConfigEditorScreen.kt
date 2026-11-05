@@ -336,6 +336,13 @@ fun ConfigEditorContent() {
                     }
                 }
                 Description(R.string.webui_config_content_security_policy_desc)
+
+                Supporting {
+                    Badge(
+                        text = "Deprecated. Use per file headers.",
+                        variant = BadgeVariant.Warning,
+                    )
+                }
             }
 
             SwitchItem(
