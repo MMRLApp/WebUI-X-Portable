@@ -2,22 +2,23 @@
 
 REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 MAX_CHARS="${1:-4000}"
+REPO_BRANCH=${GITHUB_REF#refs/heads/}
 
 get_latest_tag() {
-    git describe --tags --abbrev=0 master 2>/dev/null
+    git describe --tags --abbrev=0 $REPO_BRANCH 2>/dev/null
 }
 
 get_commits_since() {
     local tag="$1"
     local rev_range
     if [ -n "$tag" ]; then
-        rev_range="$tag..master"
+        rev_range="$tag..$REPO_BRANCH"
     else
-        rev_range="master"
+        rev_range="$REPO_BRANCH"
     fi
 
     git log --format=%s "$rev_range" | grep -v -e '^.$' \
-        -e "^Merge branch 'master'" -e "^Merge pull request #"
+        -e "^Merge branch '$REPO_BRANCH'" -e "^Merge pull request #"
 }
 
 format_markdown_list() {
@@ -28,7 +29,7 @@ format_markdown_list() {
 
     local compare_link=""
     if [ -n "$latest_tag" ]; then
-        compare_link="[See all changes here](${REPO_URL}/compare/${latest_tag}...master)"
+        compare_link="[See all changes here](${REPO_URL}/compare/${latest_tag}...$REPO_BRANCH)"
     fi
 
     local reserved_len=$(( ${#compare_link} + 1 ))

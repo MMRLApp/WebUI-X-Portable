@@ -1,5 +1,9 @@
 name: Release CI
 
+permissions:
+  contents: write
+  packages: read
+
 on:
   workflow_dispatch:
     inputs:
