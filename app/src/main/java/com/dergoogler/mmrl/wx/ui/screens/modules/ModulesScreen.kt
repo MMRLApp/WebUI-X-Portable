@@ -33,8 +33,10 @@ import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
 import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
+import com.dergoogler.mmrl.wx.ui.component.NavigationRail
 import com.dergoogler.mmrl.wx.ui.component.PopupMenu
 import com.dergoogler.mmrl.wx.ui.component.PopupMenuItem
+import com.dergoogler.mmrl.wx.ui.component.ResponsiveLayout
 import com.dergoogler.mmrl.wx.ui.component.rememberPopupMenuState
 import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import com.dergoogler.mmrl.wx.ui.screens.modules.components.ModuleItem
@@ -112,70 +114,73 @@ fun ModulesScreen() {
             )
         },
         bottomBar = { BottomNavigation() },
+        rail = { NavigationRail() },
         floatingActionButton = {
             if (prefs.workingMode != WorkingMode.MODE_NON_ROOT) return@Scaffold
             ModuleImporter(viewModel)
         },
     ) {
-        PullToRefreshBox(
-            modifier = Modifier.fillMaxSize(),
-            state = ptrState,
-            isRefreshing = isRefreshing && isLoaded,
-            onRefresh = viewModel::refreshModules,
-            indicator = {
-                Indicator(
-                    modifier = Modifier
-                        .padding(top = this@Scaffold.scaffoldTopPadding)
-                        .align(Alignment.TopCenter),
-                    isRefreshing = isRefreshing && isLoaded,
-                    state = ptrState,
-                )
-            }
-        ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .with(this@Scaffold) { it.scaffoldHazeSource() },
-                contentPadding = PaddingValues(
-                    top = this@Scaffold.scaffoldTopPadding + 8.dp,
-                    start = 8.dp,
-                    end = 8.dp,
-                    bottom = this@Scaffold.scaffoldBottomPadding + 8.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+        ResponsiveLayout {
+            PullToRefreshBox(
+                modifier = Modifier.fillMaxSize(),
+                state = ptrState,
+                isRefreshing = isRefreshing && isLoaded,
+                onRefresh = viewModel::refreshModules,
+                indicator = {
+                    Indicator(
+                        modifier = Modifier
+                            .padding(top = this@Scaffold.scaffoldTopPadding)
+                            .align(Alignment.TopCenter),
+                        isRefreshing = isRefreshing && isLoaded,
+                        state = ptrState,
+                    )
+                }
             ) {
-                when {
-                    !isLoaded -> {
-                        items(6) { SkeletonModuleItem() }
-                    }
-
-                    modules.isEmpty() -> {
-                        item {
-                            PageIndicator(
-                                icon = if (isSearch) R.drawable.mood_search else R.drawable.mood_cry,
-                                text = if (isSearch) R.string.search_empty else R.string.modules_empty,
-                            )
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .with(this@Scaffold) { it.scaffoldHazeSource() },
+                    contentPadding = PaddingValues(
+                        top = this@Scaffold.scaffoldTopPadding + 8.dp,
+                        start = this@Scaffold.scaffoldStartPadding + 8.dp,
+                        end = this@Scaffold.scaffoldEndPadding + 8.dp,
+                        bottom = this@Scaffold.scaffoldBottomPadding + 8.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    when {
+                        !isLoaded -> {
+                            items(6) { SkeletonModuleItem() }
                         }
-                    }
 
-                    else -> {
-
-                        if (prefs.developerMode { useWebUiDevUrl }) {
+                        modules.isEmpty() -> {
                             item {
-                                DebugAlert(
-                                    "Remote URL",
-                                    "You currently have a remote URL set. Modules might not work as expected."
+                                PageIndicator(
+                                    icon = if (isSearch) R.drawable.mood_search else R.drawable.mood_cry,
+                                    text = if (isSearch) R.string.search_empty else R.string.modules_empty,
                                 )
                             }
                         }
 
-                        items(
-                            items = modules.filter { it.hasWebUI },
-                            key = { it.id },
-                        ) { module ->
-                            CompositionLocalProvider(LocalModule provides module) {
-                                ModuleItem()
+                        else -> {
+
+                            if (prefs.developerMode { useWebUiDevUrl }) {
+                                item {
+                                    DebugAlert(
+                                        "Remote URL",
+                                        "You currently have a remote URL set. Modules might not work as expected."
+                                    )
+                                }
+                            }
+
+                            items(
+                                items = modules.filter { it.hasWebUI },
+                                key = { it.id },
+                            ) { module ->
+                                CompositionLocalProvider(LocalModule provides module) {
+                                    ModuleItem()
+                                }
                             }
                         }
                     }

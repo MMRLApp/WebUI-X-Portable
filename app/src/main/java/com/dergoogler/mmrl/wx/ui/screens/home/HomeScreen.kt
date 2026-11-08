@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,7 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ext.managerVersion
-import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isNonRoot
@@ -36,6 +34,8 @@ import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.ModuleAnalytics
 import com.dergoogler.mmrl.wx.ui.component.BottomNavigation
+import com.dergoogler.mmrl.wx.ui.component.NavigationRail
+import com.dergoogler.mmrl.wx.ui.component.ResponsiveLayout
 import com.dergoogler.mmrl.wx.ui.component.SensitiveDescription
 import com.dergoogler.mmrl.wx.ui.providable.LocalModulesViewModel
 import com.dergoogler.mmrl.wx.ui.screens.home.components.NonRootItem
@@ -51,6 +51,7 @@ import dev.mmrlx.compose.ui.list.component.Item
 import dev.mmrlx.compose.ui.list.component.item.Description
 import dev.mmrlx.compose.ui.list.component.item.Icon
 import dev.mmrlx.compose.ui.list.component.item.Title
+import dev.mmrlx.compose.ui.scaffold.LocalScaffoldScope
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 import dev.mmrlx.compose.ui.toolbar.Toolbar
 import dev.mmrlx.compose.ui.toolbar.ToolbarDefaults
@@ -79,135 +80,137 @@ fun HomeScreen() {
             )
         },
         bottomBar = { BottomNavigation() },
-        contentWindowInsets = WindowInsets.none,
+        rail = { NavigationRail() },
     ) {
-        Column(
-            modifier =
-                Modifier
-                    .scaffoldHazeSource()
-                    .scaffoldPadding()
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            when {
-                userPreferences.workingMode.isRoot ->
-                    RootItem()
-
-                userPreferences.workingMode.isNonRoot ->
-                    NonRootItem()
-            }
-
-            List(
+        ResponsiveLayout {
+            Column(
+                modifier =
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .scaffoldPadding()
+                        .fillMaxWidth()
+                        .scaffoldHazeSource()
+                        .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = listItemContentPaddingValues,
             ) {
-                val scope = this
+                when {
+                    userPreferences.workingMode.isRoot ->
+                        RootItem()
 
-                Surface(
-                    modifier = Modifier
-                        .outlinedCard()
-                        .padding(vertical = 16.dp)
-                        .fillMaxWidth(),
-                ) {
-                    val uname = Os.uname()
-                    Column {
-                        scope.Item {
-                            Icon(painter = painterResource(R.drawable.cookie_man))
-                            Title(R.string.unix_name)
-
-                            SensitiveDescription(
-                                enabled = userPreferences.hideUnixNameInHome,
-                                text = "${uname.sysname} ${uname.release} ${uname.version} ${uname.machine}"
-                            )
-                        }
-
-                        scope.Item {
-                            Icon(painter = painterResource(R.drawable.launcher_outline))
-                            Title(R.string.app_version)
-                            Description("${context.managerVersion.first} (${context.managerVersion.second})")
-                        }
-
-                        scope.Item {
-                            Icon(painter = painterResource(R.drawable.fingerprint))
-                            Title(R.string.fingerprint)
-                            SensitiveDescription(
-                                enabled = userPreferences.hideFingerprintInHome,
-                                text = Build.FINGERPRINT
-                            )
-                        }
-
-                        scope.Item {
-                            Icon(painter = painterResource(R.drawable.cpu_2))
-                            Title(R.string.architecture)
-                            Description(uname.machine)
-                        }
-                    }
+                    userPreferences.workingMode.isNonRoot ->
+                        NonRootItem()
                 }
 
-                Surface(
-                    modifier = Modifier
-                        .outlinedCard()
-                        .padding(vertical = 16.dp)
-                        .fillMaxWidth()
+                List(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = listItemContentPaddingValues,
                 ) {
-                    scope.Item {
-                        Title(R.string.home_storage_usage)
+                    val scope = this
 
-                        Description {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                Text(
-                                    text = analytics.totalModulesUsageBytes.toFormattedFileSize(),
-                                )
+                    Surface(
+                        modifier = Modifier
+                            .outlinedCard()
+                            .padding(vertical = 16.dp)
+                            .fillMaxWidth(),
+                    ) {
+                        val uname = Os.uname()
+                        Column {
+                            scope.Item {
+                                Icon(painter = painterResource(R.drawable.cookie_man))
+                                Title(R.string.unix_name)
 
-                                LinearProgressIndicator(
-                                    progress = {
-                                        analytics.totalStorageUsage
-                                    },
-                                    modifier =
-                                        Modifier
-                                            .height(10.dp)
-                                            .weight(1f),
-                                    drawStopIndicator = {},
+                                SensitiveDescription(
+                                    enabled = userPreferences.hideUnixNameInHome,
+                                    text = "${uname.sysname} ${uname.release} ${uname.version} ${uname.machine}"
                                 )
+                            }
 
-                                Text(
-                                    text = analytics.totalDeviceStorageBytes.toFormattedFileSize(),
+                            scope.Item {
+                                Icon(painter = painterResource(R.drawable.launcher_outline))
+                                Title(R.string.app_version)
+                                Description("${context.managerVersion.first} (${context.managerVersion.second})")
+                            }
+
+                            scope.Item {
+                                Icon(painter = painterResource(R.drawable.fingerprint))
+                                Title(R.string.fingerprint)
+                                SensitiveDescription(
+                                    enabled = userPreferences.hideFingerprintInHome,
+                                    text = Build.FINGERPRINT
                                 )
+                            }
+
+                            scope.Item {
+                                Icon(painter = painterResource(R.drawable.cpu_2))
+                                Title(R.string.architecture)
+                                Description(uname.machine)
                             }
                         }
                     }
-                }
 
-                Surface(
-                    modifier = Modifier
-                        .clickable {
-                            browser.openUri("https://github.com/sponsors/MMRLApp")
+                    Surface(
+                        modifier = Modifier
+                            .outlinedCard()
+                            .padding(vertical = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        scope.Item {
+                            Title(R.string.home_storage_usage)
+
+                            Description {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Text(
+                                        text = analytics.totalModulesUsageBytes.toFormattedFileSize(),
+                                    )
+
+                                    LinearProgressIndicator(
+                                        progress = {
+                                            analytics.totalStorageUsage
+                                        },
+                                        modifier =
+                                            Modifier
+                                                .height(10.dp)
+                                                .weight(1f),
+                                        drawStopIndicator = {},
+                                    )
+
+                                    Text(
+                                        text = analytics.totalDeviceStorageBytes.toFormattedFileSize(),
+                                    )
+                                }
+                            }
                         }
-                        .outlinedCard()
-                        .padding(vertical = 16.dp)
-                        .fillMaxWidth()
-                ) {
-                    scope.Item {
-                        Title(
-                            id = R.string.home_support_title,
-                            styleTransform = {
-                                val newStyle = it.copy(color = Color.Unspecified)
-                                it.merge(newStyle)
-                            },
-                        )
+                    }
 
-                        Description(
-                            id = R.string.home_support_content,
-                            styleTransform = {
-                                val newStyle = it.copy(color = Color.Unspecified)
-                                it.merge(newStyle)
-                            },
-                        )
+                    Surface(
+                        modifier = Modifier
+                            .clickable {
+                                browser.openUri("https://github.com/sponsors/MMRLApp")
+                            }
+                            .outlinedCard()
+                            .padding(vertical = 16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        scope.Item {
+                            Title(
+                                id = R.string.home_support_title,
+                                styleTransform = {
+                                    val newStyle = it.copy(color = Color.Unspecified)
+                                    it.merge(newStyle)
+                                },
+                            )
+
+                            Description(
+                                id = R.string.home_support_content,
+                                styleTransform = {
+                                    val newStyle = it.copy(color = Color.Unspecified)
+                                    it.merge(newStyle)
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -219,9 +222,13 @@ fun HomeScreen() {
 private fun TopBar2(
     scrollBehavior: ToolbarScrollBehavior,
 ) {
+    val scope = LocalScaffoldScope.current
+
     Toolbar(
         scrollBehavior = scrollBehavior,
         title = {
+            if (scope.hasRail) return@Toolbar
+
             dev.mmrlx.compose.ui.icon.Icon(
                 modifier = Modifier.size(30.dp),
                 painter = painterResource(R.drawable.launcher_outline),
