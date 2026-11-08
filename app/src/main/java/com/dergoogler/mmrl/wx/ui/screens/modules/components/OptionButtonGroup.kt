@@ -7,8 +7,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.wx.R
 import dev.mmrlx.compose.ui.button.Button
-import dev.mmrlx.compose.ui.button.ButtonGroup
-import dev.mmrlx.compose.ui.button.ButtonGroupDefaults
+import dev.mmrlx.compose.ui.button.HorizontalButtonGroup
 import dev.mmrlx.compose.ui.button.ButtonSize
 import dev.mmrlx.compose.ui.button.ButtonVariant
 import dev.mmrlx.compose.ui.icon.Icon
@@ -19,13 +18,13 @@ internal fun OptionButtonGroup(
     onConfigClick: () -> Unit,
     onShortcutClick: () -> Unit,
 ) {
-    ButtonGroup {
+    HorizontalButtonGroup {
         Button(
             onClick = onConfigClick,
             enabled = enabled,
             variant = ButtonVariant.Outline,
             size = ButtonSize.Sm,
-            shape = ButtonGroupDefaults.shape(0, 2)
+            shape = shape(0, 2)
         ) {
             Icon(
                 modifier = Modifier.size(20.dp),
@@ -39,7 +38,7 @@ internal fun OptionButtonGroup(
             enabled = enabled,
             variant = ButtonVariant.Outline,
             size = ButtonSize.Sm,
-            shape = ButtonGroupDefaults.shape(1, 2)
+            shape = shape(1, 2)
         ) {
             Icon(
                 modifier = Modifier.size(20.dp),
