@@ -76,7 +76,6 @@ internal fun JavaScriptFunctionScope.listPackages(): String {
 
 fun JavaScriptScope.ksuPm() {
     function("version") { 1 }
-    property("version", 1)
     function("listPackages") { listPackages() }
     function("getPackagesInfo") { getPackagesInfo() }
 }
