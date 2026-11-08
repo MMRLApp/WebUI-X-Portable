@@ -47,7 +47,6 @@ class KsuIO(webui: WebUI) : WebUI by webui {
 /** Registers `File()`, `FileInputStream()`, `FileOutputStream()` and `RandomAccessFile()`. */
 fun JavaScriptScope.ksuIO(io: KsuIO) {
     function("version") { 1 }
-    property("version", 1)
     function("File") { newObject { fileInterface(io, checkString(0)) } }
     function("FileInputStream") { newObject { fileInputStreamInterface(io) } }
     function("FileOutputStream") { newObject { fileOutputStreamInterface(io) } }
