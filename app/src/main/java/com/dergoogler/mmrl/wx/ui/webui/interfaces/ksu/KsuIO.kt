@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "PropertyName", "PrivatePropertyName")
 
 package com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu
 
@@ -9,9 +9,12 @@ import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFileOutputStream
 import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.nio.inputStream
+import dev.mmrlx.webui.ConstructorArgument
+import dev.mmrlx.webui.ConstructorArgumentType
+import dev.mmrlx.webui.JavaScriptClassFunctionScope
+import dev.mmrlx.webui.JavaScriptClassScope
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptScope
-import dev.mmrlx.webui.WebUI
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.InputStream
@@ -22,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 const val TAG = "KsuIO"
 
 /** Open streams/files of one `ksu.io()` user. Everything is closed when the WebUI is destroyed. */
-class KsuIO(webui: WebUI) : WebUI by webui {
+class KsuIO(scope: JavaScriptScope) : JavaScriptScope by scope {
     internal val inputs = ConcurrentHashMap<String, ManagedInputStream>()
     internal val outputs = ConcurrentHashMap<String, OutputStream>()
     internal val randomFiles = ConcurrentHashMap<String, SuRandomAccessFile>()
@@ -35,22 +38,47 @@ class KsuIO(webui: WebUI) : WebUI by webui {
         }
     }
 
-    private fun <T> closeAll(map: ConcurrentHashMap<String, T>, close: (T) -> Unit) {
+    val IoClass = cls("IO") {
+        method("version") {
+            1
+        }
+
+        method("File") {
+            val path = checkString(0)
+            File(path)
+        }
+
+        method("FileInputStream") { InputStream() }
+        method("FileOutputStream") { OutputStream() }
+        method("RandomAccessFile") { RandomAccessFile() }
+    }
+
+    private val File = cls("File") {
+        fileInterface(this@KsuIO)
+    }
+
+    private val InputStream = cls("FileInputStream") {
+        fileInputStreamInterface(this@KsuIO)
+    }
+
+    private val OutputStream = cls("FileOutputStream") {
+        fileOutputStreamInterface(this@KsuIO)
+    }
+
+    private val RandomAccessFile = cls("RandomAccessFile") {
+        randomAccessFileInterface(this@KsuIO)
+    }
+
+    private fun <T> closeAll(map: ConcurrentHashMap<String, T & Any>, close: (T) -> Unit) {
         map.forEach { (id, item) ->
             runCatching { synchronized(item as Any) { close(item) } }
                 .onFailure { console.error("closeAll failed for $id: $it") }
         }
         map.clear()
     }
-}
 
-/** Registers `File()`, `FileInputStream()`, `FileOutputStream()` and `RandomAccessFile()`. */
-fun JavaScriptScope.ksuIO(io: KsuIO) {
-    function("version") { 1 }
-    function("File") { newObject { fileInterface(io, checkString(0)) } }
-    function("FileInputStream") { newObject { fileInputStreamInterface(io) } }
-    function("FileOutputStream") { newObject { fileOutputStreamInterface(io) } }
-    function("RandomAccessFile") { newObject { randomAccessFileInterface(io) } }
+    private fun cls(name: String, block: JavaScriptClassScope.() -> Unit) =
+        clazz("cls.$name", block)
 }
 
 private inline fun <T> JavaScriptFunctionScope.guard(what: String, default: T, block: () -> T): T =
@@ -86,8 +114,8 @@ internal class ManagedInputStream(
     }
 }
 
-private fun JavaScriptScope.fileInputStreamInterface(io: KsuIO) {
-    function("open") {
+private fun JavaScriptClassScope.fileInputStreamInterface(io: KsuIO) {
+    method("open") {
         val path = checkString(0)
         guard("FileInputStream open", "") {
             val id = UUID.randomUUID().toString()
@@ -97,10 +125,10 @@ private fun JavaScriptScope.fileInputStreamInterface(io: KsuIO) {
     }
 
     // read(id) | read(id, maxBytes)
-    function("read") {
+    method("read") {
         val id = checkString(0)
         val max = if (isNull(1)) null else checkInt(1)
-        val stream = io.inputs[id] ?: return@function ""
+        val stream = io.inputs[id] ?: return@method ""
 
         guard("FileInputStream read", "") {
             val bytesRead = if (max == null) stream.readInto() else stream.readInto(max)
@@ -113,20 +141,20 @@ private fun JavaScriptScope.fileInputStreamInterface(io: KsuIO) {
         }
     }
 
-    function("available") {
-        val stream = io.inputs[checkString(0)] ?: return@function 0
+    method("available") {
+        val stream = io.inputs[checkString(0)] ?: return@method 0
         runCatching { stream.available() }.getOrDefault(0)
     }
 
-    function("close") {
-        val stream = io.inputs.remove(checkString(0)) ?: return@function false
+    method("close") {
+        val stream = io.inputs.remove(checkString(0)) ?: return@method false
         guard("FileInputStream close", false) { stream.close(); true }
     }
 }
 
-private fun JavaScriptScope.fileOutputStreamInterface(io: KsuIO) {
+private fun JavaScriptClassScope.fileOutputStreamInterface(io: KsuIO) {
     // open(path) | open(path, append)
-    function("open") {
+    method("open") {
         val path = checkString(0)
         val append = optBoolean(1, false)
         guard("FileOutputStream open", "") {
@@ -137,8 +165,8 @@ private fun JavaScriptScope.fileOutputStreamInterface(io: KsuIO) {
     }
 
     fun write(name: String, block: JavaScriptFunctionScope.(OutputStream) -> Unit) =
-        function(name) {
-            val bos = io.outputs[checkString(0)] ?: return@function false
+        method(name) {
+            val bos = io.outputs[checkString(0)] ?: return@method false
             guard("FileOutputStream $name", false) {
                 synchronized(bos) { block(bos) }
                 true
@@ -149,14 +177,14 @@ private fun JavaScriptScope.fileOutputStreamInterface(io: KsuIO) {
     write("write") { it.write(Base64.decode(checkString(1), Base64.NO_WRAP)) }
     write("flush") { it.flush() }
 
-    function("close") {
-        val bos = io.outputs.remove(checkString(0)) ?: return@function false
+    method("close") {
+        val bos = io.outputs.remove(checkString(0)) ?: return@method false
         guard("FileOutputStream close", false) { synchronized(bos) { bos.close() }; true }
     }
 }
 
-private fun JavaScriptScope.randomAccessFileInterface(io: KsuIO) {
-    function("open") {
+private fun JavaScriptClassScope.randomAccessFileInterface(io: KsuIO) {
+    method("open") {
         val path = checkString(0)
         val mode = checkString(1)
         guard("RandomAccessFile open", "") {
@@ -171,8 +199,8 @@ private fun JavaScriptScope.randomAccessFileInterface(io: KsuIO) {
         name: String,
         default: T,
         block: JavaScriptFunctionScope.(SuRandomAccessFile) -> T,
-    ) = function(name) {
-        val raf = io.randomFiles[checkString(0)] ?: return@function default
+    ) = method(name) {
+        val raf = io.randomFiles[checkString(0)] ?: return@method default
         guard("RandomAccessFile $name", default) { synchronized(raf) { block(raf) } }
     }
 
@@ -208,17 +236,36 @@ private fun JavaScriptScope.randomAccessFileInterface(io: KsuIO) {
     op("length", -1L) { it.length() }
     op("setLength", false) { it.setLength(checkLong(1)); true }
 
-    function("close") {
-        val raf = io.randomFiles.remove(checkString(0)) ?: return@function false
+    method("close") {
+        val raf = io.randomFiles.remove(checkString(0)) ?: return@method false
         guard("RandomAccessFile close", false) { synchronized(raf) { raf.close() }; true }
     }
 }
 
-private fun JavaScriptScope.fileInterface(io: KsuIO, path: String) {
-    val suFile: SuFile = sufile(path)
+private fun JavaScriptClassFunctionScope.getPathVar(): String? {
+    val path = getVariable("path")
+    if (path !is String) {
+        console.error("path is not a string: $path")
+        return null
+    }
+    return path
+}
 
-    fun <T> query(name: String, default: T, block: JavaScriptFunctionScope.(SuFile) -> T) =
-        function(name) { runCatching { block(suFile) }.getOrDefault(default) }
+private fun JavaScriptClassScope.fileInterface(io: KsuIO) {
+    constructor(
+        ConstructorArgument("path", ConstructorArgumentType.STRING)
+    ) {
+        val path = argument("path").getString()
+        setVariable("path", path)
+    }
+
+    fun <T> query(name: String, default: T, block: JavaScriptClassFunctionScope.(SuFile) -> T) =
+        method(name) {
+            runCatching {
+                val path = getPathVar() ?: return@runCatching default
+                block(sufile(path))
+            }.getOrDefault(default)
+        }
 
     query("exists", false) { it.exists() }
     query("isFile", false) { it.isFile }
@@ -238,10 +285,10 @@ private fun JavaScriptScope.fileInterface(io: KsuIO, path: String) {
     query("length", -1L) { it.length() }
     query("lastModified", -1L) { it.lastModified() }
     query("setLastModified", false) { it.setLastModified(checkLong(0)) }
-    query("getAbsolutePath", path) { it.absolutePath }
-    query("getCanonicalPath", path) { it.canonicalPath }
+    query("getAbsolutePath", null) { it.absolutePath }
+    query("getCanonicalPath", null) { it.canonicalPath }
     query<String?>("getParent", null) { it.parent }
-    query("getPath", path) { path }
+    query("getPath", null) { getVariable("path") }
     query("getName", "") { it.name }
     query("isHidden", false) { it.isHidden }
     query("isBlock", false) { it.isBlock() }
@@ -257,25 +304,28 @@ private fun JavaScriptScope.fileInterface(io: KsuIO, path: String) {
 
     // Not implemented (kept so old callers still get `false`)
     listOf("deleteRecursive", "createNewSymlink", "createNewLink", "clear").forEach { name ->
-        function(name) { false }
+        method(name) { false }
     }
 
-    function("newInputStream") {
+    method("newInputStream") {
         guard("newInputStream", "") {
+            val path = getPathVar() ?: return@guard ""
+
             val id = UUID.randomUUID().toString()
-            io.inputs[id] = ManagedInputStream(suFile.inputStream())
+            io.inputs[id] = ManagedInputStream(sufile(path).inputStream())
             id
         }
     }
 
     // newOutputStream() | newOutputStream(append)
-    function("newOutputStream") {
+    method("newOutputStream") {
+        val path = getPathVar() ?: return@method ""
         val append = optBoolean(0, false)
         guard("newOutputStream", "") {
             val id = UUID.randomUUID().toString()
             io.outputs[id] =
                 BufferedOutputStream(
-                    SuFileOutputStream(suFile, append),
+                    SuFileOutputStream(sufile(path), append),
                     ManagedInputStream.MAX_CHUNK_SIZE
                 )
             id

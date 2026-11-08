@@ -105,7 +105,7 @@ private fun showSystemUI(window: Window) =
 
 /** Legacy `window.ksu` interface. */
 fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
-    val io = KsuIO(this@kernelSUInterface)
+    val io = KsuIO(this)
 
     val ksu = KernelSUShell(this)
     val pm = kontext.packageManager
@@ -239,16 +239,24 @@ fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
         currentModuleInfo.toString()
     }
 
-    deprecatedFunction("listPackages", replaceWith = "ksu.pm().listPackages(type: string)", once = true) {
+    deprecatedFunction(
+        "listPackages",
+        replaceWith = "ksu.pm().listPackages(type: string)",
+        once = true
+    ) {
         listPackages()
     }
 
-    deprecatedFunction("getPackagesInfo", replaceWith = "ksu.pm().getPackagesInfo(packages: string | string[])", once = true) {
+    deprecatedFunction(
+        "getPackagesInfo",
+        replaceWith = "ksu.pm().getPackagesInfo(packages: string | string[])",
+        once = true
+    ) {
         getPackagesInfo()
     }
 
     dangerousFunction("io", Permissions.KSU.IO) {
-        newObject { ksuIO(io) }
+        io.IoClass()
     }
 
     dangerousFunction("pm", Permissions.KSU.PM) {
