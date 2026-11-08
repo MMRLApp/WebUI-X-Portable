@@ -106,9 +106,8 @@ private fun showSystemUI(window: Window) =
 /** Legacy `window.ksu` interface. */
 fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
     val io = KsuIO(this)
-
+    val pm = KsuPM(this)
     val ksu = KernelSUShell(this)
-    val pm = kontext.packageManager
 
     // Legacy
     function("mmrl") { true }
@@ -260,6 +259,6 @@ fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
     }
 
     dangerousFunction("pm", Permissions.KSU.PM) {
-        newObject { ksuPm() }
+        pm.PM()
     }
 }

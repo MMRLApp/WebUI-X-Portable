@@ -5,6 +5,7 @@ package com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu
 import android.util.Base64
 import com.dergoogler.mmrl.wx.ui.webui.randomAccessFile
 import com.dergoogler.mmrl.wx.ui.webui.sufile
+import com.dergoogler.mmrl.wx.ui.webui.util.cls
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFileOutputStream
 import dev.mmrlx.nio.SuRandomAccessFile
@@ -76,9 +77,6 @@ class KsuIO(scope: JavaScriptScope) : JavaScriptScope by scope {
         }
         map.clear()
     }
-
-    private fun cls(name: String, block: JavaScriptClassScope.() -> Unit) =
-        clazz("cls.$name", block)
 }
 
 private inline fun <T> JavaScriptFunctionScope.guard(what: String, default: T, block: () -> T): T =

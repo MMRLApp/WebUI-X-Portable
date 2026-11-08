@@ -1,12 +1,29 @@
+@file:Suppress("PropertyName")
+
 package com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu
 
 import android.content.pm.ApplicationInfo
 import androidx.core.content.pm.PackageInfoCompat
+import com.dergoogler.mmrl.wx.ui.webui.util.cls
 import com.dergoogler.mmrl.wx.ui.webui.util.packages
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptScope
 import org.json.JSONArray
 import org.json.JSONObject
+
+class KsuPM(scope: JavaScriptScope) : JavaScriptScope by scope {
+    val PM = cls("PM") {
+        method("version") { 1 }
+
+        method("getPackagesInfo") {
+            getPackagesInfo()
+        }
+
+        method("listPackages") {
+            listPackages()
+        }
+    }
+}
 
 internal fun JavaScriptFunctionScope.getPackagesInfo(): String {
     // accepts an array, or the old JSON string
@@ -72,10 +89,4 @@ internal fun JavaScriptFunctionScope.listPackages(): String {
             .map { it.packageName }
             .sorted()
     ).toString()
-}
-
-fun JavaScriptScope.ksuPm() {
-    function("version") { 1 }
-    function("listPackages") { listPackages() }
-    function("getPackagesInfo") { getPackagesInfo() }
 }
