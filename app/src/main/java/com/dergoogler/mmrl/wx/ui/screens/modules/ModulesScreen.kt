@@ -23,6 +23,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ui.component.PageIndicator
 import com.dergoogler.mmrl.wx.R
@@ -77,6 +79,10 @@ fun ModulesScreen() {
     val moduleIds = remember(modules) { modules.map { it.id }.toSet() }
 
     BackHandler(enabled = selectedIds.isNotEmpty()) { viewModel.clearSelection() }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.refreshModules()
+    }
 
     LaunchedEffect(viewModel.refreshDone) {
         viewModel.refreshDone.collect {
