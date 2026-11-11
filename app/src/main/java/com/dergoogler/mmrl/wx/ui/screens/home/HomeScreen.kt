@@ -47,6 +47,7 @@ import dev.mmrlx.compose.ui.LinearProgressIndicator
 import dev.mmrlx.compose.ui.Surface
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.list.List
+import dev.mmrlx.compose.ui.list.ListDefaults
 import dev.mmrlx.compose.ui.list.component.Item
 import dev.mmrlx.compose.ui.list.component.item.Description
 import dev.mmrlx.compose.ui.list.component.item.Icon
@@ -103,7 +104,9 @@ fun HomeScreen() {
 
                 List(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = listItemContentPaddingValues,
+                    style = ListDefaults.style.copy(
+                        contentPadding = listItemContentPaddingValues,
+                    )
                 ) {
                     val scope = this
 
@@ -197,18 +200,12 @@ fun HomeScreen() {
                         scope.Item {
                             Title(
                                 id = R.string.home_support_title,
-                                styleTransform = {
-                                    val newStyle = it.copy(color = Color.Unspecified)
-                                    it.merge(newStyle)
-                                },
+                                style = style.titleStyle.copy(color = Color.Unspecified)
                             )
 
                             Description(
                                 id = R.string.home_support_content,
-                                styleTransform = {
-                                    val newStyle = it.copy(color = Color.Unspecified)
-                                    it.merge(newStyle)
-                                },
+                                style = style.descriptionStyle.copy(color = Color.Unspecified)
                             )
                         }
                     }

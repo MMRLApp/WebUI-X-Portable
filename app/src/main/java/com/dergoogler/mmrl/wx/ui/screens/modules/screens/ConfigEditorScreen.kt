@@ -147,13 +147,10 @@ fun ConfigEditorContent() {
                 }
             ) {
                 Title(R.string.webui_config_title_title)
-                Description(config.title ?: stringResource(R.string.webui_config_title_desc)) {
-                    if (config.title == null) {
-                        it.copy(
-                            fontStyle = FontStyle.Italic
-                        )
-                    } else it
-                }
+                Description(
+                    text = config.title ?: stringResource(R.string.webui_config_title_desc),
+                    style = if (config.title == null) style.descriptionStyle.copy(fontStyle = FontStyle.Italic) else style.descriptionStyle
+                )
             }
 
             InputDialogItem(
@@ -163,13 +160,10 @@ fun ConfigEditorContent() {
                 }
             ) {
                 Title(R.string.webui_config_icon_title)
-                Description(config.icon ?: stringResource(R.string.webui_config_icon_desc)) {
-                    if (config.icon == null) {
-                        it.copy(
-                            fontStyle = FontStyle.Italic
-                        )
-                    } else it
-                }
+                Description(
+                    text = config.icon ?: stringResource(R.string.webui_config_icon_desc),
+                    style = if (config.icon == null) style.descriptionStyle.copy(fontStyle = FontStyle.Italic) else style.descriptionStyle
+                )
             }
 
             NavButton(
