@@ -14,6 +14,8 @@ import dev.mmrlx.nio.writeText
 import dev.mmrlx.utilities.json.getAs
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptRegistry
+import dev.mmrlx.webui.Response
+import dev.mmrlx.webui.WritableStream
 import org.json.JSONObject
 import java.nio.charset.Charset
 
@@ -27,14 +29,14 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
         val mode = PermissionParser.parse(options?.opt("mode") ?: 0)
 
         val stream = inputStream(path, flags, mode)
-        stream.toJSObject()
+        Response(stream)
     }
 
     dangerousAsyncFunction("outputstream", Permissions.MX.IO) {
         val path = checkString(0)
         val overwrite = optBoolean(1, false)
         val fos = outputStream(path, overwrite)
-        fos.toJSObject()
+        WritableStream(fos)
     }
 
     dangerousAsyncFunction("readFile", Permissions.MX.IO) {
