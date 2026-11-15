@@ -307,7 +307,6 @@ dependencies {
     implementation(libs.mmrlx.ui)
     implementation(libs.mmrlx.utilities)
     implementation(libs.mmrlx.webui.core)
-    implementation(libs.mmrlx.webui.lua)
     implementation(libs.mmrlx.webui.dex)
     implementation(libs.mmrlx.nio)
 

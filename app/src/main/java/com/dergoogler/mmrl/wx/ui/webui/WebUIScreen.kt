@@ -35,7 +35,6 @@ import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.iconPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.suRoute
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.webrootPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.util.dexPlugin
-import com.dergoogler.mmrl.wx.ui.webui.util.luaPlugin
 import com.dergoogler.mmrl.wx.util.withNewRootShell
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -158,7 +157,7 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
                 darkMode = prefs.isDarkMode()
                 showEventPayloadInConsole = prefs.logEventPayload
 
-                extra = mapOf(
+                extra = mutableMapOf(
                     "module" to module,
                     "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
                     "isRootMode" to prefs.workingMode.isRoot,
@@ -195,7 +194,6 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
                     insets(paddingInsets)
                 }
             }
-            .luaPlugin()
             .dexPlugin()
             .registerRoutes {
                 // ksu://icon/

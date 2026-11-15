@@ -18,12 +18,10 @@ import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.model.module.ModulePath.Companion.PROP_FILE
-import com.dergoogler.mmrl.wx.util.set
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.inputStream
 import dev.mmrlx.utilities.obj.asOrDefault
 import org.apache.commons.compress.archivers.zip.ZipFile
-import org.luaj.LuaTable
 import java.io.File
 import java.io.InputStream
 import com.dergoogler.mmrl.wx.ui.webui.activity.NewProcessWebUIActivity as MxWebUIActivity
@@ -255,26 +253,6 @@ data class Module(
         }
 
         return defaultValue
-    }
-
-    fun toLuaTable(): LuaTable {
-        val table = LuaTable()
-
-        table.set("adbPath", adbPath.toLuaTable())
-        table.set("id", id)
-        table.set("name", name)
-        table.set("version", version)
-        table.set("versionCode", versionCode)
-        table.set("author", author)
-        table.set("description", description)
-        table.set("metamodule", metaModule)
-        table.set("hasWebUI", hasWebUI)
-        table.set("path", path.toLuaTable())
-        // table.set("banner", banner)
-        // table.set("icon", icon)
-        // table.set("webrootConfig", webrootConfig.toLuaTable())
-
-        return table
     }
 
     companion object {
