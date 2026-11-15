@@ -47,7 +47,7 @@
     <string name="menu_show_updated">显示更新时间</string>
     <string name="menu_show_antifeatures">显示 Anti-Features</string>
     <string name="settings_security_inject_eruda_desc">注入 Eruda 不能与 WebUI 远程 URL 一起使用</string>
-    <string name="add_shortcut">创建快捷方式</string>
+    <string name="add_shortcut">添加快捷方式</string>
     <string name="remove_shortcut">移除快捷方式</string>
     <string name="non_root">未 Root</string>
     <string name="settings_webui_engine">WebUI 引擎</string>
@@ -141,4 +141,6 @@
     <string name="settings_security_enable_devtools_desc">不同于 Eruda，此调试控制台可以与远程主机使用。</string>
     <string name="beta">Beta</string>
     <string name="stack_trace_truncated">%s\\n… %d 更多</string>
+    <string name="create_shortcut">创建快捷方式</string>
+    <string name="settings_webui_engine_mx">WebUI MX</string>
 </resources>
