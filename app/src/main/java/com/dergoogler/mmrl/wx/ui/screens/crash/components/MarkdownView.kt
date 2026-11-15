@@ -44,7 +44,7 @@ fun MarkdownView(
             it
                 .settings {
                     darkMode = userPrefs.isDarkMode()
-                    extra = mapOf(
+                    extra = mutableMapOf(
                         "mdColorScheme" to scheme
                     )
                 }
