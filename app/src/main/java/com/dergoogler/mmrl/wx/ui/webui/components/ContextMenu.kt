@@ -50,7 +50,7 @@ import dev.mmrlx.compose.layout.outlinedCard
 import dev.mmrlx.compose.ui.HorizontalDivider
 import dev.mmrlx.compose.ui.Text
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
-import dev.mmrlx.compose.webui.WebUIState
+import dev.mmrlx.webui.WebUIState
 import dev.mmrlx.webui.WebUIContextMenu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
