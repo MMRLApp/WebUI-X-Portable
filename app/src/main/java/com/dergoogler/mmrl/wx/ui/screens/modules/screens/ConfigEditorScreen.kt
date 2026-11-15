@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
@@ -33,7 +34,6 @@ import com.dergoogler.mmrl.wx.model.module.refreshInterceptor
 import com.dergoogler.mmrl.wx.model.module.theme
 import com.dergoogler.mmrl.wx.model.module.title
 import com.dergoogler.mmrl.wx.model.module.windowResize
-import com.dergoogler.mmrl.wx.ui.component.DebugAlert
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.component.NavButton
@@ -44,6 +44,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ResponseHeadersScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ShortcutCreateScreenDestination
+import dev.mmrlx.compose.ui.Alert
 import dev.mmrlx.compose.ui.Badge
 import dev.mmrlx.compose.ui.BadgeVariant
 import dev.mmrlx.compose.ui.list.List
@@ -58,6 +59,7 @@ import dev.mmrlx.compose.ui.list.component.item.Title
 import dev.mmrlx.compose.ui.list.component.item.VerticalDividerSwitch
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 import dev.mmrlx.compose.ui.text.FormatText
+import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.compose.ui.toolbar.ToolbarTitle
 
 
@@ -131,14 +133,13 @@ fun ConfigEditorContent() {
                 .verticalScroll(rememberScrollState())
                 .scaffoldPadding()
         ) {
-            DebugAlert(
+            Alert(
+                color = MMRLXTheme.palette.Purple,
                 modifier = Modifier.padding(8.dp),
+                painter = painterResource(R.drawable.search),
                 title = "Documentation",
-            ) {
-                FormatText("We recommend checking our documentation at %y to make sure your module is working as expected.") {
-                    linkString("https://mmrl.dev/guide/webuix/config")
-                }
-            }
+                description = "We recommend checking our documentation at [mmrl.dev/guide/webuix/config](https://mmrl.dev/guide/webuix/config) to make sure your module is working as expected."
+            )
 
             InputDialogItem(
                 value = config.title ?: "",
