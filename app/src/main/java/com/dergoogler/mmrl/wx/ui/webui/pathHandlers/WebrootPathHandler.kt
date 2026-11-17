@@ -19,7 +19,7 @@ import dev.mmrlx.webui.RouteRegistry
 import dev.mmrlx.webui.WebUIInsets
 import java.io.IOException
 
-fun RouteRegistry.webrootPathHandler() {
+fun RouteRegistry.webrootPathHandler(dir: String) {
     val configBase = module.path.configDir
     val configStyleBase = sufile(configBase, "style")
     val configJsBase = sufile(configBase, "js")
@@ -29,7 +29,7 @@ fun RouteRegistry.webrootPathHandler() {
     SuFile.createDirectories(customJsHead, customJsBody, configStyleBase)
 
     val directory = sufile(
-        sufile(module.path.webrootDir).getCanonicalDirPath()
+        sufile(dir).getCanonicalDirPath()
     )
 
     val config = module.webrootConfig

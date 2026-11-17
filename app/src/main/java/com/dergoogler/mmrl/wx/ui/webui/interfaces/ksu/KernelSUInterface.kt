@@ -117,12 +117,14 @@ fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
         webview.post { Toast.makeText(kontext, msg, Toast.LENGTH_SHORT).show() }
     }
 
-    function("fullScreen") {
-        if (!preferences.allowWebUiFullscreen) return@function null
+    activity {
+        function("fullScreen") {
+            if (!preferences.allowWebUiFullscreen) return@function null
 
-        val enable = checkBoolean(0)
-        webview.post {
-            if (enable) hideSystemUI(activity.window) else showSystemUI(activity.window)
+            val enable = checkBoolean(0)
+            webview.post {
+                if (enable) hideSystemUI(window) else showSystemUI(window)
+            }
         }
     }
 

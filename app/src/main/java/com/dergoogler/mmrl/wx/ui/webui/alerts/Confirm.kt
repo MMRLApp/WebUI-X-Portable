@@ -19,7 +19,7 @@ import dev.mmrlx.compose.ui.button.ButtonVariant
 import dev.mmrlx.compose.ui.dialog.Content
 import dev.mmrlx.compose.ui.dialog.Footer
 import dev.mmrlx.compose.ui.dialog.Title
-import dev.mmrlx.compose.ui.dialog.rememberDialog
+import dev.mmrlx.compose.ui.dialog.rememberDialogController
 import dev.mmrlx.compose.ui.theme.MMRLXTheme
 import dev.mmrlx.webui.WebUI
 
@@ -121,7 +121,7 @@ internal fun WebUI.MXConfirm(
     MMRLXTheme(
         darkTheme = settings.darkMode
     ) {
-        val dialog = rememberDialog(true)
+        val dialog = rememberDialogController()
 
         val done = {
             dialog.close()

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.dergoogler.mmrl.wx.ui.webui.alerts.Confirm
 import com.dergoogler.mmrl.wx.ui.webui.alerts.Prompt
 import com.dergoogler.mmrl.wx.ui.webui.alerts.fromString
-import dev.mmrlx.compose.layout.addOverlayView
+import com.dergoogler.mmrl.wx.ui.webui.asyncOverlayLayout
 import dev.mmrlx.utilities.json.getAs
 import dev.mmrlx.utilities.json.getByPathOrDefault
 import dev.mmrlx.webui.JavaScriptScope
@@ -53,27 +53,25 @@ fun JavaScriptScope.dialogs() {
             ImeAction.fromString(it)
         }
 
-        withContext(Dispatchers.Main) {
-            activity.addOverlayView {
-                this@dialogs.Prompt(
-                    title = title,
-                    description = message,
-                    value = defaultValue,
-                    onConfirm = {
-                        deferred.complete(it)
-                    },
-                    onClose = {
-                        deferred.complete(null)
-                    },
-                    confirmText = confirmText,
-                    cancelText = cancelText,
-                    launchKeyboard = launchKeyboard,
-                    keyboardType = keyboardType,
-                    imeAction = imeAction,
-                    theme = theme,
-                    supportingText = supportingText
-                )
-            }
+        asyncOverlayLayout {
+            this@dialogs.Prompt(
+                title = title,
+                description = message,
+                value = defaultValue,
+                onConfirm = {
+                    deferred.complete(it)
+                },
+                onClose = {
+                    deferred.complete(null)
+                },
+                confirmText = confirmText,
+                cancelText = cancelText,
+                launchKeyboard = launchKeyboard,
+                keyboardType = keyboardType,
+                imeAction = imeAction,
+                theme = theme,
+                supportingText = supportingText
+            )
         }
 
         return@asyncFunction deferred.await()
@@ -90,40 +88,39 @@ fun JavaScriptScope.dialogs() {
         val message = options.getAs<String?>("message", null)
             ?: throw IllegalArgumentException("Message must not null")
 
-        withContext(Dispatchers.Main) {
-            activity.addOverlayView {
-                this@dialogs.Confirm(
-                    title = title,
-                    description = message,
-                    onConfirm = {
-                        deferred.complete(true)
-                    },
-                    onClose = {
-                        deferred.complete(false)
-                    },
-                    confirmText = confirmText,
-                    cancelText = cancelText,
-                    theme = theme
-                )
-            }
+        asyncOverlayLayout {
+            this@dialogs.Confirm(
+                title = title,
+                description = message,
+                onConfirm = {
+                    deferred.complete(true)
+                },
+                onClose = {
+                    deferred.complete(false)
+                },
+                confirmText = confirmText,
+                cancelText = cancelText,
+                theme = theme
+            )
         }
 
         return@asyncFunction deferred.await()
     }
 
-    asyncFunction("protectedConfirm") {
-        val options = checkObject(0)
+    activity {
+        asyncFunction("protectedConfirm") {
+            val options = checkObject(0)
+            val title = options.getAs<String>("title", "Confirm")
+            val description = options.getAs<String?>("description", null)
+                ?: throw IllegalArgumentException("Description must not null")
 
-        val title = options.getAs<String>("title", "Confirm")
-        val description = options.getAs<String?>("description", null)
-            ?: throw IllegalArgumentException("Description must not null")
-
-        return@asyncFunction withContext(Dispatchers.Main) {
-            deviceConfirm(
-                activity = activity,
-                title = title,
-                message = description
-            )
+            return@asyncFunction withContext(Dispatchers.Main) {
+                deviceConfirm(
+                    activity = this@activity as ComponentActivity,
+                    title = title,
+                    message = description
+                )
+            }
         }
     }
 }

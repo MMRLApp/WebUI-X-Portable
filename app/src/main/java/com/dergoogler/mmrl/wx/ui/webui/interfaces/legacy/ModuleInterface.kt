@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy
 
+import android.app.Activity
 import android.os.Build
 import androidx.core.app.ShareCompat
 import androidx.core.content.pm.PackageInfoCompat
@@ -25,10 +26,11 @@ fun JavaScriptRegistry.legacyModuleInterface() {
     val name = "$${module.sanitizedId}"
 
     namespace(name) {
-        fun controller() = WindowCompat.getInsetsController(activity.window, webview)
-
-        controller().systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        fun Activity.controller() = WindowCompat.getInsetsController(window, webview)
+        activity {
+            controller().systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
 
         function("getManager") {
             deprecated("$name.getManager()", "webui.getCurrentRootManager()")
@@ -69,19 +71,20 @@ fun JavaScriptRegistry.legacyModuleInterface() {
             module.hasShortcut()
         }
 
-        function("isLightNavigationBars") { controller().isAppearanceLightNavigationBars }
-        function("isLightStatusBars") { controller().isAppearanceLightStatusBars }
         function("isDarkMode") { settings.darkMode }
         function("getSdk") { Build.VERSION.SDK_INT }
 
-        function("setLightNavigationBars") {
-            val light = checkBoolean(0)
-            webview.post { controller().isAppearanceLightNavigationBars = light }
-        }
-
-        function("setLightStatusBars") {
-            val light = checkBoolean(0)
-            webview.post { controller().isAppearanceLightStatusBars = light }
+        activity {
+            function("isLightNavigationBars") { controller().isAppearanceLightNavigationBars }
+            function("isLightStatusBars") { controller().isAppearanceLightStatusBars }
+            function("setLightNavigationBars") {
+                val light = checkBoolean(0)
+                webview.post { controller().isAppearanceLightNavigationBars = light }
+            }
+            function("setLightStatusBars") {
+                val light = checkBoolean(0)
+                webview.post { controller().isAppearanceLightStatusBars = light }
+            }
         }
 
         function("shareText") {

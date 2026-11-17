@@ -116,6 +116,8 @@ android {
             isJniDebuggable = false
             renderscriptOptimLevel = 3
             multiDexEnabled = true
+            isMinifyEnabled = true
+            isShrinkResources = true
             versionNameSuffix = "-release"
             manifestPlaceholders["webuiPermissionId"] = mmrlBaseApplicationId
         }
@@ -307,6 +309,7 @@ dependencies {
     implementation(libs.mmrlx.ui)
     implementation(libs.mmrlx.utilities)
     implementation(libs.mmrlx.webui.core)
+    implementation(libs.mmrlx.webui.overlay)
     implementation(libs.mmrlx.webui.dex)
     implementation(libs.mmrlx.nio)
 

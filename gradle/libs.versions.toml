@@ -1,6 +1,6 @@
 [versions]
 dexlib2 = "2.5.2"
-mmrlx = "1.0.302"
+mmrlx = "1.0.316"
 mmrl = "b6da2febe9"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "9.0.1"
@@ -130,6 +130,7 @@ libsu-io = { module = "com.github.topjohnwu.libsu:io", version.ref = "libsu" }
 mmrlx-ui = { module = "dev.mmrlx:ui", version.ref = "mmrlx" }
 mmrlx-nio = { module = "dev.mmrlx:nio", version.ref = "mmrlx" }
 mmrlx-webui-core = { module = "dev.mmrlx:webui.core", version.ref = "mmrlx" }
+mmrlx-webui-overlay = { module = "dev.mmrlx:webui.overlay", version.ref = "mmrlx" }
 mmrlx-webui-lua = { module = "dev.mmrlx:webui.lua", version.ref = "mmrlx" }
 mmrlx-webui-dex = { module = "dev.mmrlx:webui.dex", version.ref = "mmrlx" }
 mmrlx-utilities = { module = "dev.mmrlx:utilities", version.ref = "mmrlx" }

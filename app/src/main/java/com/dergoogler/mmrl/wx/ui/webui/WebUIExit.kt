@@ -22,7 +22,7 @@ private fun WebUI.handleNativeExit(config: WebrootConfig) {
 
     with(kontext) {
         if (config.exitConfirm) {
-            activity.addOverlayView {
+            activity?.addOverlayView {
                 this@handleNativeExit.Confirm(
                     title = getString(R.string.exit),
                     description = getString(R.string.exit_desc),

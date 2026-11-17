@@ -4,7 +4,7 @@ import com.dergoogler.mmrl.wx.model.module.permissions
 import com.dergoogler.mmrl.wx.ui.webui.alerts.Md3Confirm
 import com.dergoogler.mmrl.wx.ui.webui.mdColorScheme
 import com.dergoogler.mmrl.wx.ui.webui.module
-import dev.mmrlx.compose.layout.addOverlayView
+import com.dergoogler.mmrl.wx.ui.webui.syncOverlayLayout
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptScope
 
@@ -125,8 +125,8 @@ private fun <T> JavaScriptScope.requirePermission(
         }
     }
 
-    activity.runOnUiThread {
-        activity.addOverlayView {
+    activity {
+        syncOverlayLayout {
             Md3Confirm(
                 title = "Missing permission",
                 description = message,

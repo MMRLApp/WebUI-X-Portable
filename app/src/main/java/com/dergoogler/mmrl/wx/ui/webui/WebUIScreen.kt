@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
 import android.os.Build
-import android.system.OsConstants.O_RDONLY
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
@@ -14,27 +13,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.wx.datastore.model.WebUILaunchMode
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
 import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.ui.webui.components.ContextMenu
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.appInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.fileSystemInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.ksu.kernelSUInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.legacyFileInputInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.legacyFileOutputInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.legacy.legacyModuleInterface
-import com.dergoogler.mmrl.wx.ui.webui.interfaces.moduleInterface
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.internalPathHandler
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.iconPathHandler
-import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.suRoute
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.webrootPathHandler
-import com.dergoogler.mmrl.wx.ui.webui.util.dexPlugin
 import com.dergoogler.mmrl.wx.util.withNewRootShell
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -44,10 +30,6 @@ import dev.mmrlx.compose.webui.WebUIRecomposer
 import dev.mmrlx.compose.webui.WebUIView
 import dev.mmrlx.compose.webui.insets
 import dev.mmrlx.compose.webui.rememberWebUIState
-import dev.mmrlx.nio.SuFile
-import dev.mmrlx.nio.SuFileInputStream
-import dev.mmrlx.nio.SuFileOutputStream
-import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.WebUIContextMenu
 
 @Destination<RootGraph>
@@ -116,6 +98,12 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
 
     val wstate = rememberWebUIState(domain) {
         it
+            .base(
+                module = module,
+                colorScheme = colorScheme,
+                prefs = prefs,
+                isDebug = isDebug
+            )
             .factories {
                 // in no activity mode `activity.finish()` will close the app. override it.
                 if (isNavigationStack) {
@@ -123,60 +111,7 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
                         navigator.popBackStack()
                     }
                 }
-
-                inputStreamFactory { paths ->
-                    val path = paths.first
-                    val mode: Int = paths[1, O_RDONLY]
-                    SuFileInputStream(SuFile(path), mode, 0)
-                }
-
-                outputStreamFactory { paths ->
-                    val path = paths.first
-                    val append = paths[1, false]
-                    SuFileOutputStream(path, append)
-                }
-
-                randomAccessFileFactory { paths ->
-                    val path = paths.first
-                    val mode = paths[1, "r"]
-                    SuRandomAccessFile(path, mode)
-                }
-
-                fileFactory { paths ->
-                    SuFile(*paths)
-                }
             }
-            .settings {
-                schemeWhitelist += "ksu"
-                useDefaultApplicationInterface = false
-                useDefaultFileSystem = false
-                debug = isDebug
-                forceKillProcess =
-                    prefs.forceKillWebUIProcess && prefs.webuiLaunchMode == WebUILaunchMode.SEPARATE_PROCESS
-                userAgentString = userAgent
-                darkMode = prefs.isDarkMode()
-                showEventPayloadInConsole = prefs.logEventPayload
-
-                extra = mutableMapOf(
-                    "module" to module,
-                    "disableGlobalExitConfirm" to prefs.disableGlobalExitConfirm,
-                    "isRootMode" to prefs.workingMode.isRoot,
-                    "workingMode" to prefs.workingMode,
-                    "mdColorScheme" to colorScheme,
-                    "preferences" to prefs,
-                )
-            }
-            .registerJavaScriptInterfaces {
-                moduleInterface()
-                kernelSUInterface()
-                appInterface()
-                fileSystemInterface()
-                // legacy
-                legacyModuleInterface()
-                legacyFileInputInterface()
-                legacyFileOutputInterface()
-            }
-            .backHandlers()
             .client {
                 onUntrustedUrl { uri ->
                     browser.open(uri)
@@ -188,39 +123,12 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
                     }
                 }
             }
-            .chromeClient { }
             .apply {
                 if (isNavigationStack) {
                     insets(paddingInsets)
                 }
             }
-            .dexPlugin()
-            .registerRoutes {
-                // ksu://icon/
-                iconPathHandler()
-            }
-            .registerRoutes {
-                internalPathHandler()
-                suRoute(
-                    "/.${module.id}/",
-                    module.path.moduleDir
-                )
-
-                suRoute(
-                    "/.adb/",
-                    module.adbPath.baseDir
-                )
-                suRoute(
-                    "/.config/",
-                    module.adbPath.configDir
-                )
-                suRoute(
-                    "/.local/",
-                    module.adbPath.localDir
-                )
-
-                webrootPathHandler()
-            }
+            .registerRoutes { webrootPathHandler(module.path.webrootDir) }
     }
 
     DisposableEffect(Unit) {

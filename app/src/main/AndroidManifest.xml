@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="PackageVisibilityPolicy,QueryAllPackagesPermission" />
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <uses-permission
         android:name="${webuiPermissionId}.permission.WEBUI_X"
         android:protectionLevel="dangerous" />
@@ -125,6 +127,11 @@
                 <action android:name="NonRootService" />
             </intent-filter>
         </service>
+
+        <service
+            android:name="${__packageName__}.ui.webui.overlay.WebUIOverlay"
+            android:foregroundServiceType="specialUse"
+            android:exported="false" />
 
         <service
             android:name="dev.mmrlx.nio.service.NonRootFileService"

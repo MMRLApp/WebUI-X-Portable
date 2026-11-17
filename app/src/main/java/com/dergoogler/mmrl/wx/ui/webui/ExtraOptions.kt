@@ -1,9 +1,20 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
+import android.os.IBinder
+import android.view.View
+import android.view.ViewGroup.LayoutParams
 import androidx.compose.material3.ColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalView
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.model.module.Module
+import dev.mmrlx.compose.webui.drawCompose
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.JavaScriptFunctionScope
@@ -12,6 +23,8 @@ import dev.mmrlx.webui.WebUI
 import dev.mmrlx.webui.WebUIFactories
 import dev.mmrlx.webui.WebUISettings
 import dev.mmrlx.webui.extra
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 val WebUI.preferences: UserPreferences
     get() = settings.preferences
@@ -152,4 +165,51 @@ fun WebUIFactories.randomAccessFileFactory(factory: WebUIFactories.Factory<SuRan
 fun WebUI.randomAccessFile(path: String, mode: String): SuRandomAccessFile {
     return getFactory<SuRandomAccessFile>("randomAccessFile")?.create(path, mode)
         ?: throw IllegalStateException("Random access file factory not set")
+}
+
+suspend fun WebUI.asyncOverlayLayout(
+    layoutParams: LayoutParams = LayoutParams(
+        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
+    ),
+    content: @Composable () -> Unit,
+) = withContext(Dispatchers.Main) {
+    drawCompose(layoutParams = layoutParams, content = content)
+}
+
+fun WebUI.syncOverlayLayout(
+    layoutParams: LayoutParams = LayoutParams(
+        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT
+    ),
+    content: @Composable () -> Unit,
+) = webview.post {
+    drawCompose(layoutParams = layoutParams, content = content)
+}
+
+@Composable
+fun rememberWindowToken(): IBinder? {
+    val view = LocalView.current
+    var windowToken by remember(view) { mutableStateOf(view.windowToken) }
+
+    DisposableEffect(view) {
+        if (view.isAttachedToWindow) {
+            windowToken = view.windowToken
+        }
+
+        val listener = object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {
+                windowToken = v.windowToken
+            }
+
+            override fun onViewDetachedFromWindow(v: View) {
+                windowToken = null
+            }
+        }
+
+        view.addOnAttachStateChangeListener(listener)
+        onDispose {
+            view.removeOnAttachStateChangeListener(listener)
+        }
+    }
+
+    return windowToken
 }
