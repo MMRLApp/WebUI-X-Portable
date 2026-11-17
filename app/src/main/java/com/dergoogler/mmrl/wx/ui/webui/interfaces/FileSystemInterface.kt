@@ -32,7 +32,7 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
         Response(stream)
     }
 
-    dangerousAsyncFunction("outputstream", Permissions.MX.IO) {
+    dangerousFunction("outputstream", Permissions.MX.IO) {
         val path = checkString(0)
         val overwrite = optBoolean(1, false)
         val fos = outputStream(path, overwrite)
@@ -48,7 +48,7 @@ fun JavaScriptRegistry.fileSystemInterface() = namespace("fs") {
         sufile(path).inputStream(flags, mode).reader(charset).use { it.readText() }
     }
 
-    dangerousAsyncFunction("readFileSync", Permissions.MX.IO) {
+    dangerousFunction("readFileSync", Permissions.MX.IO) {
         val path = checkString(0)
         val options = optObject(1)
         val charset = options.charset()
