@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
-import android.os.Build
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.systemBars
@@ -11,9 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.ext.none
-import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.wx.ui.component.LocalModule
 import com.dergoogler.mmrl.wx.ui.component.ModuleScope
@@ -21,10 +18,8 @@ import com.dergoogler.mmrl.wx.ui.providable.LocalBrowser
 import com.dergoogler.mmrl.wx.ui.providable.LocalDestinationsNavigator
 import com.dergoogler.mmrl.wx.ui.webui.components.ContextMenu
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.webrootPathHandler
-import com.dergoogler.mmrl.wx.util.withNewRootShell
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.topjohnwu.superuser.ShellUtils
 import dev.mmrlx.compose.ui.scaffold.Scaffold
 import dev.mmrlx.compose.webui.WebUIRecomposer
 import dev.mmrlx.compose.webui.WebUIView
@@ -68,23 +63,6 @@ private fun WebUIScreen0(isNavigationStack: Boolean = false) {
     }
 
     var contextMenu by remember { mutableStateOf<WebUIContextMenu?>(null) }
-
-    val userAgent = remember {
-        val versionCode = context.managerVersion.second
-
-        val platform = prefs.workingMode
-
-        val platformVersion = if (platform == WorkingMode.MODE_NON_ROOT) {
-            -1
-        } else {
-            (withNewRootShell { ShellUtils.fastCmd(this, "su -V") }).toIntOrNull() ?: -1
-        }
-
-        val osVersion = Build.VERSION.RELEASE
-        val deviceModel = Build.MODEL
-
-        "WebUI X/$versionCode (Linux; Android $osVersion; $deviceModel; ${platform.toString}/$platformVersion)"
-    }
 
     val isDebug = prefs.developerMode
 

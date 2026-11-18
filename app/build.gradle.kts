@@ -103,8 +103,6 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -248,7 +246,6 @@ dependencies {
 
     implementation(libs.apache.commons.compress)
 
-    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.activity.compose)

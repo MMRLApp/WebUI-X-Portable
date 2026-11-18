@@ -1,9 +1,12 @@
 package com.dergoogler.mmrl.wx.ui.webui
 
+import android.os.Build
 import android.system.OsConstants.O_RDONLY
 import androidx.compose.material3.ColorScheme
+import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.wx.datastore.model.UserPreferences
 import com.dergoogler.mmrl.wx.datastore.model.WebUILaunchMode
+import com.dergoogler.mmrl.wx.datastore.model.WorkingMode
 import com.dergoogler.mmrl.wx.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.wx.model.module.Module
 import com.dergoogler.mmrl.wx.ui.webui.interfaces.appInterface
@@ -16,49 +19,69 @@ import com.dergoogler.mmrl.wx.ui.webui.interfaces.moduleInterface
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.internalPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.ksu.iconPathHandler
 import com.dergoogler.mmrl.wx.ui.webui.pathHandlers.suRoute
+import com.dergoogler.mmrl.wx.util.withNewRootShell
+import com.topjohnwu.superuser.ShellUtils
 import dev.mmrlx.nio.SuFile
 import dev.mmrlx.nio.SuFileInputStream
 import dev.mmrlx.nio.SuFileOutputStream
 import dev.mmrlx.nio.SuRandomAccessFile
 import dev.mmrlx.webui.WebUI
-import okhttp3.internal.userAgent
+
+private fun WebUI.userAgent(prefs: UserPreferences): String {
+    val versionCode = kontext.managerVersion.second
+
+    val platform = prefs.workingMode
+
+    val platformVersion = if (platform == WorkingMode.MODE_NON_ROOT) {
+        -1
+    } else {
+        (withNewRootShell { ShellUtils.fastCmd(this, "su -V") }).toIntOrNull() ?: -1
+    }
+
+    val osVersion = Build.VERSION.RELEASE
+    val deviceModel = Build.MODEL
+
+    return "WebUI X/$versionCode (Linux; Android $osVersion; $deviceModel; ${platform.toString}/$platformVersion)"
+}
 
 fun WebUI.base(
     module: Module,
     colorScheme: ColorScheme,
     prefs: UserPreferences,
     isDebug: Boolean = false,
-) = this.factories {
-    inputStreamFactory { paths ->
-        val path = paths.first
-        val mode: Int = paths[1, O_RDONLY]
-        SuFileInputStream(SuFile(path), mode, 0)
-    }
+): WebUI {
 
-    outputStreamFactory { paths ->
-        val path = paths.first
-        val append = paths[1, false]
-        SuFileOutputStream(path, append)
-    }
 
-    randomAccessFileFactory { paths ->
-        val path = paths.first
-        val mode = paths[1, "r"]
-        SuRandomAccessFile(path, mode)
-    }
+    return this.factories {
+        inputStreamFactory { paths ->
+            val path = paths.first
+            val mode: Int = paths[1, O_RDONLY]
+            SuFileInputStream(SuFile(path), mode, 0)
+        }
 
-    fileFactory { paths ->
-        SuFile(*paths)
-    }
-}
-    .settings {
+        outputStreamFactory { paths ->
+            val path = paths.first
+            val append = paths[1, false]
+            SuFileOutputStream(path, append)
+        }
+
+        randomAccessFileFactory { paths ->
+            val path = paths.first
+            val mode = paths[1, "r"]
+            SuRandomAccessFile(path, mode)
+        }
+
+        fileFactory { paths ->
+            SuFile(*paths)
+        }
+    }.settings {
         schemeWhitelist += "ksu"
         useDefaultApplicationInterface = false
         useDefaultFileSystem = false
         debug = isDebug
         forceKillProcess =
             prefs.forceKillWebUIProcess && prefs.webuiLaunchMode == WebUILaunchMode.SEPARATE_PROCESS
-        userAgentString = userAgent
+        userAgentString = userAgent(prefs)
         darkMode = prefs.isDarkMode()
         showEventPayloadInConsole = prefs.logEventPayload
 
@@ -68,8 +91,7 @@ fun WebUI.base(
         extra["workingMode"] = prefs.workingMode
         extra["mdColorScheme"] = colorScheme
         extra["preferences"] = prefs
-    }
-    .registerJavaScriptInterfaces {
+    }.registerJavaScriptInterfaces {
         moduleInterface()
         kernelSUInterface()
         appInterface()
@@ -78,31 +100,23 @@ fun WebUI.base(
         legacyModuleInterface()
         legacyFileInputInterface()
         legacyFileOutputInterface()
-    }
-    .backHandlers()
-    .client {}
-    .chromeClient { }
-    .registerRoutes {
+    }.backHandlers().client {}.chromeClient { }.registerRoutes {
         // ksu://icon/
         iconPathHandler()
-    }
-    .registerRoutes {
+    }.registerRoutes {
         internalPathHandler()
         suRoute(
-            "/.${module.id}/",
-            module.path.moduleDir
+            "/.${module.id}/", module.path.moduleDir
         )
 
         suRoute(
-            "/.adb/",
-            module.adbPath.baseDir
+            "/.adb/", module.adbPath.baseDir
         )
         suRoute(
-            "/.config/",
-            module.adbPath.configDir
+            "/.config/", module.adbPath.configDir
         )
         suRoute(
-            "/.local/",
-            module.adbPath.localDir
+            "/.local/", module.adbPath.localDir
         )
     }
+}

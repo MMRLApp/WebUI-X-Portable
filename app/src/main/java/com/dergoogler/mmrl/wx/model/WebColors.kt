@@ -1,7 +1,5 @@
 package com.dergoogler.mmrl.wx.model
 
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.graphics.Color
@@ -10,26 +8,19 @@ import com.dergoogler.mmrl.ext.toCssValue
 import com.dergoogler.mmrl.ui.component.button.defaultFilledTonalButtonColors
 import com.dergoogler.mmrl.ui.component.card.defaultCardColors
 import java.util.Locale
-import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
 data class WebColors(val colorScheme: ColorScheme) {
     val filledTonalButtonColors = colorScheme.defaultFilledTonalButtonColors
     val cardColors = colorScheme.defaultCardColors
 
-    val colorSchemeMap: Map<String, Color> =
-        (colorScheme::class as KClass<ColorScheme>).memberProperties
-            .filter { it.returnType.classifier == Color::class }
-            .associateBy({ it.name }, { it.get(colorScheme) as Color })
-
-    val filledTonalButtonColorsMap =
-        (filledTonalButtonColors::class as KClass<ButtonColors>).memberProperties
-            .filter { it.returnType.classifier == Color::class }
-            .associateBy({ it.name }, { it.get(filledTonalButtonColors) as Color })
-
-    val cardColorsMap = (cardColors::class as KClass<CardColors>).memberProperties
+    private inline fun <reified T : Any> T.map(): Map<String, Color> = T::class.memberProperties
         .filter { it.returnType.classifier == Color::class }
-        .associateBy({ it.name }, { it.get(cardColors) as Color })
+        .associateBy({ it.name }, { it.get(this) as Color })
+
+    val colorSchemeMap = colorScheme.map()
+    val filledTonalButtonColorsMap = filledTonalButtonColors.map()
+    val cardColorsMap = cardColors.map()
 
     val allCssColors = buildString {
         appendLine(":root {")
@@ -40,7 +31,11 @@ data class WebColors(val colorScheme: ColorScheme) {
 
             // Manual inject this because it not a default
             if (name == "surface") {
-                appendTabbedLine("--tonalSurface: ${colorScheme.surfaceColorAtElevation(1.dp).toCssValue()};")
+                appendTabbedLine(
+                    "--tonalSurface: ${
+                        colorScheme.surfaceColorAtElevation(1.dp).toCssValue()
+                    };"
+                )
             }
         }
 
@@ -57,7 +52,8 @@ data class WebColors(val colorScheme: ColorScheme) {
         appendLine("}")
     }
 
-    fun String.capitalize() = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+    fun String.capitalize() =
+        this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
     fun StringBuilder.appendTabbedLine(line: String, count: Int = 1) {
         val tabs = "\t".repeat(count)
