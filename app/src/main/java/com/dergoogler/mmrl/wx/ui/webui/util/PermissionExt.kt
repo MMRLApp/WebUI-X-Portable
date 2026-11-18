@@ -7,9 +7,13 @@ import com.dergoogler.mmrl.wx.ui.webui.module
 import com.dergoogler.mmrl.wx.ui.webui.syncOverlayLayout
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptScope
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 private val requestedPermissions = mutableSetOf<String>()
 
+// Dangerous functions
+
 fun JavaScriptScope.dangerousFunction(
     name: String,
     permission: Permissions.Name,
@@ -30,25 +34,41 @@ fun JavaScriptScope.dangerousFunction(
     }
 }
 
+// Async versions support suspend functions.
+
+private suspend fun <T> JavaScriptScope.requirePermissionAsync(
+    permission: Permissions.Name,
+    method: String? = null,
+    default: T? = null,
+    block: suspend () -> T,
+): T? = requirePermissionAsync(
+    group = Permissions.Group(setOf(permission)),
+    method = method,
+    default = default,
+    block = block,
+)
+
 fun JavaScriptScope.dangerousAsyncFunction(
     name: String,
-    permission: Permissions.Name,
-    block: JavaScriptFunctionScope.() -> Any?,
+    permission: Permissions.Group,
+    block: suspend JavaScriptFunctionScope.() -> Any?,
 ) = asyncFunction(name) {
-    requirePermission(permission, name) {
+    requirePermissionAsync(permission, name) {
         block()
     }
 }
 
 fun JavaScriptScope.dangerousAsyncFunction(
     name: String,
-    permission: Permissions.Group,
-    block: JavaScriptFunctionScope.() -> Any?,
+    permission: Permissions.Name,
+    block: suspend JavaScriptFunctionScope.() -> Any?,
 ) = asyncFunction(name) {
-    requirePermission(permission, name) {
+    requirePermissionAsync(permission, name) {
         block()
     }
 }
+
+// Public permission API
 
 fun <T> JavaScriptScope.requirePermission(
     name: Permissions.Group,
@@ -85,6 +105,8 @@ fun <T> JavaScriptScope.requirePermission(
     block = block,
 )
 
+// Synchronous permission check
+
 private fun <T> JavaScriptScope.requirePermission(
     interfaceId: String,
     group: Permissions.Group,
@@ -94,22 +116,84 @@ private fun <T> JavaScriptScope.requirePermission(
 ): T {
     val permissions = module.webrootConfig.permissions.toMutableList()
 
-    // Already granted?
-    group.permissions.firstOrNull {
-        permissions.contains(it.permissionName)
-    }?.let {
+    if (group.permissions.any {
+            it.permissionName in permissions
+        }) {
         return block()
     }
 
-    // Prevent showing the same permission request twice.
-    val requestKey = group.permissions
-        .map { it.permissionName }
-        .sorted()
-        .joinToString("|")
+    val requestKey = group.requestKey()
 
     if (!requestedPermissions.add(requestKey)) {
         return default
     }
+
+    showPermissionDialog(
+        interfaceId = interfaceId,
+        group = group,
+        method = method,
+    ) { }
+
+    return default
+}
+
+// Asynchronous permission check
+
+private suspend fun <T> JavaScriptScope.requirePermissionAsync(
+    group: Permissions.Group,
+    method: String? = null,
+    default: T? = null,
+    block: suspend () -> T,
+): T? {
+    val permissions = module.webrootConfig.permissions
+
+    if (group.permissions.any {
+            it.permissionName in permissions
+        }) {
+        return block()
+    }
+
+    val requestKey = group.requestKey()
+
+    if (!requestedPermissions.add(requestKey)) {
+        return default
+    }
+
+    val granted = suspendCancellableCoroutine { continuation ->
+        continuation.invokeOnCancellation {
+            requestedPermissions.remove(requestKey)
+        }
+
+        showPermissionDialog(
+            interfaceId = namespaceName,
+            group = group,
+            method = method,
+        ) { result ->
+            if (continuation.isActive) {
+                continuation.resume(result)
+            }
+        }
+    }
+
+    if (!granted) {
+        return default
+    }
+
+    // Permission was granted. Execute the original function.
+    return block()
+}
+
+// Permission dialog
+
+private fun JavaScriptScope.showPermissionDialog(
+    interfaceId: String,
+    group: Permissions.Group,
+    method: String?,
+    onResult: (Boolean) -> Unit,
+) {
+    val requestKey = group.requestKey()
+
+    val permissions = module.webrootConfig.permissions.toMutableList()
 
     val permissionNames = group.permissions.joinToString(" or ") {
         "\"${it.permissionName}\""
@@ -125,13 +209,22 @@ private fun <T> JavaScriptScope.requirePermission(
         }
     }
 
+    var completed = false
+
+    fun finish(granted: Boolean) {
+        if (completed) return
+        completed = true
+
+        requestedPermissions.remove(requestKey)
+        onResult(granted)
+    }
+
     activity {
         syncOverlayLayout {
             Md3Confirm(
                 title = "Missing permission",
                 description = message,
                 onConfirm = {
-                    // Grant every permission in the group.
                     group.permissions.forEach {
                         if (it.permissionName !in permissions) {
                             permissions += it.permissionName
@@ -143,15 +236,24 @@ private fun <T> JavaScriptScope.requirePermission(
                         permissions
                     )
 
+                    finish(true)
                     reload()
                 },
-                onClose = {},
+                onClose = {
+                    finish(false)
+                },
                 colorScheme = mdColorScheme,
                 confirmText = "Allow",
                 cancelText = "Reject",
             )
         }
     }
-
-    return default
 }
+
+// Helpers
+
+private fun Permissions.Group.requestKey(): String =
+    permissions
+        .map { it.permissionName }
+        .sorted()
+        .joinToString("|")
