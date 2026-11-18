@@ -21,6 +21,7 @@ import com.topjohnwu.superuser.internal.WaitRunnable
 import dev.mmrlx.webui.JavaScriptFunctionScope
 import dev.mmrlx.webui.JavaScriptRegistry
 import dev.mmrlx.webui.WebUI
+import dev.mmrlx.webui.overlay.isOverlay
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -119,6 +120,10 @@ fun JavaScriptRegistry.kernelSUInterface() = namespace("ksu") {
 
     activity {
         function("fullScreen") {
+            if (isOverlay) {
+                console.warn("fullScreen is not supported in overlay mode")
+                return@function null
+            }
             if (!preferences.allowWebUiFullscreen) return@function null
 
             val enable = checkBoolean(0)
