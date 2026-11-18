@@ -128,6 +128,16 @@
             </intent-filter>
         </service>
 
+        <activity
+            android:name="${__packageName__}.ui.webui.overlay.WebUIOverlayActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.OverlayHost"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|uiMode|density|fontScale|layoutDirection|locale" />
+
+
         <service
             android:name="${__packageName__}.ui.webui.overlay.WebUIOverlay"
             android:foregroundServiceType="specialUse"

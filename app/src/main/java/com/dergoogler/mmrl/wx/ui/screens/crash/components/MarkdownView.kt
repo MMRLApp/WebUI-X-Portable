@@ -44,9 +44,7 @@ fun MarkdownView(
             it
                 .settings {
                     darkMode = userPrefs.isDarkMode()
-                    extra = mutableMapOf(
-                        "mdColorScheme" to scheme
-                    )
+                    extra["mdColorScheme"] = scheme
                 }
                 .client {
                     onUntrustedUrl { uri ->
